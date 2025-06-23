@@ -430,16 +430,52 @@ class StockDashboard {
             }
         }
         
-        // EMA trend logic: =IF(AND(Y5<0,Z5<0,AA5<0),"ST BEARISH",IF(AND(E5>AI5,E5>AJ5,E5>AK5,AI5>AJ5,AJ5>AK5),"ST BULLISH"))
+        // Enhanced EMA trend logic with comprehensive classifications
         let emaStackingTrend = null;
         if (pct8EMA !== null && pct13EMA !== null && pct21EMA !== null && ema8 && ema13 && ema21) {
+            const isEmaStacked = ema8 > ema13 && ema13 > ema21;
+            const isEmaInverted = ema8 < ema13 && ema13 < ema21;
+            const priceAbove8 = currentPrice > ema8;
+            const priceAbove13 = currentPrice > ema13;
+            const priceAbove21 = currentPrice > ema21;
+            
+            // Primary conditions
             if (pct8EMA < 0 && pct13EMA < 0 && pct21EMA < 0) {
                 emaStackingTrend = "ST BEARISH";
-            } else if (currentPrice > ema8 && currentPrice > ema13 && currentPrice > ema21 && 
-                       ema8 > ema13 && ema13 > ema21) {
+            } else if (priceAbove8 && priceAbove13 && priceAbove21 && isEmaStacked) {
                 emaStackingTrend = "ST BULLISH";
+            }
+            // Additional logic for N/A cases
+            else if (isEmaStacked) {
+                // EMAs are properly stacked regardless of price position
+                emaStackingTrend = "EMA Bullish";
+            } else if (isEmaInverted) {
+                // EMAs are inverted (bearish structure)
+                emaStackingTrend = "EMA Bearish";
+            } else if (priceAbove21 && !priceAbove8 && !priceAbove13) {
+                // Price above 21 EMA but below 8 and 13
+                emaStackingTrend = "Uptrend Maintained";
+            } else if (priceAbove8 && priceAbove13 && !priceAbove21) {
+                // Price above short EMAs but below long EMA
+                emaStackingTrend = "Breaking Out";
+            } else if (priceAbove8 && !priceAbove13 && !priceAbove21) {
+                // Price only above shortest EMA
+                emaStackingTrend = "Early Recovery";
+            } else if (!priceAbove8 && priceAbove13 && priceAbove21) {
+                // Price above longer EMAs but below shortest
+                emaStackingTrend = "Short Pullback";
+            } else if (priceAbove8 && !priceAbove13 && priceAbove21) {
+                // Price above 8 and 21 but not 13 (mixed signals)
+                emaStackingTrend = "Mixed Signals";
+            } else if (!priceAbove8 && !priceAbove13 && priceAbove21) {
+                // Price only above longest EMA
+                emaStackingTrend = "Support Hold";
+            } else if (!priceAbove8 && priceAbove13 && !priceAbove21) {
+                // Price only above middle EMA
+                emaStackingTrend = "Mid Recovery";
             } else {
-                emaStackingTrend = null;
+                // Any remaining edge cases
+                emaStackingTrend = "Transitioning";
             }
         }
         
@@ -525,18 +561,42 @@ class StockDashboard {
                 const boolValue = data.comparisons[column];
                 return boolValue === null ? -1 : (boolValue ? 1 : 0);
             case 'sma50Above100Above200':
-            case 'ema8Above13Above21':
-                const trendValue = data.comparisons[column];
-                if (trendValue === null) return -1;
-                if (typeof trendValue === 'string') {
-                    // Sort order: BULLISH/ST BULLISH > Healthy/At Support > FALSE > BEARISH/ST BEARISH
-                    if (trendValue === 'BULLISH' || trendValue === 'ST BULLISH') return 4;
-                    if (trendValue === 'Healthy' || trendValue === 'At Support') return 3;
-                    if (trendValue === 'FALSE') return 2;
-                    if (trendValue === 'BEARISH' || trendValue === 'ST BEARISH') return 1;
-                    return 0;
+                const smaTrendValue = data.comparisons[column];
+                if (smaTrendValue === null) return -1;
+                if (typeof smaTrendValue === 'string') {
+                    // SMA trend ranking
+                    const smaRankings = {
+                        'BULLISH': 4,
+                        'Healthy': 3,
+                        'At Support': 2,
+                        'FALSE': 1,
+                        'BEARISH': 0
+                    };
+                    return smaRankings[smaTrendValue] || 0;
                 }
-                return trendValue ? 1 : 0;
+                return smaTrendValue ? 1 : 0;
+            case 'ema8Above13Above21':
+                const emaTrendValue = data.comparisons[column];
+                if (emaTrendValue === null) return -1;
+                if (typeof emaTrendValue === 'string') {
+                    // Comprehensive EMA trend ranking (higher = better)
+                    const emaRankings = {
+                        'ST BULLISH': 12,
+                        'EMA Bullish': 11,
+                        'Uptrend Maintained': 10,
+                        'Breaking Out': 9,
+                        'Early Recovery': 8,
+                        'Short Pullback': 7,
+                        'Support Hold': 6,
+                        'Mid Recovery': 5,
+                        'Mixed Signals': 4,
+                        'Transitioning': 3,
+                        'EMA Bearish': 2,
+                        'ST BEARISH': 1
+                    };
+                    return emaRankings[emaTrendValue] || 0;
+                }
+                return emaTrendValue ? 1 : 0;
             case 'sma50':
             case 'sma100':
             case 'sma200':
@@ -604,10 +664,17 @@ class StockDashboard {
         const getBooleanClass = (value) => {
             if (value === null || value === undefined) return '';
             if (typeof value === 'string') {
-                if (value === 'BULLISH' || value === 'ST BULLISH' || value === 'Healthy') return 'positive';
-                if (value === 'BEARISH' || value === 'ST BEARISH') return 'negative';
-                if (value === 'At Support') return 'healthy';
-                if (value === 'FALSE') return 'negative';
+                // Positive/Bullish classifications
+                if (['BULLISH', 'ST BULLISH', 'Healthy', 'EMA Bullish', 'Uptrend Maintained', 
+                     'Breaking Out', 'Early Recovery'].includes(value)) return 'positive';
+                
+                // Negative/Bearish classifications  
+                if (['BEARISH', 'ST BEARISH', 'EMA Bearish', 'FALSE'].includes(value)) return 'negative';
+                
+                // Neutral/Cautionary classifications
+                if (['At Support', 'Short Pullback', 'Support Hold', 'Mid Recovery', 
+                     'Mixed Signals', 'Transitioning'].includes(value)) return 'healthy';
+                
                 return '';
             }
             return value ? 'positive' : 'negative';
