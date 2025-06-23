@@ -10,76 +10,160 @@
     <div class="container">
         <header>
             <h1>Dynamic Thematic Dashboard</h1>
-            <button id="refreshBtn" class="refresh-btn">Refresh Data</button>
+            <div class="tab-container">
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="sector-overview">Sector Overview</button>
+                    <button class="tab-btn" data-tab="high-growth">High Growth Momentum</button>
+                </div>
+                <button id="refreshBtn" class="refresh-btn">Refresh Data</button>
+            </div>
         </header>
         
-        <div class="main-content">
-            <div class="side-panel" id="sidePanel">
-                <h3>📊 Market Insights</h3>
-                
-                <div class="insight-section">
-                    <h4>🚀 Most Bullish (Top 5)</h4>
-                    <div id="bullishList" class="stock-list"></div>
+        <!-- Sector Overview Tab -->
+        <div class="tab-content active" id="sector-overview">
+            <div class="main-content">
+                <div class="side-panel" id="sidePanel">
+                    <h3>📊 Market Insights</h3>
+                    
+                    <div class="insight-section">
+                        <h4>🚀 Most Bullish (Top 5)</h4>
+                        <div id="bullishList" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>⚠️ Most Bearish (Top 3)</h4>
+                        <div id="bearishList" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>📈 Best Performers (Top 3)</h4>
+                        <div id="performersList" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>💎 Breakout Candidates (Top 3)</h4>
+                        <div id="breakoutList" class="stock-list"></div>
+                    </div>
                 </div>
                 
-                <div class="insight-section">
-                    <h4>⚠️ Most Bearish (Top 3)</h4>
-                    <div id="bearishList" class="stock-list"></div>
-                </div>
-                
-                <div class="insight-section">
-                    <h4>📈 Best Performers (Top 3)</h4>
-                    <div id="performersList" class="stock-list"></div>
-                </div>
-                
-                <div class="insight-section">
-                    <h4>💎 Breakout Candidates (Top 3)</h4>
-                    <div id="breakoutList" class="stock-list"></div>
+                <div class="dashboard">
+                    <table id="stockTable">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-column="ticker">Ticker</th>
+                            <th class="sortable" data-column="name">Name</th>
+                            <th class="sortable" data-column="liberationChange">% change since Liberation</th>
+                            <th class="sortable" data-column="currentPrice">Price</th>
+                            <th class="sortable" data-column="ytd">% YTD</th>
+                            <th class="sortable" data-column="1d">%1 D</th>
+                            <th class="sortable" data-column="1w">% 1 Wk</th>
+                            <th class="sortable" data-column="2w">%2 Wk</th>
+                            <th class="sortable" data-column="1m">%1 Mo</th>
+                            <th class="sortable" data-column="2m">%2 Mo</th>
+                            <th class="sortable" data-column="3m">%3 Mo</th>
+                            <th class="sortable" data-column="6m">%6Mo</th>
+                            <th class="sortable" data-column="1y">%1YR</th>
+                            <th class="sortable" data-column="deltaFrom52WeekHigh">Δ 52w H</th>
+                            <th class="sortable" data-column="above50SMA">>50 SMA</th>
+                            <th class="sortable" data-column="above100SMA">>100 SMA</th>
+                            <th class="sortable" data-column="above200SMA">>200 SMA</th>
+                            <th class="sortable" data-column="sma50Above100Above200">50>100>200?</th>
+                            <th class="sortable" data-column="above8EMA">>8d EMA</th>
+                            <th class="sortable" data-column="above13EMA">>13d EMA</th>
+                            <th class="sortable" data-column="above21EMA">>21d EMA</th>
+                            <th class="sortable" data-column="ema8Above13Above21">ema 8>13>21</th>
+                            <th class="sortable" data-column="sma50">50 SMA</th>
+                            <th class="sortable" data-column="sma100">100 SMA</th>
+                            <th class="sortable" data-column="sma200">200 SMA</th>
+                            <th class="sortable" data-column="ema8">8d EMA</th>
+                            <th class="sortable" data-column="ema13">13d EMA</th>
+                            <th class="sortable" data-column="ema21">21d EMA</th>
+                            <th class="sortable" data-column="rsi14">14D RSI</th>
+                            <th class="sortable" data-column="rsi30">30D RSI</th>
+                            <th class="sortable" data-column="nextEarnings">Next Earnings</th>
+                            <th class="sortable" data-column="daysToEarnings">Days to Earnings</th>
+                            <th class="sortable" data-column="consecutiveUpDays"># of Days Up</th>
+                        </tr>
+                    </thead>
+                    <tbody id="stockTableBody">
+                        <!-- Stock data will be populated here -->
+                    </tbody>
+                </table>
                 </div>
             </div>
-            
-            <div class="dashboard">
-                <table id="stockTable">
-                <thead>
-                    <tr>
-                        <th class="sortable" data-column="ticker">Ticker</th>
-                        <th class="sortable" data-column="name">Name</th>
-                        <th class="sortable" data-column="liberationChange">% change since Liberation</th>
-                        <th class="sortable" data-column="currentPrice">Price</th>
-                        <th class="sortable" data-column="ytd">% YTD</th>
-                        <th class="sortable" data-column="1d">%1 D</th>
-                        <th class="sortable" data-column="1w">% 1 Wk</th>
-                        <th class="sortable" data-column="2w">%2 Wk</th>
-                        <th class="sortable" data-column="1m">%1 Mo</th>
-                        <th class="sortable" data-column="2m">%2 Mo</th>
-                        <th class="sortable" data-column="3m">%3 Mo</th>
-                        <th class="sortable" data-column="6m">%6Mo</th>
-                        <th class="sortable" data-column="1y">%1YR</th>
-                        <th class="sortable" data-column="deltaFrom52WeekHigh">Δ 52w H</th>
-                        <th class="sortable" data-column="above50SMA">>50 SMA</th>
-                        <th class="sortable" data-column="above100SMA">>100 SMA</th>
-                        <th class="sortable" data-column="above200SMA">>200 SMA</th>
-                        <th class="sortable" data-column="sma50Above100Above200">50>100>200?</th>
-                        <th class="sortable" data-column="above8EMA">>8d EMA</th>
-                        <th class="sortable" data-column="above13EMA">>13d EMA</th>
-                        <th class="sortable" data-column="above21EMA">>21d EMA</th>
-                        <th class="sortable" data-column="ema8Above13Above21">ema 8>13>21</th>
-                        <th class="sortable" data-column="sma50">50 SMA</th>
-                        <th class="sortable" data-column="sma100">100 SMA</th>
-                        <th class="sortable" data-column="sma200">200 SMA</th>
-                        <th class="sortable" data-column="ema8">8d EMA</th>
-                        <th class="sortable" data-column="ema13">13d EMA</th>
-                        <th class="sortable" data-column="ema21">21d EMA</th>
-                        <th class="sortable" data-column="rsi14">14D RSI</th>
-                        <th class="sortable" data-column="rsi30">30D RSI</th>
-                        <th class="sortable" data-column="nextEarnings">Next Earnings</th>
-                        <th class="sortable" data-column="daysToEarnings">Days to Earnings</th>
-                    </tr>
-                </thead>
-                <tbody id="stockTableBody">
-                    <!-- Stock data will be populated here -->
-                </tbody>
-            </table>
+        </div>
+
+        <!-- High Growth Momentum Tab -->
+        <div class="tab-content" id="high-growth">
+            <div class="main-content">
+                <div class="side-panel" id="sidePanelGrowth">
+                    <h3>📊 Growth Insights</h3>
+                    
+                    <div class="insight-section">
+                        <h4>🚀 Most Bullish (Top 5)</h4>
+                        <div id="bullishListGrowth" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>⚠️ Most Bearish (Top 5)</h4>
+                        <div id="bearishListGrowth" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>📈 Best Performers (Top 5)</h4>
+                        <div id="performersListGrowth" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>💎 Breakout Candidates (Top 5)</h4>
+                        <div id="breakoutListGrowth" class="stock-list"></div>
+                    </div>
+                </div>
+                
+                <div class="dashboard">
+                    <table id="growthTable">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-column="ticker">Ticker</th>
+                            <th class="sortable" data-column="name">Name</th>
+                            <th class="sortable" data-column="liberationChange">% change since Liberation</th>
+                            <th class="sortable" data-column="currentPrice">Price</th>
+                            <th class="sortable" data-column="ytd">% YTD</th>
+                            <th class="sortable" data-column="1d">%1 D</th>
+                            <th class="sortable" data-column="1w">% 1 Wk</th>
+                            <th class="sortable" data-column="2w">%2 Wk</th>
+                            <th class="sortable" data-column="1m">%1 Mo</th>
+                            <th class="sortable" data-column="2m">%2 Mo</th>
+                            <th class="sortable" data-column="3m">%3 Mo</th>
+                            <th class="sortable" data-column="6m">%6Mo</th>
+                            <th class="sortable" data-column="1y">%1YR</th>
+                            <th class="sortable" data-column="deltaFrom52WeekHigh">Δ 52w H</th>
+                            <th class="sortable" data-column="above50SMA">>50 SMA</th>
+                            <th class="sortable" data-column="above100SMA">>100 SMA</th>
+                            <th class="sortable" data-column="above200SMA">>200 SMA</th>
+                            <th class="sortable" data-column="sma50Above100Above200">50>100>200?</th>
+                            <th class="sortable" data-column="above8EMA">>8d EMA</th>
+                            <th class="sortable" data-column="above13EMA">>13d EMA</th>
+                            <th class="sortable" data-column="above21EMA">>21d EMA</th>
+                            <th class="sortable" data-column="ema8Above13Above21">ema 8>13>21</th>
+                            <th class="sortable" data-column="sma50">50 SMA</th>
+                            <th class="sortable" data-column="sma100">100 SMA</th>
+                            <th class="sortable" data-column="sma200">200 SMA</th>
+                            <th class="sortable" data-column="ema8">8d EMA</th>
+                            <th class="sortable" data-column="ema13">13d EMA</th>
+                            <th class="sortable" data-column="ema21">21d EMA</th>
+                            <th class="sortable" data-column="rsi14">14D RSI</th>
+                            <th class="sortable" data-column="rsi30">30D RSI</th>
+                            <th class="sortable" data-column="nextEarnings">Next Earnings</th>
+                            <th class="sortable" data-column="daysToEarnings">Days to Earnings</th>
+                            <th class="sortable" data-column="consecutiveUpDays"># of Days Up</th>
+                        </tr>
+                    </thead>
+                    <tbody id="growthTableBody">
+                        <!-- Growth stock data will be populated here -->
+                    </tbody>
+                </table>
+                </div>
             </div>
         </div>
         
@@ -88,6 +172,6 @@
         </div>
     </div>
     
-    <script src="script.js?v=10"></script>
+    <script src="script.js?v=16"></script>
 </body>
 </html>

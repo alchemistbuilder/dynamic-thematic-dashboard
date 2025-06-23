@@ -1,10 +1,11 @@
 // Configuration
 const API_KEY = 'WLIqlQJDbnkp9ke0IEtulkjvpfM7e9Nq'; // Maximum plan - unlimited calls
+const FMP_API_KEY = 'm1HzjYgss43pOkJZcWTr2tuKvRvOPM4W'; // Premium FMP API key
 const LIBERATION_DAY = new Date('2025-04-02');
 const USE_POLYGON = true; // Set to false to use Yahoo Finance
 
-// Your exact ticker list
-const STOCK_TICKERS = [
+// Sector Overview tickers (ETFs + Crypto)
+const SECTOR_TICKERS = [
     'GLD',
     'FXI', 
     'KWEB',
@@ -32,8 +33,63 @@ const STOCK_TICKERS = [
     'XBI'
 ];
 
-// Crypto currencies
+// High Growth Momentum tickers (Individual stocks)
+const GROWTH_TICKERS = [
+    'PLTR',
+    'MELI', 
+    'CNSWF',
+    'RBLX',
+    'UBER',
+    'CRWD',
+    'CHWY',
+    'SE',
+    'CVNA',
+    'SPOT',
+    'GRAB',
+    'HOOD',
+    'DASH',
+    'ROOT',
+    'CPNG',
+    'ZM',
+    'SNOW',
+    'PTON',
+    'HIMS',
+    'BABA',
+    'TOST',
+    'DOCU',
+    'SOFI',
+    'HUBS',
+    'AFRM',
+    'COIN',
+    'SHOP',
+    'ROKU',
+    'ABNB',
+    'CRCT',
+    'TWLO',
+    'APP',
+    'OSCR',
+    'OLO',
+    'LMND',
+    'CART',
+    'SFIX',
+    'FTDR',
+    'SNAP',
+    'DKNG',
+    'LC',
+    'FSLY',
+    'MDB',
+    'PINS',
+    'ASTS',
+    'ZETA',
+    'CRCL',
+    'RKLB'
+];
+
+// Crypto currencies (for sector overview only)
 const CRYPTO_TICKERS = ['X:BTCUSD', 'X:SOLUSD'];
+
+// Combined lists for backwards compatibility
+const STOCK_TICKERS = SECTOR_TICKERS;
 
 // Stock names mapping - exact ETF names from web research
 const STOCK_NAMES = {
@@ -66,9 +122,63 @@ const STOCK_NAMES = {
     'X:SOLUSD': 'Solana'
 };
 
+// Growth stock names mapping
+const GROWTH_NAMES = {
+    'PLTR': 'Palantir Technologies Inc',
+    'MELI': 'MercadoLibre Inc',
+    'CNSWF': 'Coinsquare Ltd',
+    'RBLX': 'Roblox Corporation',
+    'UBER': 'Uber Technologies Inc',
+    'CRWD': 'CrowdStrike Holdings Inc',
+    'CHWY': 'Chewy Inc',
+    'SE': 'Sea Limited',
+    'CVNA': 'Carvana Co',
+    'SPOT': 'Spotify Technology SA',
+    'GRAB': 'Grab Holdings Limited',
+    'HOOD': 'Robinhood Markets Inc',
+    'DASH': 'DoorDash Inc',
+    'ROOT': 'Root Inc',
+    'CPNG': 'Coupang Inc',
+    'ZM': 'Zoom Video Communications Inc',
+    'SNOW': 'Snowflake Inc',
+    'PTON': 'Peloton Interactive Inc',
+    'HIMS': 'Hims & Hers Health Inc',
+    'BABA': 'Alibaba Group Holding Limited',
+    'TOST': 'Toast Inc',
+    'DOCU': 'DocuSign Inc',
+    'SOFI': 'SoFi Technologies Inc',
+    'HUBS': 'HubSpot Inc',
+    'AFRM': 'Affirm Holdings Inc',
+    'COIN': 'Coinbase Global Inc',
+    'SHOP': 'Shopify Inc',
+    'ROKU': 'Roku Inc',
+    'ABNB': 'Airbnb Inc',
+    'CRCT': 'Cricut Inc',
+    'TWLO': 'Twilio Inc',
+    'APP': 'AppLovin Corporation',
+    'OSCR': 'Oscar Health Inc',
+    'OLO': 'Olo Inc',
+    'LMND': 'Lemonade Inc',
+    'CART': 'Maplebear Inc',
+    'SFIX': 'Stitch Fix Inc',
+    'FTDR': 'Frontdoor Inc',
+    'SNAP': 'Snap Inc',
+    'DKNG': 'DraftKings Inc',
+    'LC': 'LendingClub Corporation',
+    'FSLY': 'Fastly Inc',
+    'MDB': 'MongoDB Inc',
+    'PINS': 'Pinterest Inc',
+    'ASTS': 'AST SpaceMobile Inc',
+    'ZETA': 'Zeta Global Holdings Corp',
+    'CRCL': 'Circle Internet Financial Ltd',
+    'RKLB': 'Rocket Lab USA Inc'
+};
+
 class StockDashboard {
     constructor() {
-        this.stockData = new Map();
+        this.sectorData = new Map();
+        this.growthData = new Map();
+        this.currentTab = 'sector-overview';
         this.sortColumn = null;
         this.sortDirection = 'asc';
         this.init();
@@ -79,9 +189,21 @@ class StockDashboard {
         this.loadData();
     }
 
+    get stockData() {
+        return this.currentTab === 'sector-overview' ? this.sectorData : this.growthData;
+    }
+
     bindEvents() {
         document.getElementById('refreshBtn').addEventListener('click', () => {
             this.loadData();
+        });
+
+        // Tab switching functionality
+        document.querySelectorAll('.tab-btn').forEach(tabBtn => {
+            tabBtn.addEventListener('click', () => {
+                const tabId = tabBtn.dataset.tab;
+                this.switchTab(tabId);
+            });
         });
 
         // Add sorting functionality
@@ -91,6 +213,82 @@ class StockDashboard {
                 this.sortTable(column);
             });
         });
+
+        // Add middle mouse button panning for all dashboard elements
+        this.setupPanningForAllDashboards();
+    }
+
+    setupPanningForAllDashboards() {
+        const dashboards = document.querySelectorAll('.dashboard');
+        
+        dashboards.forEach(dashboard => {
+            let isPanning = false;
+            let startX = 0;
+            let scrollLeft = 0;
+
+            dashboard.addEventListener('mousedown', (e) => {
+                // Check if middle mouse button is pressed (button === 1)
+                if (e.button === 1) {
+                    e.preventDefault();
+                    isPanning = true;
+                    dashboard.style.cursor = 'grabbing';
+                    startX = e.pageX - dashboard.offsetLeft;
+                    scrollLeft = dashboard.scrollLeft;
+                }
+            });
+
+            dashboard.addEventListener('mousemove', (e) => {
+                if (!isPanning) return;
+                e.preventDefault();
+                const x = e.pageX - dashboard.offsetLeft;
+                const walk = (x - startX) * 2; // Scroll speed multiplier
+                dashboard.scrollLeft = scrollLeft + walk; // Fixed: pull right goes right, pull left goes left
+            });
+
+            dashboard.addEventListener('mouseup', (e) => {
+                if (e.button === 1) {
+                    isPanning = false;
+                    dashboard.style.cursor = 'default';
+                }
+            });
+
+            dashboard.addEventListener('mouseleave', () => {
+                isPanning = false;
+                dashboard.style.cursor = 'default';
+            });
+
+            // Prevent default middle click behavior
+            dashboard.addEventListener('auxclick', (e) => {
+                if (e.button === 1) {
+                    e.preventDefault();
+                }
+            });
+        });
+    }
+
+    switchTab(tabId) {
+        // Update current tab
+        this.currentTab = tabId;
+        
+        // Update tab buttons
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        document.querySelector(`[data-tab="${tabId}"]`).classList.add('active');
+        
+        // Update tab content
+        document.querySelectorAll('.tab-content').forEach(content => {
+            content.classList.remove('active');
+        });
+        document.getElementById(tabId).classList.add('active');
+        
+        // Render appropriate data
+        this.renderTable();
+        
+        // If no data loaded for this tab, load it
+        if (this.stockData.size === 0) {
+            this.loadData();
+        }
     }
 
     async loadData() {
@@ -115,25 +313,49 @@ class StockDashboard {
     }
 
     async fetchAllStockData() {
-        const allTickers = [...STOCK_TICKERS, ...CRYPTO_TICKERS];
-        console.log('Fetching data for tickers:', allTickers);
+        // Fetch sector data (ETFs + crypto)
+        await this.fetchDataForTab('sector-overview');
+        
+        // Fetch growth data (individual stocks)
+        await this.fetchDataForTab('high-growth');
+    }
+
+    async fetchDataForTab(tabType) {
+        let tickers, dataMap, tickerType;
+        
+        if (tabType === 'sector-overview') {
+            tickers = [...SECTOR_TICKERS, ...CRYPTO_TICKERS];
+            dataMap = this.sectorData;
+            tickerType = 'sector';
+        } else {
+            tickers = GROWTH_TICKERS;
+            dataMap = this.growthData;
+            tickerType = 'growth';
+        }
+        
+        console.log(`Fetching ${tickerType} data for tickers:`, tickers);
         
         if (USE_POLYGON) {
             // Polygon paid tier - fetch all in parallel for instant loading
-            const promises = allTickers.map(ticker => this.fetchStockData(ticker));
+            const promises = tickers.map(ticker => this.fetchStockData(ticker));
             const results = await Promise.allSettled(promises);
             
             let successCount = 0;
             results.forEach((result, index) => {
                 if (result.status === 'fulfilled' && result.value) {
-                    this.stockData.set(allTickers[index], result.value);
+                    dataMap.set(tickers[index], result.value);
                     successCount++;
                 } else {
-                    console.error(`Failed to fetch data for ${allTickers[index]}:`, result.reason || 'No data');
+                    console.error(`Failed to fetch data for ${tickers[index]}:`, result.reason || 'No data');
                 }
             });
             
-            console.log(`Successfully fetched data for ${successCount}/${allTickers.length} tickers`);
+            console.log(`Successfully fetched ${tickerType} data for ${successCount}/${tickers.length} tickers`);
+            
+            // Fetch earnings data (individual stocks only, not ETFs/crypto)
+            if (tabType === 'high-growth') {
+                await this.fetchAllEarningsData(GROWTH_TICKERS, dataMap);
+            }
         } else {
             // Yahoo Finance - sequential loading with delays
             let successCount = 0;
@@ -258,14 +480,16 @@ class StockDashboard {
         // Calculate RSI indicators
         const rsiData = this.calculateRSI(sortedData);
         
+        // Calculate consecutive up days
+        const consecutiveUpDays = this.calculateConsecutiveUpDays(sortedData);
+        
         // Calculate 52-week high
         const week52High = this.calculate52WeekHigh(sortedData);
         
         // Calculate comparison indicators
         const comparisons = this.calculateComparisons(currentPrice, movingAverages, week52High);
         
-        // Fetch earnings data (we'll get this separately)
-        const earningsData = await this.getEarningsData(ticker);
+        // Note: Earnings data removed - not available through current API
         
         // Determine trends
         const shortTermTrend = this.determineShortTermTrend(movingAverages);
@@ -273,15 +497,15 @@ class StockDashboard {
 
         return {
             ticker,
-            name: STOCK_NAMES[ticker] || ticker,
+            name: STOCK_NAMES[ticker] || GROWTH_NAMES[ticker] || ticker,
             currentPrice,
             liberationChange,
             changes,
             movingAverages,
             rsiData,
+            consecutiveUpDays,
             week52High,
             comparisons,
-            earningsData,
             shortTermTrend,
             longTermTrend
         };
@@ -440,32 +664,29 @@ class StockDashboard {
         return rsi;
     }
 
-    async getEarningsData(ticker) {
-        // For ETFs and crypto, earnings don't apply
-        if (ticker.startsWith('X:') || ['SPY', 'QQQ', 'GLD', 'FXI', 'KWEB', 'XLU', 'IHI', 'XLI', 'XLF', 'XLP', 'XLRE', 'IGV', 'ARKW', 'XLV', 'XLE', 'FNGS', 'WCLD', 'SMH', 'IWM', 'ARKK', 'XLY', 'SOXX', 'ARKG', 'IBB', 'XBI'].includes(ticker)) {
-            return {
-                nextEarningsDate: null,
-                daysToEarnings: null
-            };
-        }
-
-        try {
-            // Try to get earnings data from Polygon
-            const earningsUrl = `https://api.polygon.io/v1/indicators/rsi/${ticker}?timestamp.gte=2024-01-01&timespan=day&adjusted=true&window=14&series_type=close&expand_underlying=false&order=desc&limit=1000&apikey=${API_KEY}`;
+    calculateConsecutiveUpDays(data) {
+        if (data.length < 2) return 0;
+        
+        // Sort data by timestamp to ensure chronological order
+        const sortedData = data.sort((a, b) => a.t - b.t);
+        
+        let consecutiveUpDays = 0;
+        
+        // Start from the most recent day and work backwards
+        for (let i = sortedData.length - 1; i > 0; i--) {
+            const currentClose = sortedData[i].c;
+            const previousClose = sortedData[i - 1].c;
             
-            // For now, return null since we need a different endpoint for earnings
-            // Polygon's earnings endpoint requires a different structure
-            return {
-                nextEarningsDate: null,
-                daysToEarnings: null
-            };
-        } catch (error) {
-            console.error(`Error fetching earnings for ${ticker}:`, error);
-            return {
-                nextEarningsDate: null,
-                daysToEarnings: null
-            };
+            // If current day is up (green candle)
+            if (currentClose > previousClose) {
+                consecutiveUpDays++;
+            } else {
+                // Stop counting when we hit a down day
+                break;
+            }
         }
+        
+        return consecutiveUpDays;
     }
 
     calculate52WeekHigh(data) {
@@ -685,16 +906,21 @@ class StockDashboard {
             case 'rsi30':
                 return data.rsiData.rsi30 || 50; // Default to neutral RSI
             case 'nextEarnings':
-                return data.earningsData.nextEarningsDate ? new Date(data.earningsData.nextEarningsDate).getTime() : Infinity;
+                if (!data.nextEarnings || data.nextEarnings === 'N/A') return new Date('9999-12-31'); // Sort N/A to end
+                return new Date(data.nextEarnings);
             case 'daysToEarnings':
-                return data.earningsData.daysToEarnings || Infinity;
+                if (!data.daysToEarnings || data.daysToEarnings === 'N/A') return 9999; // Sort N/A to end
+                return data.daysToEarnings;
+            case 'consecutiveUpDays':
+                return data.consecutiveUpDays || 0;
             default:
                 return 0;
         }
     }
 
     renderTable() {
-        const tbody = document.getElementById('stockTableBody');
+        const tbodyId = this.currentTab === 'sector-overview' ? 'stockTableBody' : 'growthTableBody';
+        const tbody = document.getElementById(tbodyId);
         tbody.innerHTML = '';
 
         // Convert Map to Array for sorting
@@ -831,29 +1057,35 @@ class StockDashboard {
             breakoutScore: this.calculateBreakoutScore(data)
         }));
 
+        // Get appropriate list IDs based on current tab
+        const suffix = this.currentTab === 'sector-overview' ? '' : 'Growth';
+        
         // Top 5 Most Bullish
         const topBullish = scoredStocks
             .sort((a, b) => b.bullishScore - a.bullishScore)
             .slice(0, 5);
-        this.populateStockList('bullishList', topBullish, 'bullish');
+        this.populateStockList(`bullishList${suffix}`, topBullish, 'bullish');
 
-        // Top 3 Most Bearish
+        // Top 5 Most Bearish (or Top 3 for sector overview)
+        const bearishCount = this.currentTab === 'sector-overview' ? 3 : 5;
         const topBearish = scoredStocks
             .sort((a, b) => b.bearishScore - a.bearishScore)
-            .slice(0, 3);
-        this.populateStockList('bearishList', topBearish, 'bearish');
+            .slice(0, bearishCount);
+        this.populateStockList(`bearishList${suffix}`, topBearish, 'bearish');
 
-        // Top 3 Best Performers
+        // Top 5 Best Performers (or Top 3 for sector overview)
+        const performerCount = this.currentTab === 'sector-overview' ? 3 : 5;
         const topPerformers = scoredStocks
             .sort((a, b) => b.performanceScore - a.performanceScore)
-            .slice(0, 3);
-        this.populateStockList('performersList', topPerformers, 'performer');
+            .slice(0, performerCount);
+        this.populateStockList(`performersList${suffix}`, topPerformers, 'performer');
 
-        // Top 3 Breakout Candidates
+        // Top 5 Breakout Candidates (or Top 3 for sector overview)
+        const breakoutCount = this.currentTab === 'sector-overview' ? 3 : 5;
         const topBreakouts = scoredStocks
             .sort((a, b) => b.breakoutScore - a.breakoutScore)
-            .slice(0, 3);
-        this.populateStockList('breakoutList', topBreakouts, 'breakout');
+            .slice(0, breakoutCount);
+        this.populateStockList(`breakoutList${suffix}`, topBreakouts, 'breakout');
     }
 
     populateStockList(containerId, stocks, type) {
@@ -934,29 +1166,6 @@ class StockDashboard {
         return ''; // Neutral
     }
 
-    formatEarningsDate(date) {
-        if (!date) return 'N/A';
-        return new Date(date).toLocaleDateString('en-US', { 
-            month: 'numeric', 
-            day: 'numeric', 
-            year: 'numeric' 
-        });
-    }
-
-    formatDaysToEarnings(days) {
-        if (days === null || days === undefined) return 'N/A';
-        if (days === 0) return 'Today';
-        if (days === 1) return '1 day';
-        if (days < 0) return `${Math.abs(days)} days ago`;
-        return `${days} days`;
-    }
-
-    getEarningsClass(days) {
-        if (days === null || days === undefined) return '';
-        if (days <= 7 && days >= 0) return 'healthy'; // Within a week (yellow)
-        if (days <= 0) return 'negative'; // Already passed (red)
-        return ''; // Future earnings
-    }
 
     createRowHTML(data) {
         const formatPercent = (value) => {
@@ -1027,9 +1236,142 @@ class StockDashboard {
             <td>${formatPrice(data.movingAverages.ema21)}</td>
             <td class="${this.getRSIClass(data.rsiData.rsi14)}">${this.formatRSI(data.rsiData.rsi14)}</td>
             <td class="${this.getRSIClass(data.rsiData.rsi30)}">${this.formatRSI(data.rsiData.rsi30)}</td>
-            <td>${this.formatEarningsDate(data.earningsData.nextEarningsDate)}</td>
-            <td class="${this.getEarningsClass(data.earningsData.daysToEarnings)}">${this.formatDaysToEarnings(data.earningsData.daysToEarnings)}</td>
+            <td>${this.formatEarningsDate(data.nextEarnings)}</td>
+            <td class="${this.getDaysToEarningsClass(data.daysToEarnings)}">${this.formatDaysToEarnings(data.daysToEarnings)}</td>
+            <td class="${this.getConsecutiveUpDaysClass(data.consecutiveUpDays)}">${data.consecutiveUpDays}</td>
         `;
+    }
+
+    async fetchAllEarningsData(tickers, dataMap) {
+        console.log('Fetching earnings data for growth stock tickers...');
+        
+        // Fetch earnings for growth stock tickers only
+        const earningsPromises = tickers.map(ticker => this.fetchEarningsData(ticker));
+        const earningsResults = await Promise.allSettled(earningsPromises);
+        
+        let earningsSuccessCount = 0;
+        earningsResults.forEach((result, index) => {
+            const ticker = tickers[index];
+            if (result.status === 'fulfilled' && result.value) {
+                const stockData = dataMap.get(ticker);
+                if (stockData) {
+                    stockData.nextEarnings = result.value.nextEarnings;
+                    stockData.daysToEarnings = result.value.daysToEarnings;
+                    earningsSuccessCount++;
+                }
+            } else {
+                console.error(`Failed to fetch earnings for ${ticker}:`, result.reason || 'No earnings data');
+                const stockData = dataMap.get(ticker);
+                if (stockData) {
+                    stockData.nextEarnings = 'N/A';
+                    stockData.daysToEarnings = 'N/A';
+                }
+            }
+        });
+        
+        console.log(`Successfully fetched earnings for ${earningsSuccessCount}/${tickers.length} tickers`);
+    }
+
+    async fetchEarningsData(ticker) {
+        try {
+            // FMP earnings calendar API - get next 3 months
+            const today = new Date();
+            const threeMonthsLater = new Date(today);
+            threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3);
+            
+            const fromDate = today.toISOString().split('T')[0];
+            const toDate = threeMonthsLater.toISOString().split('T')[0];
+            
+            const fmpUrl = `https://financialmodelingprep.com/api/v3/earning_calendar?from=${fromDate}&to=${toDate}&apikey=${FMP_API_KEY}`;
+            
+            const response = await fetch(fmpUrl);
+            
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}`);
+            }
+            
+            const earningsData = await response.json();
+            
+            // Find next earnings for this ticker
+            const tickerEarnings = earningsData.filter(earning => 
+                earning.symbol === ticker && new Date(earning.date) >= today
+            );
+            
+            if (tickerEarnings.length === 0) {
+                return null;
+            }
+            
+            // Sort by date and get the next one
+            tickerEarnings.sort((a, b) => new Date(a.date) - new Date(b.date));
+            const nextEarning = tickerEarnings[0];
+            
+            const earningsDate = new Date(nextEarning.date);
+            const daysToEarnings = Math.ceil((earningsDate - today) / (1000 * 60 * 60 * 24));
+            
+            return {
+                nextEarnings: nextEarning.date,
+                daysToEarnings: daysToEarnings
+            };
+            
+        } catch (error) {
+            console.error(`Error fetching earnings for ${ticker}:`, error);
+            return null;
+        }
+    }
+
+    formatEarningsDate(dateStr) {
+        if (!dateStr || dateStr === 'N/A') {
+            return 'N/A';
+        }
+        
+        const date = new Date(dateStr);
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        });
+    }
+
+    formatDaysToEarnings(days) {
+        if (!days || days === 'N/A') {
+            return 'N/A';
+        }
+        
+        if (days === 0) {
+            return 'Today';
+        } else if (days === 1) {
+            return '1 day';
+        } else if (days < 0) {
+            return `${Math.abs(days)} days ago`;
+        } else {
+            return `${days} days`;
+        }
+    }
+
+    getDaysToEarningsClass(days) {
+        if (!days || days === 'N/A') {
+            return '';
+        }
+        
+        if (days <= 7) {
+            return 'urgent-earnings';
+        } else if (days <= 30) {
+            return 'upcoming-earnings';
+        } else {
+            return 'future-earnings';
+        }
+    }
+
+    getConsecutiveUpDaysClass(days) {
+        if (days === 0) {
+            return 'no-up-days';
+        } else if (days >= 5) {
+            return 'many-up-days';
+        } else if (days >= 3) {
+            return 'some-up-days';
+        } else {
+            return 'few-up-days';
+        }
     }
 
     showError(message) {

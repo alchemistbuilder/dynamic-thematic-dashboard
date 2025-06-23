@@ -34,6 +34,52 @@ header {
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
+.tab-container {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+}
+
+.tabs {
+    display: flex;
+    gap: 8px;
+}
+
+.tab-btn {
+    background: rgba(255, 255, 255, 0.05);
+    color: rgba(255, 255, 255, 0.7);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 12px 20px;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    font-family: inherit;
+    letter-spacing: -0.01em;
+    transition: all 0.2s ease;
+}
+
+.tab-btn:hover {
+    background: rgba(255, 255, 255, 0.08);
+    color: rgba(255, 255, 255, 0.9);
+    transform: translateY(-1px);
+}
+
+.tab-btn.active {
+    background: linear-gradient(135deg, #00d4aa 0%, #00b896 100%);
+    color: white;
+    border-color: #00d4aa;
+    box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
+}
+
+.tab-content {
+    display: none;
+}
+
+.tab-content.active {
+    display: block;
+}
+
 h1 {
     color: #ffffff;
     font-size: 2.5rem;
@@ -378,4 +424,44 @@ tbody tr:hover {
     margin: 16px 0;
     text-align: center;
     border: 1px solid rgba(239, 83, 80, 0.3);
+}
+
+/* Earnings date styling */
+.urgent-earnings {
+    background: rgba(255, 87, 34, 0.15) !important;
+    color: #ff5722;
+    font-weight: 600;
+}
+
+.upcoming-earnings {
+    background: rgba(255, 193, 7, 0.15) !important;
+    color: #ffc107;
+    font-weight: 500;
+}
+
+.future-earnings {
+    color: rgba(255, 255, 255, 0.7);
+}
+
+/* Consecutive up days styling */
+.no-up-days {
+    background: rgba(239, 83, 80, 0.15) !important;
+    color: #ef5350;
+    font-weight: 500;
+}
+
+.few-up-days {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.some-up-days {
+    background: rgba(255, 193, 7, 0.15) !important;
+    color: #ffc107;
+    font-weight: 500;
+}
+
+.many-up-days {
+    background: rgba(0, 212, 170, 0.15) !important;
+    color: #00d4aa;
+    font-weight: 600;
 }
