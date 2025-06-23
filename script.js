@@ -404,15 +404,54 @@ class StockDashboard {
     calculateComparisons(currentPrice, mas, week52High) {
         const { sma50, sma100, sma200, ema8, ema13, ema21 } = mas;
         
+        // Calculate percentage differences from moving averages
+        const pct50SMA = sma50 ? ((currentPrice - sma50) / sma50) * 100 : null;
+        const pct100SMA = sma100 ? ((currentPrice - sma100) / sma100) * 100 : null;
+        const pct200SMA = sma200 ? ((currentPrice - sma200) / sma200) * 100 : null;
+        
+        const pct8EMA = ema8 ? ((currentPrice - ema8) / ema8) * 100 : null;
+        const pct13EMA = ema13 ? ((currentPrice - ema13) / ema13) * 100 : null;
+        const pct21EMA = ema21 ? ((currentPrice - ema21) / ema21) * 100 : null;
+        
+        // SMA trend logic: =IF(AND(T5<0,U5<0,V5<0),"BEARISH",IF(AND(E5>AE5,E5>AF5,E5>AG5,AE5>AF5,AF5>AG5),"BULLISH",IF(AND(T5<0,U5>0,U5<0.1,W5>0),"At Support",IF(AND(T5>0,U5>0,V5>0),"Healthy","zFALSE"))))
+        let smaStackingTrend = null;
+        if (pct50SMA !== null && pct100SMA !== null && pct200SMA !== null && sma50 && sma100 && sma200) {
+            if (pct50SMA < 0 && pct100SMA < 0 && pct200SMA < 0) {
+                smaStackingTrend = "BEARISH";
+            } else if (currentPrice > sma50 && currentPrice > sma100 && currentPrice > sma200 && 
+                       sma50 > sma100 && sma100 > sma200) {
+                smaStackingTrend = "BULLISH";
+            } else if (pct50SMA < 0 && pct100SMA > 0 && pct100SMA < 0.1 && pct200SMA > 0) {
+                smaStackingTrend = "At Support";
+            } else if (pct50SMA > 0 && pct100SMA > 0 && pct200SMA > 0) {
+                smaStackingTrend = "Healthy";
+            } else {
+                smaStackingTrend = "FALSE";
+            }
+        }
+        
+        // EMA trend logic: =IF(AND(Y5<0,Z5<0,AA5<0),"ST BEARISH",IF(AND(E5>AI5,E5>AJ5,E5>AK5,AI5>AJ5,AJ5>AK5),"ST BULLISH"))
+        let emaStackingTrend = null;
+        if (pct8EMA !== null && pct13EMA !== null && pct21EMA !== null && ema8 && ema13 && ema21) {
+            if (pct8EMA < 0 && pct13EMA < 0 && pct21EMA < 0) {
+                emaStackingTrend = "ST BEARISH";
+            } else if (currentPrice > ema8 && currentPrice > ema13 && currentPrice > ema21 && 
+                       ema8 > ema13 && ema13 > ema21) {
+                emaStackingTrend = "ST BULLISH";
+            } else {
+                emaStackingTrend = null;
+            }
+        }
+        
         return {
             above50SMA: sma50 ? currentPrice > sma50 : null,
             above100SMA: sma100 ? currentPrice > sma100 : null,
             above200SMA: sma200 ? currentPrice > sma200 : null,
-            sma50Above100Above200: (sma50 && sma100 && sma200) ? (sma50 > sma100 && sma100 > sma200) : null,
+            sma50Above100Above200: smaStackingTrend,
             above8EMA: ema8 ? currentPrice > ema8 : null,
             above13EMA: ema13 ? currentPrice > ema13 : null,
             above21EMA: ema21 ? currentPrice > ema21 : null,
-            ema8Above13Above21: (ema8 && ema13 && ema21) ? (ema8 > ema13 && ema13 > ema21) : null,
+            ema8Above13Above21: emaStackingTrend,
             deltaFrom52WeekHigh: week52High ? ((currentPrice - week52High) / week52High) * 100 : null
         };
     }
@@ -480,13 +519,24 @@ class StockDashboard {
             case 'above50SMA':
             case 'above100SMA':
             case 'above200SMA':
-            case 'sma50Above100Above200':
             case 'above8EMA':
             case 'above13EMA':
             case 'above21EMA':
+                const boolValue = data.comparisons[column];
+                return boolValue === null ? -1 : (boolValue ? 1 : 0);
+            case 'sma50Above100Above200':
             case 'ema8Above13Above21':
-                const value = data.comparisons[column];
-                return value === null ? -1 : (value ? 1 : 0);
+                const trendValue = data.comparisons[column];
+                if (trendValue === null) return -1;
+                if (typeof trendValue === 'string') {
+                    // Sort order: BULLISH/ST BULLISH > Healthy/At Support > FALSE > BEARISH/ST BEARISH
+                    if (trendValue === 'BULLISH' || trendValue === 'ST BULLISH') return 4;
+                    if (trendValue === 'Healthy' || trendValue === 'At Support') return 3;
+                    if (trendValue === 'FALSE') return 2;
+                    if (trendValue === 'BEARISH' || trendValue === 'ST BEARISH') return 1;
+                    return 0;
+                }
+                return trendValue ? 1 : 0;
             case 'sma50':
             case 'sma100':
             case 'sma200':
@@ -547,11 +597,19 @@ class StockDashboard {
 
         const formatBoolean = (value) => {
             if (value === null || value === undefined) return 'N/A';
+            if (typeof value === 'string') return value; // For trend strings like "BULLISH", "ST BEARISH"
             return value ? '✓' : '✗';
         };
 
         const getBooleanClass = (value) => {
             if (value === null || value === undefined) return '';
+            if (typeof value === 'string') {
+                if (value === 'BULLISH' || value === 'ST BULLISH' || value === 'Healthy') return 'positive';
+                if (value === 'BEARISH' || value === 'ST BEARISH') return 'negative';
+                if (value === 'At Support') return 'healthy';
+                if (value === 'FALSE') return 'negative';
+                return '';
+            }
             return value ? 'positive' : 'negative';
         };
 
