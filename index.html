@@ -13,8 +13,33 @@
             <button id="refreshBtn" class="refresh-btn">Refresh Data</button>
         </header>
         
-        <div class="dashboard">
-            <table id="stockTable">
+        <div class="main-content">
+            <div class="side-panel" id="sidePanel">
+                <h3>📊 Market Insights</h3>
+                
+                <div class="insight-section">
+                    <h4>🚀 Most Bullish (Top 5)</h4>
+                    <div id="bullishList" class="stock-list"></div>
+                </div>
+                
+                <div class="insight-section">
+                    <h4>⚠️ Most Bearish (Top 3)</h4>
+                    <div id="bearishList" class="stock-list"></div>
+                </div>
+                
+                <div class="insight-section">
+                    <h4>📈 Best Performers (Top 3)</h4>
+                    <div id="performersList" class="stock-list"></div>
+                </div>
+                
+                <div class="insight-section">
+                    <h4>💎 Breakout Candidates (Top 3)</h4>
+                    <div id="breakoutList" class="stock-list"></div>
+                </div>
+            </div>
+            
+            <div class="dashboard">
+                <table id="stockTable">
                 <thead>
                     <tr>
                         <th class="sortable" data-column="ticker">Ticker</th>
@@ -51,6 +76,7 @@
                     <!-- Stock data will be populated here -->
                 </tbody>
             </table>
+            </div>
         </div>
         
         <div class="loading" id="loading" style="display: none;">
@@ -58,6 +84,6 @@
         </div>
     </div>
     
-    <script src="script.js?v=8"></script>
+    <script src="script.js?v=9"></script>
 </body>
 </html>

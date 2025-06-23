@@ -640,6 +640,202 @@ class StockDashboard {
             row.innerHTML = this.createRowHTML(data);
             tbody.appendChild(row);
         });
+
+        // Update side panel with rankings
+        this.updateSidePanel(stockArray);
+    }
+
+    calculateBullishScore(data) {
+        let score = 0;
+        
+        // SMA trend scoring
+        const smaTrend = data.comparisons.sma50Above100Above200;
+        if (smaTrend === 'BULLISH') score += 40;
+        else if (smaTrend === 'Healthy') score += 30;
+        else if (smaTrend === 'At Support') score += 20;
+        
+        // EMA trend scoring
+        const emaTrend = data.comparisons.ema8Above13Above21;
+        if (emaTrend === 'ST BULLISH') score += 40;
+        else if (emaTrend === 'EMA Bullish') score += 35;
+        else if (emaTrend === 'Uptrend Maintained') score += 30;
+        else if (emaTrend === 'Breaking Out') score += 25;
+        else if (emaTrend === 'Early Recovery') score += 20;
+        
+        // Performance scoring (Liberation Day weighted 2x)
+        const libChange = data.liberationChange || 0;
+        const ytdChange = data.changes.ytd || 0;
+        score += (libChange * 0.5) + (ytdChange * 0.25);
+        
+        // Above moving averages bonus
+        if (data.comparisons.above50SMA) score += 10;
+        if (data.comparisons.above100SMA) score += 10;
+        if (data.comparisons.above200SMA) score += 10;
+        
+        return score;
+    }
+
+    calculateBearishScore(data) {
+        let score = 0;
+        
+        // Negative trend indicators
+        const smaTrend = data.comparisons.sma50Above100Above200;
+        if (smaTrend === 'BEARISH') score += 40;
+        else if (smaTrend === 'FALSE') score += 20;
+        
+        const emaTrend = data.comparisons.ema8Above13Above21;
+        if (emaTrend === 'ST BEARISH') score += 40;
+        else if (emaTrend === 'EMA Bearish') score += 30;
+        
+        // Negative performance
+        const libChange = data.liberationChange || 0;
+        const ytdChange = data.changes.ytd || 0;
+        if (libChange < 0) score += Math.abs(libChange) * 0.5;
+        if (ytdChange < 0) score += Math.abs(ytdChange) * 0.25;
+        
+        // Below moving averages penalty
+        if (!data.comparisons.above50SMA) score += 10;
+        if (!data.comparisons.above100SMA) score += 10;
+        if (!data.comparisons.above200SMA) score += 10;
+        
+        // Distance from 52-week high
+        const delta52w = data.comparisons.deltaFrom52WeekHigh || 0;
+        if (delta52w < -20) score += Math.abs(delta52w) * 0.3;
+        
+        return score;
+    }
+
+    calculatePerformanceScore(data) {
+        const libChange = data.liberationChange || 0;
+        const ytdChange = data.changes.ytd || 0;
+        const oneMonthChange = data.changes['1m'] || 0;
+        
+        return (libChange * 0.4) + (ytdChange * 0.4) + (oneMonthChange * 0.2);
+    }
+
+    calculateBreakoutScore(data) {
+        let score = 0;
+        
+        // Look for breakout patterns
+        const emaTrend = data.comparisons.ema8Above13Above21;
+        if (emaTrend === 'Breaking Out') score += 40;
+        else if (emaTrend === 'Early Recovery') score += 30;
+        else if (emaTrend === 'Uptrend Maintained') score += 25;
+        
+        // Recent momentum
+        const oneWeekChange = data.changes['1w'] || 0;
+        const twoWeekChange = data.changes['2w'] || 0;
+        
+        if (oneWeekChange > 5) score += 20;
+        if (twoWeekChange > 10) score += 15;
+        
+        // Volume consideration (if available in future)
+        // Near 52-week high consideration
+        const delta52w = data.comparisons.deltaFrom52WeekHigh || -100;
+        if (delta52w > -5) score += 20; // Within 5% of 52-week high
+        
+        return score;
+    }
+
+    updateSidePanel(stockArray) {
+        // Calculate scores for all stocks
+        const scoredStocks = stockArray.map(data => ({
+            ...data,
+            bullishScore: this.calculateBullishScore(data),
+            bearishScore: this.calculateBearishScore(data),
+            performanceScore: this.calculatePerformanceScore(data),
+            breakoutScore: this.calculateBreakoutScore(data)
+        }));
+
+        // Top 5 Most Bullish
+        const topBullish = scoredStocks
+            .sort((a, b) => b.bullishScore - a.bullishScore)
+            .slice(0, 5);
+        this.populateStockList('bullishList', topBullish, 'bullish');
+
+        // Top 3 Most Bearish
+        const topBearish = scoredStocks
+            .sort((a, b) => b.bearishScore - a.bearishScore)
+            .slice(0, 3);
+        this.populateStockList('bearishList', topBearish, 'bearish');
+
+        // Top 3 Best Performers
+        const topPerformers = scoredStocks
+            .sort((a, b) => b.performanceScore - a.performanceScore)
+            .slice(0, 3);
+        this.populateStockList('performersList', topPerformers, 'performer');
+
+        // Top 3 Breakout Candidates
+        const topBreakouts = scoredStocks
+            .sort((a, b) => b.breakoutScore - a.breakoutScore)
+            .slice(0, 3);
+        this.populateStockList('breakoutList', topBreakouts, 'breakout');
+    }
+
+    populateStockList(containerId, stocks, type) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = '';
+
+        stocks.forEach(stock => {
+            const card = document.createElement('div');
+            card.className = `stock-card ${type}`;
+            
+            let signal = '';
+            let performance = '';
+            
+            if (type === 'bullish') {
+                signal = `${stock.comparisons.sma50Above100Above200} • ${stock.comparisons.ema8Above13Above21}`;
+                performance = `Lib: ${this.formatPercent(stock.liberationChange)} | YTD: ${this.formatPercent(stock.changes.ytd)}`;
+            } else if (type === 'bearish') {
+                signal = `${stock.comparisons.sma50Above100Above200} • ${stock.comparisons.ema8Above13Above21}`;
+                performance = `Lib: ${this.formatPercent(stock.liberationChange)} | 52W: ${this.formatPercent(stock.comparisons.deltaFrom52WeekHigh)}`;
+            } else if (type === 'performer') {
+                signal = `YTD: ${this.formatPercent(stock.changes.ytd)} • 1M: ${this.formatPercent(stock.changes['1m'])}`;
+                performance = `Liberation: ${this.formatPercent(stock.liberationChange)}`;
+            } else if (type === 'breakout') {
+                signal = stock.comparisons.ema8Above13Above21;
+                performance = `1W: ${this.formatPercent(stock.changes['1w'])} | 2W: ${this.formatPercent(stock.changes['2w'])}`;
+            }
+
+            card.innerHTML = `
+                <div class="stock-ticker">${stock.ticker}</div>
+                <div class="stock-signal">${signal}</div>
+                <div class="stock-performance">
+                    <span style="color: rgba(255,255,255,0.8);">${performance}</span>
+                </div>
+            `;
+
+            // Add click handler to scroll to stock in main table
+            card.addEventListener('click', () => {
+                this.scrollToStock(stock.ticker);
+            });
+
+            container.appendChild(card);
+        });
+    }
+
+    scrollToStock(ticker) {
+        // Find the row with this ticker and scroll to it
+        const rows = document.querySelectorAll('#stockTableBody tr');
+        rows.forEach(row => {
+            const tickerCell = row.querySelector('.ticker-cell');
+            if (tickerCell && tickerCell.textContent === ticker) {
+                row.scrollIntoView({ 
+                    behavior: 'smooth', 
+                    block: 'center' 
+                });
+                // Highlight the row briefly
+                row.style.backgroundColor = 'rgba(0, 212, 170, 0.2)';
+                setTimeout(() => {
+                    row.style.backgroundColor = '';
+                }, 2000);
+            }
+        });
+    }
+
+    formatPercent(value) {
+        if (value === null || value === undefined) return 'N/A';
+        return (value >= 0 ? '+' : '') + value.toFixed(1) + '%';
     }
 
     createRowHTML(data) {
