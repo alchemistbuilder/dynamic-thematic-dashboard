@@ -184,7 +184,7 @@ class StockDashboard {
                 }
 
                 console.log(`Successfully got ${data.results.length} data points for ${ticker}`);
-                return this.processStockData(ticker, data.results);
+                return await this.processStockData(ticker, data.results);
             } catch (error) {
                 console.error(`Error fetching ${ticker}:`, error);
                 return null;
@@ -234,7 +234,7 @@ class StockDashboard {
                 })).filter(point => point.c !== null);
 
                 console.log(`Successfully got ${historicalData.length} data points for ${ticker}`);
-                return this.processStockData(ticker, historicalData);
+                return await this.processStockData(ticker, historicalData);
             } catch (error) {
                 console.error(`Error fetching ${ticker}:`, error);
                 return null;
@@ -242,7 +242,7 @@ class StockDashboard {
         }
     }
 
-    processStockData(ticker, historicalData) {
+    async processStockData(ticker, historicalData) {
         const sortedData = historicalData.sort((a, b) => a.t - b.t);
         const currentPrice = sortedData[sortedData.length - 1].c;
         
@@ -255,11 +255,17 @@ class StockDashboard {
         // Calculate moving averages
         const movingAverages = this.calculateMovingAverages(sortedData);
         
+        // Calculate RSI indicators
+        const rsiData = this.calculateRSI(sortedData);
+        
         // Calculate 52-week high
         const week52High = this.calculate52WeekHigh(sortedData);
         
         // Calculate comparison indicators
         const comparisons = this.calculateComparisons(currentPrice, movingAverages, week52High);
+        
+        // Fetch earnings data (we'll get this separately)
+        const earningsData = await this.getEarningsData(ticker);
         
         // Determine trends
         const shortTermTrend = this.determineShortTermTrend(movingAverages);
@@ -272,8 +278,10 @@ class StockDashboard {
             liberationChange,
             changes,
             movingAverages,
+            rsiData,
             week52High,
             comparisons,
+            earningsData,
             shortTermTrend,
             longTermTrend
         };
@@ -390,6 +398,74 @@ class StockDashboard {
         const ema21 = this.calculateEMA(prices, 21);
         
         return { ema8, ema13, ema21 };
+    }
+
+    calculateRSI(data) {
+        const closes = data.map(d => d.c);
+        
+        return {
+            rsi14: this.calculateRSIPeriod(closes, 14),
+            rsi30: this.calculateRSIPeriod(closes, 30)
+        };
+    }
+
+    calculateRSIPeriod(closes, period) {
+        if (closes.length < period + 1) return null;
+        
+        let gains = [];
+        let losses = [];
+        
+        // Calculate gains and losses
+        for (let i = 1; i < closes.length; i++) {
+            const change = closes[i] - closes[i - 1];
+            gains.push(change > 0 ? change : 0);
+            losses.push(change < 0 ? Math.abs(change) : 0);
+        }
+        
+        // Calculate initial average gain and loss
+        let avgGain = gains.slice(0, period).reduce((sum, gain) => sum + gain, 0) / period;
+        let avgLoss = losses.slice(0, period).reduce((sum, loss) => sum + loss, 0) / period;
+        
+        // Calculate RSI using smoothed averages
+        for (let i = period; i < gains.length; i++) {
+            avgGain = ((avgGain * (period - 1)) + gains[i]) / period;
+            avgLoss = ((avgLoss * (period - 1)) + losses[i]) / period;
+        }
+        
+        if (avgLoss === 0) return 100; // Avoid division by zero
+        
+        const rs = avgGain / avgLoss;
+        const rsi = 100 - (100 / (1 + rs));
+        
+        return rsi;
+    }
+
+    async getEarningsData(ticker) {
+        // For ETFs and crypto, earnings don't apply
+        if (ticker.startsWith('X:') || ['SPY', 'QQQ', 'GLD', 'FXI', 'KWEB', 'XLU', 'IHI', 'XLI', 'XLF', 'XLP', 'XLRE', 'IGV', 'ARKW', 'XLV', 'XLE', 'FNGS', 'WCLD', 'SMH', 'IWM', 'ARKK', 'XLY', 'SOXX', 'ARKG', 'IBB', 'XBI'].includes(ticker)) {
+            return {
+                nextEarningsDate: null,
+                daysToEarnings: null
+            };
+        }
+
+        try {
+            // Try to get earnings data from Polygon
+            const earningsUrl = `https://api.polygon.io/v1/indicators/rsi/${ticker}?timestamp.gte=2024-01-01&timespan=day&adjusted=true&window=14&series_type=close&expand_underlying=false&order=desc&limit=1000&apikey=${API_KEY}`;
+            
+            // For now, return null since we need a different endpoint for earnings
+            // Polygon's earnings endpoint requires a different structure
+            return {
+                nextEarningsDate: null,
+                daysToEarnings: null
+            };
+        } catch (error) {
+            console.error(`Error fetching earnings for ${ticker}:`, error);
+            return {
+                nextEarningsDate: null,
+                daysToEarnings: null
+            };
+        }
     }
 
     calculate52WeekHigh(data) {
@@ -604,6 +680,14 @@ class StockDashboard {
             case 'ema13':
             case 'ema21':
                 return data.movingAverages[column] || 0;
+            case 'rsi14':
+                return data.rsiData.rsi14 || 50; // Default to neutral RSI
+            case 'rsi30':
+                return data.rsiData.rsi30 || 50; // Default to neutral RSI
+            case 'nextEarnings':
+                return data.earningsData.nextEarningsDate ? new Date(data.earningsData.nextEarningsDate).getTime() : Infinity;
+            case 'daysToEarnings':
+                return data.earningsData.daysToEarnings || Infinity;
             default:
                 return 0;
         }
@@ -838,6 +922,42 @@ class StockDashboard {
         return (value >= 0 ? '+' : '') + value.toFixed(1) + '%';
     }
 
+    formatRSI(value) {
+        if (value === null || value === undefined) return 'N/A';
+        return value.toFixed(0);
+    }
+
+    getRSIClass(value) {
+        if (value === null || value === undefined) return '';
+        if (value >= 70) return 'negative'; // Overbought (red)
+        if (value <= 30) return 'positive'; // Oversold (green - potential buying opportunity)
+        return ''; // Neutral
+    }
+
+    formatEarningsDate(date) {
+        if (!date) return 'N/A';
+        return new Date(date).toLocaleDateString('en-US', { 
+            month: 'numeric', 
+            day: 'numeric', 
+            year: 'numeric' 
+        });
+    }
+
+    formatDaysToEarnings(days) {
+        if (days === null || days === undefined) return 'N/A';
+        if (days === 0) return 'Today';
+        if (days === 1) return '1 day';
+        if (days < 0) return `${Math.abs(days)} days ago`;
+        return `${days} days`;
+    }
+
+    getEarningsClass(days) {
+        if (days === null || days === undefined) return '';
+        if (days <= 7 && days >= 0) return 'healthy'; // Within a week (yellow)
+        if (days <= 0) return 'negative'; // Already passed (red)
+        return ''; // Future earnings
+    }
+
     createRowHTML(data) {
         const formatPercent = (value) => {
             if (value === null || value === undefined) return 'N/A';
@@ -905,6 +1025,10 @@ class StockDashboard {
             <td>${formatPrice(data.movingAverages.ema8)}</td>
             <td>${formatPrice(data.movingAverages.ema13)}</td>
             <td>${formatPrice(data.movingAverages.ema21)}</td>
+            <td class="${this.getRSIClass(data.rsiData.rsi14)}">${this.formatRSI(data.rsiData.rsi14)}</td>
+            <td class="${this.getRSIClass(data.rsiData.rsi30)}">${this.formatRSI(data.rsiData.rsi30)}</td>
+            <td>${this.formatEarningsDate(data.earningsData.nextEarningsDate)}</td>
+            <td class="${this.getEarningsClass(data.earningsData.daysToEarnings)}">${this.formatDaysToEarnings(data.earningsData.daysToEarnings)}</td>
         `;
     }
 
