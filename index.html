@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dynamic Thematic Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Dynamic Thematic Dashboard</h1>
+            <button id="refreshBtn" class="refresh-btn">Refresh Data</button>
+        </header>
+        
+        <div class="dashboard">
+            <table id="stockTable">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-column="ticker">Ticker</th>
+                        <th class="sortable" data-column="name">Name</th>
+                        <th class="sortable" data-column="liberationChange">% change since Liberation</th>
+                        <th class="sortable" data-column="currentPrice">Price</th>
+                        <th class="sortable" data-column="ytd">% YTD</th>
+                        <th class="sortable" data-column="1d">%1 D</th>
+                        <th class="sortable" data-column="1w">% 1 Wk</th>
+                        <th class="sortable" data-column="2w">%2 Wk</th>
+                        <th class="sortable" data-column="1m">%1 Mo</th>
+                        <th class="sortable" data-column="2m">%2 Mo</th>
+                        <th class="sortable" data-column="3m">%3 Mo</th>
+                        <th class="sortable" data-column="6m">%6Mo</th>
+                        <th class="sortable" data-column="1y">%1YR</th>
+                        <th class="sortable" data-column="deltaFrom52WeekHigh">Δ 52w H</th>
+                        <th class="sortable" data-column="above50SMA">>50 SMA</th>
+                        <th class="sortable" data-column="above100SMA">>100 SMA</th>
+                        <th class="sortable" data-column="above200SMA">>200 SMA</th>
+                        <th class="sortable" data-column="sma50Above100Above200">50>100>200?</th>
+                        <th class="sortable" data-column="above8EMA">>8d EMA</th>
+                        <th class="sortable" data-column="above13EMA">>13d EMA</th>
+                        <th class="sortable" data-column="above21EMA">>21d EMA</th>
+                        <th class="sortable" data-column="ema8Above13Above21">ema 8>13>21</th>
+                        <th class="sortable" data-column="sma50">50 SMA</th>
+                        <th class="sortable" data-column="sma100">100 SMA</th>
+                        <th class="sortable" data-column="sma200">200 SMA</th>
+                        <th class="sortable" data-column="ema8">8d EMA</th>
+                        <th class="sortable" data-column="ema13">13d EMA</th>
+                        <th class="sortable" data-column="ema21">21d EMA</th>
+                    </tr>
+                </thead>
+                <tbody id="stockTableBody">
+                    <!-- Stock data will be populated here -->
+                </tbody>
+            </table>
+        </div>
+        
+        <div class="loading" id="loading" style="display: none;">
+            Loading stock data...
+        </div>
+    </div>
+    
+    <script src="script.js?v=5"></script>
+</body>
+</html>
