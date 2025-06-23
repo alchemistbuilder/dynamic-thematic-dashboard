@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
 * {
     margin: 0;
     padding: 0;
@@ -5,9 +7,12 @@
 }
 
 body {
-    font-family: Arial, sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background: linear-gradient(135deg, #1e1e1e 0%, #2d2d2d 100%);
+    color: #ffffff;
+    min-height: 100vh;
+    font-weight: 400;
+    letter-spacing: -0.01em;
 }
 
 .container {
@@ -20,71 +25,91 @@ header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 20px;
-    background: white;
-    padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 32px;
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 24px 32px;
+    border-radius: 16px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
 }
 
 h1 {
-    color: #2c3e50;
+    color: #ffffff;
+    font-size: 2.5rem;
+    font-weight: 300;
+    letter-spacing: -0.02em;
+    margin: 0;
 }
 
 .refresh-btn {
-    background-color: #3498db;
+    background: linear-gradient(135deg, #00d4aa 0%, #00b896 100%);
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
+    padding: 12px 24px;
+    border-radius: 12px;
     cursor: pointer;
     font-size: 14px;
-    transition: background-color 0.3s;
+    font-weight: 500;
+    font-family: inherit;
+    letter-spacing: -0.01em;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
 }
 
 .refresh-btn:hover {
-    background-color: #2980b9;
+    transform: translateY(-1px);
+    box-shadow: 0 6px 20px rgba(0, 212, 170, 0.4);
 }
 
 .refresh-btn:disabled {
-    background-color: #bdc3c7;
+    background: rgba(255, 255, 255, 0.1);
     cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
 }
 
 .dashboard {
-    background: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    background: rgba(255, 255, 255, 0.02);
+    backdrop-filter: blur(20px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    padding: 24px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
     overflow-x: auto;
 }
 
 table {
     width: 100%;
     border-collapse: collapse;
-    font-size: 12px;
+    font-size: 13px;
+    font-weight: 400;
+    letter-spacing: -0.01em;
 }
 
 th, td {
-    padding: 8px 6px;
+    padding: 12px 16px;
     text-align: center;
-    border: 1px solid #ddd;
+    border: 1px solid rgba(255, 255, 255, 0.08);
     white-space: nowrap;
+    background: rgba(255, 255, 255, 0.01);
 }
 
 th {
-    background-color: #f8f9fa;
-    font-weight: bold;
+    background: rgba(255, 255, 255, 0.05);
+    font-weight: 500;
     position: sticky;
     top: 0;
     z-index: 10;
     cursor: pointer;
     user-select: none;
-    transition: background-color 0.2s;
+    transition: all 0.2s ease;
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 }
 
 th:hover {
-    background-color: #e9ecef;
+    background: rgba(255, 255, 255, 0.08);
 }
 
 th.sortable {
@@ -165,80 +190,89 @@ th.sortable:hover::before {
 }
 
 tbody tr:nth-child(even) {
-    background-color: #f8f9fa;
+    background: rgba(255, 255, 255, 0.02);
 }
 
 tbody tr:hover {
-    background-color: #e8f4fd;
+    background: rgba(255, 255, 255, 0.05);
+    transform: scale(1.002);
+    transition: all 0.2s ease;
 }
 
 /* Color coding for trends */
 .bullish {
-    background-color: #d4edda !important;
-    color: #155724;
+    background: rgba(0, 212, 170, 0.15) !important;
+    color: #00d4aa;
 }
 
 .bearish {
-    background-color: #f8d7da !important;
-    color: #721c24;
+    background: rgba(239, 83, 80, 0.15) !important;
+    color: #ef5350;
 }
 
 .st-bullish {
-    background-color: #d1ecf1 !important;
-    color: #0c5460;
+    background: rgba(0, 212, 170, 0.1) !important;
+    color: #00d4aa;
 }
 
 .st-bearish {
-    background-color: #f5c6cb !important;
-    color: #721c24;
+    background: rgba(239, 83, 80, 0.1) !important;
+    color: #ef5350;
 }
 
 .healthy {
-    background-color: #fff3cd !important;
-    color: #856404;
+    background: rgba(255, 193, 7, 0.15) !important;
+    color: #ffc107;
 }
 
 /* Positive/Negative percentage colors */
 .positive {
-    color: #28a745;
-    font-weight: bold;
+    color: #00d4aa;
+    font-weight: 500;
 }
 
 .negative {
-    color: #dc3545;
-    font-weight: bold;
+    color: #ef5350;
+    font-weight: 500;
 }
 
 .loading {
     text-align: center;
     padding: 40px;
     font-size: 18px;
-    color: #666;
+    color: rgba(255, 255, 255, 0.6);
+    font-weight: 300;
 }
 
 .ticker-cell {
-    font-weight: bold;
+    font-weight: 600;
     text-align: left;
-    padding-left: 10px;
+    padding-left: 16px;
+    color: #ffffff;
+    letter-spacing: 0.02em;
 }
 
 .name-cell {
     text-align: left;
-    padding-left: 10px;
-    max-width: 150px;
+    padding-left: 16px;
+    max-width: 200px;
     overflow: hidden;
     text-overflow: ellipsis;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 400;
 }
 
 .price-cell {
-    font-weight: bold;
+    font-weight: 600;
+    color: #ffffff;
 }
 
 .error {
-    background-color: #f8d7da;
-    color: #721c24;
-    padding: 10px;
-    border-radius: 5px;
-    margin: 10px 0;
+    background: rgba(239, 83, 80, 0.15);
+    color: #ef5350;
+    padding: 16px;
+    border-radius: 12px;
+    margin: 16px 0;
     text-align: center;
+    border: 1px solid rgba(239, 83, 80, 0.3);
 }
