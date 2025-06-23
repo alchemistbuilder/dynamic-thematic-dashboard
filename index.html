@@ -12,18 +12,123 @@
             <h1>Dynamic Thematic Dashboard</h1>
             <div class="tab-container">
                 <div class="tabs">
-                    <button class="tab-btn active" data-tab="sector-overview">Sector Overview</button>
+                    <button class="tab-btn active" data-tab="market-summary">Market Summary</button>
+                    <button class="tab-btn" data-tab="sector-overview">Sector Overview</button>
                     <button class="tab-btn" data-tab="high-growth">High Growth Momentum</button>
                 </div>
-                <button id="refreshBtn" class="refresh-btn">Refresh Data</button>
+                <div class="controls">
+                    <button id="refreshBtn" class="refresh-btn">Refresh Data</button>
+                    <button id="liveToggle" class="live-toggle-btn">
+                        <span class="live-indicator"></span>
+                        Live Prices: <span class="live-status">OFF</span>
+                    </button>
+                </div>
             </div>
         </header>
         
+        <!-- Market Summary Tab -->
+        <div class="tab-content active" id="market-summary">
+            <div class="main-content">
+                <div class="side-panel" id="sidePanelSummary">
+                    <h3>📊 Market Summary</h3>
+                    
+                    <div class="summary-section">
+                        <h4>🏢 Sector ETFs Highlights</h4>
+                        <div class="insight-section">
+                            <h5>🚀 Most Bullish (Top 5)</h5>
+                            <div id="sectorBullishSummary" class="stock-list"></div>
+                        </div>
+                        <div class="insight-section">
+                            <h5>⚠️ Most Bearish (Top 5)</h5>
+                            <div id="sectorBearishSummary" class="stock-list"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-section">
+                        <h4>🚀 Growth Stocks Highlights</h4>
+                        <div class="insight-section">
+                            <h5>🚀 Most Bullish (Top 5)</h5>
+                            <div id="growthBullishSummary" class="stock-list"></div>
+                        </div>
+                        <div class="insight-section">
+                            <h5>⚠️ Most Bearish (Top 5)</h5>
+                            <div id="growthBearishSummary" class="stock-list"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-section">
+                        <h4>📈 Overall Best Performers (Top 5)</h4>
+                        <div id="overallPerformersSummary" class="stock-list"></div>
+                    </div>
+                </div>
+                
+                <div class="dashboard">
+                    <div class="summary-stats">
+                        <h3>📊 Market Overview</h3>
+                        
+                        <!-- Stats Grid -->
+                        <div class="stats-grid">
+                            <div class="stat-card">
+                                <h4>Sector ETFs</h4>
+                                <div class="stat-value" id="sectorStats">Loading...</div>
+                            </div>
+                            <div class="stat-card">
+                                <h4>Growth Stocks</h4>
+                                <div class="stat-value" id="growthStats">Loading...</div>
+                            </div>
+                            <div class="stat-card">
+                                <h4>Market Momentum</h4>
+                                <div class="stat-value" id="momentumStats">Loading...</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Notable Highlights Section -->
+                        <div class="highlights-section">
+                            <h3>🎯 Notable Market Highlights</h3>
+                            <div class="highlights-grid">
+                                <div class="highlight-card">
+                                    <h4>🔥 Hot Streaks (3+ Days Up)</h4>
+                                    <div id="hotStreaksList" class="hot-streaks-list">Loading...</div>
+                                </div>
+                                <div class="highlight-card">
+                                    <h4>📈 Top Momentum Plays</h4>
+                                    <div id="momentumPlaysList" class="momentum-list">Loading...</div>
+                                </div>
+                                <div class="highlight-card">
+                                    <h4>⚡ Breakout Watch</h4>
+                                    <div id="breakoutWatchList" class="breakout-list">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Cross-Tab Notable Items -->
+                        <div class="cross-tab-section">
+                            <h3>🎪 Cross-Tab Notable Items</h3>
+                            <div class="notable-grid">
+                                <div class="notable-card">
+                                    <h4>🏆 Sector Champions</h4>
+                                    <div id="sectorChampions" class="champions-list">Loading...</div>
+                                </div>
+                                <div class="notable-card">
+                                    <h4>🚀 Growth Leaders</h4>
+                                    <div id="growthLeaders" class="leaders-list">Loading...</div>
+                                </div>
+                                <div class="notable-card">
+                                    <h4>📊 Cross-Sector Trends</h4>
+                                    <div id="crossSectorTrends" class="trends-list">Loading...</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Sector Overview Tab -->
-        <div class="tab-content active" id="sector-overview">
+        <div class="tab-content" id="sector-overview">
             <div class="main-content">
                 <div class="side-panel" id="sidePanel">
-                    <h3>📊 Market Insights</h3>
+                    <h3>📊 Sector Insights</h3>
                     
                     <div class="insight-section">
                         <h4>🚀 Most Bullish (Top 5)</h4>
@@ -31,17 +136,17 @@
                     </div>
                     
                     <div class="insight-section">
-                        <h4>⚠️ Most Bearish (Top 3)</h4>
+                        <h4>⚠️ Most Bearish (Top 5)</h4>
                         <div id="bearishList" class="stock-list"></div>
                     </div>
                     
                     <div class="insight-section">
-                        <h4>📈 Best Performers (Top 3)</h4>
+                        <h4>📈 Best Performers (Top 5)</h4>
                         <div id="performersList" class="stock-list"></div>
                     </div>
                     
                     <div class="insight-section">
-                        <h4>💎 Breakout Candidates (Top 3)</h4>
+                        <h4>💎 Breakout Candidates (Top 5)</h4>
                         <div id="breakoutList" class="stock-list"></div>
                     </div>
                 </div>
@@ -126,7 +231,9 @@
                         <tr>
                             <th class="sortable" data-column="ticker">Ticker</th>
                             <th class="sortable" data-column="name">Name</th>
-                            <th class="sortable" data-column="liberationChange">% change since Liberation</th>
+                            <th class="sortable draggable" data-column="liberationChange" draggable="true">
+                                <div class="drag-indicator"></div>% change since Liberation
+                            </th>
                             <th class="sortable" data-column="currentPrice">Price</th>
                             <th class="sortable" data-column="ytd">% YTD</th>
                             <th class="sortable" data-column="1d">%1 D</th>
@@ -172,6 +279,6 @@
         </div>
     </div>
     
-    <script src="script.js?v=16"></script>
+    <script src="script.js?v=23"></script>
 </body>
 </html>

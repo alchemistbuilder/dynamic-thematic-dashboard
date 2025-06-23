@@ -178,9 +178,11 @@ class StockDashboard {
     constructor() {
         this.sectorData = new Map();
         this.growthData = new Map();
-        this.currentTab = 'sector-overview';
+        this.currentTab = 'market-summary';
         this.sortColumn = null;
         this.sortDirection = 'asc';
+        this.liveUpdateInterval = null;
+        this.liveUpdateEnabled = false;
         this.init();
     }
 
@@ -190,12 +192,20 @@ class StockDashboard {
     }
 
     get stockData() {
-        return this.currentTab === 'sector-overview' ? this.sectorData : this.growthData;
+        if (this.currentTab === 'sector-overview') return this.sectorData;
+        if (this.currentTab === 'high-growth') return this.growthData;
+        return new Map(); // Market summary doesn't have its own data
     }
 
     bindEvents() {
         document.getElementById('refreshBtn').addEventListener('click', () => {
             this.loadData();
+        });
+
+        // Live price toggle
+        const liveToggle = document.getElementById('liveToggle');
+        liveToggle.addEventListener('click', () => {
+            this.toggleLivePrices();
         });
 
         // Tab switching functionality
@@ -206,16 +216,14 @@ class StockDashboard {
             });
         });
 
-        // Add sorting functionality
-        document.querySelectorAll('th.sortable').forEach(header => {
-            header.addEventListener('click', () => {
-                const column = header.dataset.column;
-                this.sortTable(column);
-            });
-        });
+        // Initial sorting functionality will be set up in setupColumnDragAndDrop
+        this.bindSortingEvents();
 
         // Add middle mouse button panning for all dashboard elements
         this.setupPanningForAllDashboards();
+        
+        // Add column drag and drop functionality
+        this.setupColumnDragAndDrop();
     }
 
     setupPanningForAllDashboards() {
@@ -266,6 +274,122 @@ class StockDashboard {
         });
     }
 
+    setupColumnDragAndDrop() {
+        // Make all table headers draggable and add drag/drop functionality
+        document.querySelectorAll('th.sortable').forEach(header => {
+            // Make headers draggable
+            header.draggable = true;
+            header.classList.add('draggable');
+            
+            // Add drag indicator if not already present
+            if (!header.querySelector('.drag-indicator')) {
+                const indicator = document.createElement('div');
+                indicator.className = 'drag-indicator';
+                header.insertBefore(indicator, header.firstChild);
+            }
+            
+            // Drag start
+            header.addEventListener('dragstart', (e) => {
+                e.dataTransfer.effectAllowed = 'move';
+                e.dataTransfer.setData('text/html', header.outerHTML);
+                e.dataTransfer.setData('text/plain', header.dataset.column);
+                header.classList.add('dragging');
+                this.draggedElement = header;
+                this.draggedIndex = Array.from(header.parentNode.children).indexOf(header);
+            });
+            
+            // Drag end
+            header.addEventListener('dragend', (e) => {
+                header.classList.remove('dragging');
+                document.querySelectorAll('th.drag-over').forEach(th => {
+                    th.classList.remove('drag-over');
+                });
+                this.draggedElement = null;
+            });
+            
+            // Drag over
+            header.addEventListener('dragover', (e) => {
+                if (this.draggedElement !== header) {
+                    e.preventDefault();
+                    e.dataTransfer.dropEffect = 'move';
+                    header.classList.add('drag-over');
+                }
+            });
+            
+            // Drag leave
+            header.addEventListener('dragleave', (e) => {
+                header.classList.remove('drag-over');
+            });
+            
+            // Drop
+            header.addEventListener('drop', (e) => {
+                e.preventDefault();
+                if (this.draggedElement !== header) {
+                    this.reorderColumns(this.draggedElement, header);
+                }
+                header.classList.remove('drag-over');
+            });
+        });
+    }
+
+    reorderColumns(draggedHeader, targetHeader) {
+        const table = draggedHeader.closest('table');
+        const headerRow = draggedHeader.parentNode;
+        const allRows = table.querySelectorAll('tr');
+        
+        const draggedIndex = Array.from(headerRow.children).indexOf(draggedHeader);
+        const targetIndex = Array.from(headerRow.children).indexOf(targetHeader);
+        
+        if (draggedIndex === targetIndex) return;
+        
+        // Reorder header
+        if (draggedIndex < targetIndex) {
+            headerRow.insertBefore(draggedHeader, targetHeader.nextSibling);
+        } else {
+            headerRow.insertBefore(draggedHeader, targetHeader);
+        }
+        
+        // Reorder all body rows
+        allRows.forEach(row => {
+            if (row !== headerRow && row.children.length > draggedIndex) {
+                const draggedCell = row.children[draggedIndex];
+                const targetCell = row.children[targetIndex];
+                
+                if (draggedCell && targetCell) {
+                    if (draggedIndex < targetIndex) {
+                        row.insertBefore(draggedCell, targetCell.nextSibling);
+                    } else {
+                        row.insertBefore(draggedCell, targetCell);
+                    }
+                }
+            }
+        });
+        
+        // Re-setup event listeners for the reordered headers
+        setTimeout(() => {
+            this.setupColumnDragAndDrop();
+            this.bindSortingEvents();
+        }, 100);
+    }
+
+    bindSortingEvents() {
+        // Re-bind sorting functionality after column reorder
+        document.querySelectorAll('th.sortable').forEach(header => {
+            // Remove existing listeners by cloning the element
+            const newHeader = header.cloneNode(true);
+            header.parentNode.replaceChild(newHeader, header);
+            
+            // Add fresh event listener
+            newHeader.addEventListener('click', (e) => {
+                // Don't sort if we're dragging
+                if (!e.target.closest('th').classList.contains('dragging')) {
+                    const column = newHeader.dataset.column;
+                    this.sortTable(column);
+                }
+            });
+        });
+    }
+
     switchTab(tabId) {
         // Update current tab
         this.currentTab = tabId;
@@ -283,12 +407,200 @@ class StockDashboard {
         document.getElementById(tabId).classList.add('active');
         
         // Render appropriate data
-        this.renderTable();
-        
-        // If no data loaded for this tab, load it
-        if (this.stockData.size === 0) {
-            this.loadData();
+        if (tabId === 'market-summary') {
+            this.renderMarketSummary();
+        } else {
+            this.renderTable();
+            
+            // If no data loaded for this tab, load it
+            if (this.stockData.size === 0) {
+                this.loadData();
+            }
         }
+    }
+
+    toggleLivePrices() {
+        const liveToggle = document.getElementById('liveToggle');
+        const liveStatus = liveToggle.querySelector('.live-status');
+        
+        this.liveUpdateEnabled = !this.liveUpdateEnabled;
+        
+        if (this.liveUpdateEnabled) {
+            liveToggle.classList.add('active');
+            
+            if (this.isMarketOpen()) {
+                liveStatus.textContent = 'ON';
+            } else {
+                liveStatus.textContent = 'ON (Market Closed)';
+            }
+            
+            // Start live updates
+            this.startLiveUpdates();
+        } else {
+            liveToggle.classList.remove('active');
+            liveStatus.textContent = 'OFF';
+            
+            // Stop live updates
+            this.stopLiveUpdates();
+        }
+    }
+
+    isMarketOpen() {
+        const now = new Date();
+        const day = now.getDay();
+        
+        // Market closed on weekends
+        if (day === 0 || day === 6) return false;
+        
+        // Get current time in ET
+        const etTime = new Date(now.toLocaleString("en-US", {timeZone: "America/New_York"}));
+        const hours = etTime.getHours();
+        const minutes = etTime.getMinutes();
+        
+        // Market hours: 9:30 AM - 4:00 PM ET
+        if (hours < 9 || hours >= 16) return false;
+        if (hours === 9 && minutes < 30) return false;
+        
+        return true;
+    }
+
+    startLiveUpdates() {
+        // Update immediately
+        this.updateLivePrices();
+        
+        // Then update every 30 seconds
+        this.liveUpdateInterval = setInterval(() => {
+            if (this.isMarketOpen()) {
+                this.updateLivePrices();
+            } else {
+                // Show market closed message
+                console.log('Market is closed - live updates paused');
+            }
+        }, 30000); // 30 seconds
+    }
+
+    stopLiveUpdates() {
+        if (this.liveUpdateInterval) {
+            clearInterval(this.liveUpdateInterval);
+            this.liveUpdateInterval = null;
+        }
+    }
+
+    async updateLivePrices() {
+        console.log('Updating live prices...');
+        
+        // Get all tickers for current tab
+        let tickers = [];
+        if (this.currentTab === 'sector-overview') {
+            tickers = [...SECTOR_TICKERS, ...CRYPTO_TICKERS];
+        } else if (this.currentTab === 'high-growth') {
+            tickers = GROWTH_TICKERS;
+        } else {
+            // Market summary - don't update live prices
+            return;
+        }
+        
+        // Fetch current quotes for all tickers
+        const quotePromises = tickers.map(ticker => this.fetchLiveQuote(ticker));
+        const quotes = await Promise.allSettled(quotePromises);
+        
+        // Update the data and refresh display
+        quotes.forEach((result, index) => {
+            if (result.status === 'fulfilled' && result.value) {
+                const ticker = tickers[index];
+                const existingData = this.stockData.get(ticker);
+                
+                if (existingData) {
+                    // Update current price and recalculate 1D change
+                    existingData.currentPrice = result.value.price;
+                    existingData.changes['1d'] = result.value.changePercent;
+                    
+                    // Update the table cell if visible
+                    this.updatePriceCell(ticker, result.value);
+                }
+            }
+        });
+    }
+
+    async fetchLiveQuote(ticker) {
+        try {
+            // Use snapshot endpoint for real-time data
+            const endpoint = `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers/${ticker}?apikey=${API_KEY}`;
+            
+            const response = await fetch(endpoint);
+            if (!response.ok) throw new Error(`HTTP ${response.status}`);
+            
+            const data = await response.json();
+            
+            if (data.ticker) {
+                const dayData = data.ticker.day;
+                const prevDayData = data.ticker.prevDay;
+                const min = data.ticker.min;
+                
+                // Use the most recent price available
+                const currentPrice = min?.c || dayData?.c || prevDayData?.c || 0;
+                const prevClose = prevDayData?.c || currentPrice;
+                const changePercent = ((currentPrice - prevClose) / prevClose) * 100;
+                
+                return {
+                    price: currentPrice,
+                    changePercent: changePercent
+                };
+            } else {
+                // Fallback for crypto or if snapshot fails
+                if (ticker.startsWith('X:')) {
+                    // For crypto, use the forex endpoint
+                    const cryptoResponse = await fetch(
+                        `https://api.polygon.io/v2/aggs/ticker/${ticker}/prev?apikey=${API_KEY}`
+                    );
+                    const cryptoData = await cryptoResponse.json();
+                    const lastPrice = cryptoData.results?.[0]?.c || 0;
+                    
+                    return {
+                        price: lastPrice,
+                        changePercent: 0 // Would need previous day for accurate calculation
+                    };
+                }
+            }
+            
+            return null;
+        } catch (error) {
+            console.error(`Error fetching live quote for ${ticker}:`, error);
+            return null;
+        }
+    }
+
+    updatePriceCell(ticker, quoteData) {
+        // Find the row for this ticker
+        const tbody = document.getElementById(
+            this.currentTab === 'sector-overview' ? 'stockTableBody' : 'growthTableBody'
+        );
+        
+        const rows = tbody.querySelectorAll('tr');
+        rows.forEach(row => {
+            const tickerCell = row.querySelector('td.ticker-cell');
+            if (tickerCell && tickerCell.textContent === ticker) {
+                // Update price cell (4th column)
+                const priceCell = row.cells[3];
+                if (priceCell) {
+                    priceCell.textContent = `$${quoteData.price.toFixed(2)}`;
+                    priceCell.classList.add('price-updated');
+                    
+                    // Remove animation class after animation completes
+                    setTimeout(() => {
+                        priceCell.classList.remove('price-updated');
+                    }, 1000);
+                }
+                
+                // Update 1D change cell (6th column)
+                const dayChangeCell = row.cells[5];
+                if (dayChangeCell) {
+                    const changeClass = quoteData.changePercent >= 0 ? 'positive' : 'negative';
+                    dayChangeCell.className = changeClass;
+                    dayChangeCell.textContent = `${quoteData.changePercent >= 0 ? '+' : ''}${quoteData.changePercent.toFixed(2)}%`;
+                }
+            }
+        });
     }
 
     async loadData() {
@@ -301,7 +613,11 @@ class StockDashboard {
 
         try {
             await this.fetchAllStockData();
-            this.renderTable();
+            if (this.currentTab === 'market-summary') {
+                this.renderMarketSummary();
+            } else {
+                this.renderTable();
+            }
         } catch (error) {
             console.error('Error loading data:', error);
             this.showError('Failed to load stock data. Please try again.');
@@ -982,6 +1298,12 @@ class StockDashboard {
         if (data.comparisons.above100SMA) score += 10;
         if (data.comparisons.above200SMA) score += 10;
         
+        // Consecutive up days momentum bonus
+        const upDays = data.consecutiveUpDays || 0;
+        if (upDays >= 5) score += 25;      // 5+ days: Strong momentum
+        else if (upDays >= 3) score += 15; // 3-4 days: Good momentum  
+        else if (upDays >= 1) score += 5;  // 1-2 days: Some momentum
+        
         return score;
     }
 
@@ -1066,25 +1388,22 @@ class StockDashboard {
             .slice(0, 5);
         this.populateStockList(`bullishList${suffix}`, topBullish, 'bullish');
 
-        // Top 5 Most Bearish (or Top 3 for sector overview)
-        const bearishCount = this.currentTab === 'sector-overview' ? 3 : 5;
+        // Top 5 Most Bearish for all tabs
         const topBearish = scoredStocks
             .sort((a, b) => b.bearishScore - a.bearishScore)
-            .slice(0, bearishCount);
+            .slice(0, 5);
         this.populateStockList(`bearishList${suffix}`, topBearish, 'bearish');
 
-        // Top 5 Best Performers (or Top 3 for sector overview)
-        const performerCount = this.currentTab === 'sector-overview' ? 3 : 5;
+        // Top 5 Best Performers for all tabs
         const topPerformers = scoredStocks
             .sort((a, b) => b.performanceScore - a.performanceScore)
-            .slice(0, performerCount);
+            .slice(0, 5);
         this.populateStockList(`performersList${suffix}`, topPerformers, 'performer');
 
-        // Top 5 Breakout Candidates (or Top 3 for sector overview)
-        const breakoutCount = this.currentTab === 'sector-overview' ? 3 : 5;
+        // Top 5 Breakout Candidates for all tabs
         const topBreakouts = scoredStocks
             .sort((a, b) => b.breakoutScore - a.breakoutScore)
-            .slice(0, breakoutCount);
+            .slice(0, 5);
         this.populateStockList(`breakoutList${suffix}`, topBreakouts, 'breakout');
     }
 
@@ -1240,6 +1559,290 @@ class StockDashboard {
             <td class="${this.getDaysToEarningsClass(data.daysToEarnings)}">${this.formatDaysToEarnings(data.daysToEarnings)}</td>
             <td class="${this.getConsecutiveUpDaysClass(data.consecutiveUpDays)}">${data.consecutiveUpDays}</td>
         `;
+    }
+
+    renderMarketSummary() {
+        // Ensure both datasets are loaded
+        if (this.sectorData.size === 0 || this.growthData.size === 0) {
+            // Load data if not available
+            this.loadData();
+            return;
+        }
+
+        // Get scored stocks for both datasets
+        const sectorArray = Array.from(this.sectorData.values()).filter(data => data !== null);
+        const growthArray = Array.from(this.growthData.values()).filter(data => data !== null);
+
+        const scoredSector = sectorArray.map(data => ({
+            ...data,
+            bullishScore: this.calculateBullishScore(data),
+            bearishScore: this.calculateBearishScore(data),
+            performanceScore: this.calculatePerformanceScore(data)
+        }));
+
+        const scoredGrowth = growthArray.map(data => ({
+            ...data,
+            bullishScore: this.calculateBullishScore(data),
+            bearishScore: this.calculateBearishScore(data),
+            performanceScore: this.calculatePerformanceScore(data)
+        }));
+
+        // Populate sector summaries (Top 5)
+        const topSectorBullish = scoredSector
+            .sort((a, b) => b.bullishScore - a.bullishScore)
+            .slice(0, 5);
+        this.populateStockList('sectorBullishSummary', topSectorBullish, 'bullish');
+
+        const topSectorBearish = scoredSector
+            .sort((a, b) => b.bearishScore - a.bearishScore)
+            .slice(0, 5);
+        this.populateStockList('sectorBearishSummary', topSectorBearish, 'bearish');
+
+        // Populate growth summaries (Top 5)
+        const topGrowthBullish = scoredGrowth
+            .sort((a, b) => b.bullishScore - a.bullishScore)
+            .slice(0, 5);
+        this.populateStockList('growthBullishSummary', topGrowthBullish, 'bullish');
+
+        const topGrowthBearish = scoredGrowth
+            .sort((a, b) => b.bearishScore - a.bearishScore)
+            .slice(0, 5);
+        this.populateStockList('growthBearishSummary', topGrowthBearish, 'bearish');
+
+        // Overall best performers (combine both datasets)
+        const allScored = [...scoredSector, ...scoredGrowth];
+        const overallPerformers = allScored
+            .sort((a, b) => b.performanceScore - a.performanceScore)
+            .slice(0, 5);
+        this.populateStockList('overallPerformersSummary', overallPerformers, 'performer');
+
+        // Update statistics
+        this.updateMarketStats(scoredSector, scoredGrowth);
+    }
+
+    updateMarketStats(sectorData, growthData) {
+        // Sector stats
+        const sectorBullish = sectorData.filter(s => s.bullishScore > 50).length;
+        const sectorTotal = sectorData.length;
+        const sectorAvgPerf = sectorData.reduce((sum, s) => sum + (s.liberationChange || 0), 0) / sectorTotal;
+
+        document.getElementById('sectorStats').innerHTML = `
+            <div>${sectorBullish}/${sectorTotal} Bullish</div>
+            <div style="font-size: 0.9rem; color: ${sectorAvgPerf >= 0 ? '#00d4aa' : '#ef5350'}">
+                Avg: ${sectorAvgPerf >= 0 ? '+' : ''}${sectorAvgPerf.toFixed(1)}%
+            </div>
+        `;
+
+        // Growth stats
+        const growthBullish = growthData.filter(s => s.bullishScore > 50).length;
+        const growthTotal = growthData.length;
+        const growthAvgPerf = growthData.reduce((sum, s) => sum + (s.liberationChange || 0), 0) / growthTotal;
+
+        document.getElementById('growthStats').innerHTML = `
+            <div>${growthBullish}/${growthTotal} Bullish</div>
+            <div style="font-size: 0.9rem; color: ${growthAvgPerf >= 0 ? '#00d4aa' : '#ef5350'}">
+                Avg: ${growthAvgPerf >= 0 ? '+' : ''}${growthAvgPerf.toFixed(1)}%
+            </div>
+        `;
+
+        // Momentum stats (consecutive up days)
+        const allData = [...sectorData, ...growthData];
+        const strongMomentum = allData.filter(s => (s.consecutiveUpDays || 0) >= 3).length;
+        const totalStocks = allData.length;
+
+        document.getElementById('momentumStats').innerHTML = `
+            <div>${strongMomentum}/${totalStocks} Hot Streaks</div>
+            <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7)">
+                3+ consecutive up days
+            </div>
+        `;
+
+        // Populate notable highlights sections
+        this.populateNotableHighlights(allData, sectorData, growthData);
+    }
+
+    populateNotableHighlights(allData, sectorData, growthData) {
+        // Hot Streaks (3+ consecutive up days)
+        const hotStreaks = allData
+            .filter(s => (s.consecutiveUpDays || 0) >= 3)
+            .sort((a, b) => (b.consecutiveUpDays || 0) - (a.consecutiveUpDays || 0))
+            .slice(0, 8);
+
+        const hotStreaksList = document.getElementById('hotStreaksList');
+        if (hotStreaksList) {
+            hotStreaksList.innerHTML = `
+                <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <span>Ticker</span>
+                    <span>Consecutive Days</span>
+                </div>
+                ${hotStreaks.length > 0 ? hotStreaks.map(stock => `
+                    <div class="hot-streak-item">
+                        <span class="stock-ticker-highlight">${stock.ticker}</span>
+                        <span class="streak-days">${stock.consecutiveUpDays || 0} days</span>
+                    </div>
+                `).join('') : '<div style="color: rgba(255,255,255,0.6);">No hot streaks found</div>'}
+            `;
+        }
+
+        // Top Momentum Plays (high recent performance)
+        const momentumPlays = allData
+            .filter(s => (s.changes['1w'] || 0) > 2) // At least 2% up in past week
+            .sort((a, b) => (b.changes['1w'] || 0) - (a.changes['1w'] || 0))
+            .slice(0, 6);
+
+        const momentumPlaysList = document.getElementById('momentumPlaysList');
+        if (momentumPlaysList) {
+            momentumPlaysList.innerHTML = `
+                <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <span>Ticker</span>
+                    <span>% 1 Week</span>
+                </div>
+                ${momentumPlays.length > 0 ? momentumPlays.map(stock => `
+                    <div class="momentum-item">
+                        <span class="stock-ticker-highlight">${stock.ticker}</span>
+                        <span class="positive">${this.formatPercent(stock.changes['1w'])}</span>
+                    </div>
+                `).join('') : '<div style="color: rgba(255,255,255,0.6);">No strong momentum found</div>'}
+            `;
+        }
+
+        // Breakout Watch (near 52-week highs with good trends)
+        const breakoutWatch = allData
+            .filter(s => (s.comparisons.deltaFrom52WeekHigh || -100) > -10) // Within 10% of 52w high
+            .filter(s => s.comparisons.ema8Above13Above21 && 
+                        ['ST BULLISH', 'EMA Bullish', 'Breaking Out', 'Uptrend Maintained'].includes(s.comparisons.ema8Above13Above21))
+            .sort((a, b) => (b.comparisons.deltaFrom52WeekHigh || -100) - (a.comparisons.deltaFrom52WeekHigh || -100))
+            .slice(0, 6);
+
+        const breakoutWatchList = document.getElementById('breakoutWatchList');
+        if (breakoutWatchList) {
+            breakoutWatchList.innerHTML = `
+                <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <span>Ticker</span>
+                    <span>Δ from 52W High</span>
+                </div>
+                ${breakoutWatch.length > 0 ? breakoutWatch.map(stock => `
+                    <div class="momentum-item">
+                        <span class="stock-ticker-highlight">${stock.ticker}</span>
+                        <span class="positive">${this.formatPercent(stock.comparisons.deltaFrom52WeekHigh)}</span>
+                    </div>
+                `).join('') : '<div style="color: rgba(255,255,255,0.6);">No breakout candidates</div>'}
+            `;
+        }
+
+        // Cross-Tab Notable Items  
+        this.populateCrossTabNotables(allData, sectorData, growthData);
+    }
+
+    populateCrossTabNotables(allData, sectorData, growthData) {
+        // Sector Champions (best sector ETFs)
+        const sectorChampions = sectorData
+            .sort((a, b) => (b.liberationChange || 0) - (a.liberationChange || 0))
+            .slice(0, 5);
+
+        const sectorChampionsEl = document.getElementById('sectorChampions');
+        if (sectorChampionsEl) {
+            sectorChampionsEl.innerHTML = `
+                <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <span>Ticker</span>
+                    <span>% Since Liberation</span>
+                </div>
+                ${sectorChampions.map(stock => `
+                    <div class="trend-item">
+                        <span class="stock-ticker-highlight">${stock.ticker}</span>
+                        <span class="trend-description">${this.formatPercent(stock.liberationChange)}</span>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // Growth Leaders (best growth stocks)
+        const growthLeaders = growthData
+            .sort((a, b) => (b.liberationChange || 0) - (a.liberationChange || 0))
+            .slice(0, 5);
+
+        const growthLeadersEl = document.getElementById('growthLeaders');
+        if (growthLeadersEl) {
+            growthLeadersEl.innerHTML = `
+                <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                    <span>Ticker</span>
+                    <span>% Since Liberation</span>
+                </div>
+                ${growthLeaders.map(stock => `
+                    <div class="trend-item">
+                        <span class="stock-ticker-highlight">${stock.ticker}</span>
+                        <span class="trend-description">${this.formatPercent(stock.liberationChange)}</span>
+                    </div>
+                `).join('')}
+            `;
+        }
+
+        // Cross-Sector Trends (identify interesting patterns)
+        const crossSectorTrends = this.identifyCrossSectorTrends(allData);
+        const crossSectorTrendsEl = document.getElementById('crossSectorTrends');
+        if (crossSectorTrendsEl) {
+            crossSectorTrendsEl.innerHTML = crossSectorTrends.map(trend => `
+                <div class="trend-item">
+                    <span class="trend-description">${trend}</span>
+                </div>
+            `).join('');
+        }
+    }
+
+    identifyCrossSectorTrends(allData) {
+        const trends = [];
+        
+        // Count bullish/bearish trends
+        const bullishCount = allData.filter(s => s.comparisons.sma50Above100Above200 === 'BULLISH').length;
+        const bearishCount = allData.filter(s => s.comparisons.sma50Above100Above200 === 'BEARISH').length;
+        const total = allData.length;
+        
+        if (bullishCount / total > 0.6) {
+            trends.push(`🚀 Strong market: ${bullishCount}/${total} stocks bullish`);
+        } else if (bearishCount / total > 0.4) {
+            trends.push(`⚠️ Market stress: ${bearishCount}/${total} stocks bearish`);
+        } else {
+            trends.push(`📊 Mixed market: ${bullishCount} bullish, ${bearishCount} bearish`);
+        }
+
+        // RSI patterns - always show these
+        const overboughtCount = allData.filter(s => (s.rsiData.rsi14 || 50) > 70).length;
+        const oversoldCount = allData.filter(s => (s.rsiData.rsi14 || 50) < 30).length;
+        
+        if (overboughtCount > 0) {
+            trends.push(`📈 ${overboughtCount} stocks overbought (RSI > 70)`);
+        }
+        if (oversoldCount > 0) {
+            trends.push(`📉 ${oversoldCount} buying opportunities (RSI < 30)`);
+        }
+        if (overboughtCount === 0 && oversoldCount === 0) {
+            trends.push(`⚖️ RSI levels balanced across market`);
+        }
+
+        // Earnings coming up
+        const earningsThisWeek = allData.filter(s => s.daysToEarnings && s.daysToEarnings <= 7 && s.daysToEarnings !== 'N/A').length;
+        if (earningsThisWeek > 0) {
+            trends.push(`📊 ${earningsThisWeek} stocks reporting earnings this week`);
+        }
+
+        // Momentum analysis
+        const strongMomentum = allData.filter(s => (s.consecutiveUpDays || 0) >= 3).length;
+        if (strongMomentum > 0) {
+            trends.push(`🔥 ${strongMomentum} stocks on hot streaks (3+ days)`);
+        }
+
+        // Near 52-week highs
+        const near52WeekHigh = allData.filter(s => (s.comparisons.deltaFrom52WeekHigh || -100) > -5).length;
+        if (near52WeekHigh > 0) {
+            trends.push(`⚡ ${near52WeekHigh} stocks near 52-week highs`);
+        }
+
+        // Ensure we always have at least 3-4 trends
+        if (trends.length < 3) {
+            trends.push('🔍 Active market monitoring');
+        }
+
+        return trends.slice(0, 6); // Limit to 6 trends max for readability
     }
 
     async fetchAllEarningsData(tickers, dataMap) {
