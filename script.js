@@ -610,9 +610,18 @@ class StockDashboard {
             this.renderGainersLosers();
         } else if (tabId === 'ai-platform') {
             this.renderTable();
-            // AI platform uses standard table rendering with custom insights
+            this.renderSectorAnalysis('ai-platform', this.aiPlatformData);
         } else {
             this.renderTable();
+            
+            // Render sector analysis for relevant tabs
+            if (this.currentTab === 'high-growth') {
+                this.renderSectorAnalysis('growth', this.growthData);
+            } else if (this.currentTab === 'compounder') {
+                this.renderSectorAnalysis('compounder', this.compounderData);
+            } else if (this.currentTab === 'mag7-plus') {
+                this.renderSectorAnalysis('mag7', this.mag7Data);
+            }
             
             // If no data loaded for this tab, load it
             if (this.stockData.size === 0) {
@@ -3644,6 +3653,90 @@ class StockDashboard {
                 </div>
             </div>
         `;
+    }
+
+    renderSectorAnalysis(sectorId, sectorData) {
+        if (!sectorData || sectorData.size === 0) {
+            return;
+        }
+
+        const stocks = Array.from(sectorData.values()).filter(stock => stock !== null);
+        
+        // Calculate equal-weighted portfolio returns
+        const timeframes = ['1d', '1w', '2w', '1m', '2m', '3m', '6m', 'ytd'];
+        const returns = {};
+        
+        timeframes.forEach(timeframe => {
+            const validChanges = stocks
+                .map(stock => stock.changes[timeframe])
+                .filter(change => change !== null && change !== undefined && !isNaN(change));
+            
+            if (validChanges.length > 0) {
+                // Calculate median for more robust average
+                const sortedChanges = validChanges.sort((a, b) => a - b);
+                const middle = Math.floor(sortedChanges.length / 2);
+                returns[timeframe] = sortedChanges.length % 2 === 0
+                    ? (sortedChanges[middle - 1] + sortedChanges[middle]) / 2
+                    : sortedChanges[middle];
+            } else {
+                returns[timeframe] = 0;
+            }
+        });
+
+        // Calculate percentage above moving averages
+        const maStats = {
+            above50SMA: 0,
+            above100SMA: 0,
+            above200SMA: 0,
+            above8EMA: 0,
+            above13EMA: 0,
+            above21EMA: 0
+        };
+
+        const totalStocks = stocks.length;
+        stocks.forEach(stock => {
+            if (stock.comparisons) {
+                if (stock.comparisons.above50SMA) maStats.above50SMA++;
+                if (stock.comparisons.above100SMA) maStats.above100SMA++;
+                if (stock.comparisons.above200SMA) maStats.above200SMA++;
+                if (stock.comparisons.above8EMA) maStats.above8EMA++;
+                if (stock.comparisons.above13EMA) maStats.above13EMA++;
+                if (stock.comparisons.above21EMA) maStats.above21EMA++;
+            }
+        });
+
+        // Convert to percentages
+        Object.keys(maStats).forEach(key => {
+            maStats[key] = totalStocks > 0 ? ((maStats[key] / totalStocks) * 100).toFixed(1) : '0.0';
+        });
+
+        // Update the UI
+        timeframes.forEach(timeframe => {
+            const elementId = `${sectorId}-return-${timeframe}`;
+            const element = document.getElementById(elementId);
+            if (element) {
+                const value = returns[timeframe];
+                element.textContent = `${value >= 0 ? '+' : ''}${value.toFixed(2)}%`;
+                element.className = `return-value ${value >= 0 ? 'positive' : 'negative'}`;
+            }
+        });
+
+        // Update moving average stats
+        const maMapping = {
+            above50SMA: `${sectorId}-above-50sma`,
+            above100SMA: `${sectorId}-above-100sma`,
+            above200SMA: `${sectorId}-above-200sma`,
+            above8EMA: `${sectorId}-above-8ema`,
+            above13EMA: `${sectorId}-above-13ema`,
+            above21EMA: `${sectorId}-above-21ema`
+        };
+
+        Object.keys(maMapping).forEach(key => {
+            const element = document.getElementById(maMapping[key]);
+            if (element) {
+                element.textContent = `${maStats[key]}%`;
+            }
+        });
     }
 }
 

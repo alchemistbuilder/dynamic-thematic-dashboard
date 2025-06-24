@@ -1085,6 +1085,114 @@ th.drag-over .drag-indicator {
     white-space: nowrap;
 }
 
+/* Sector Analysis Styles */
+.sector-analysis {
+    background: rgba(40, 40, 40, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 25px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+}
+
+.sector-analysis h3 {
+    color: #00d4aa;
+    font-size: 1.5rem;
+    margin-bottom: 20px;
+    text-align: center;
+    font-weight: 600;
+}
+
+.sector-metrics {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 30px;
+}
+
+.sector-returns h4,
+.sector-ma-stats h4 {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+    font-weight: 500;
+}
+
+.returns-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+}
+
+.return-item {
+    background: rgba(20, 20, 20, 0.6);
+    border-radius: 8px;
+    padding: 12px;
+    text-align: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.return-label {
+    display: block;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.7);
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.return-value {
+    display: block;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #ffffff;
+}
+
+.return-value.positive {
+    color: #00d4aa;
+}
+
+.return-value.negative {
+    color: #ef5350;
+}
+
+.ma-stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+}
+
+.ma-stat {
+    background: rgba(20, 20, 20, 0.6);
+    border-radius: 8px;
+    padding: 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.ma-label {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-weight: 500;
+}
+
+.ma-value {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #00d4aa;
+}
+
+@media (max-width: 1200px) {
+    .sector-metrics {
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+    
+    .returns-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
 /* Gainers/Losers Tab Styles */
 .gainers-losers-container {
     padding: 30px;
