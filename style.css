@@ -1243,6 +1243,14 @@ th.drag-over .drag-indicator {
     justify-content: center;
 }
 
+/* 4-column compact layout for fitting all timeframes in one row */
+.gl-timeframes.four-column {
+    grid-template-columns: repeat(4, 1fr);
+    gap: 15px;
+    max-width: 1400px;
+    margin: 15px auto;
+}
+
 /* Champions timeframe styling - fits in grid but with special border */
 .gl-timeframe.champions {
     /* Ensure the border encompasses the entire champions timeframe */
@@ -1294,6 +1302,70 @@ th.drag-over .drag-indicator {
     margin-bottom: 10px;
     max-width: 500px;
     overflow: hidden;
+}
+
+/* Compact styling for 4-column layout */
+.gl-timeframes.four-column .gl-timeframe {
+    max-width: none;
+    padding: 12px;
+    margin-bottom: 0;
+    background: rgba(25, 25, 25, 0.4);
+}
+
+.gl-timeframes.four-column .gl-timeframe h3 {
+    font-size: 0.85rem;
+    margin-bottom: 6px;
+    font-weight: 500;
+}
+
+/* Compact columns for 4-column layout */
+.gl-timeframes.four-column .gl-columns {
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.gl-timeframes.four-column .gl-column {
+    padding: 10px;
+    background: rgba(15, 15, 15, 0.5);
+}
+
+.gl-timeframes.four-column .gl-column h4 {
+    font-size: 0.75rem;
+    margin-bottom: 4px;
+    font-weight: 500;
+}
+
+/* Compact list and items for 4-column layout */
+.gl-timeframes.four-column .gl-list {
+    gap: 4px;
+}
+
+.gl-timeframes.four-column .gl-item {
+    padding: 6px 8px;
+    background: rgba(20, 20, 20, 0.3);
+    border-radius: 4px;
+}
+
+/* Much smaller, cleaner text in 4-column layout */
+.gl-timeframes.four-column .gl-ticker {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.gl-timeframes.four-column .gl-name {
+    font-size: 0.65rem;
+    max-width: 100px;
+    opacity: 0.8;
+}
+
+.gl-timeframes.four-column .gl-change {
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+/* More compact stock info layout */
+.gl-timeframes.four-column .gl-stock-info {
+    margin-right: 6px;
 }
 
 .gl-columns {

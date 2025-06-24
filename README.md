@@ -1,66 +1,93 @@
 # Dynamic Thematic Dashboard
 
-A real-time stock and cryptocurrency dashboard with comprehensive technical indicators and performance tracking.
+A comprehensive real-time stock market dashboard with advanced analytics, multi-timeframe performance tracking, and thematic portfolio management.
 
 ## 🚀 Features
 
-### 📊 Market Coverage
-- **25 ETFs** covering major sectors (Tech, Healthcare, Energy, Financials, etc.)
-- **2 Cryptocurrencies** (Bitcoin and Solana)
-- **Real-time data** from Polygon.io API
+### 📊 Multi-Tab Dashboard
+- **Market Summary**: Overview of all sectors and top performers
+- **Sector Overview**: 34 ETFs covering major sectors and themes
+- **High Growth Momentum**: 47 growth stocks with breakout analysis
+- **Compounders**: 25 quality long-term growth stocks
+- **Mag7+**: 12 mega-cap technology leaders
+- **AI Platform Basket**: 21 AI-focused companies
+- **Market Intelligence**: Advanced analytics and insights
+- **Gainers/Losers**: Multi-timeframe performance leaders
 
-### 📈 Technical Indicators
-- **Moving Averages**: 8/13/21-day EMAs, 50/100/200-day SMAs
+### 📈 Advanced Technical Analysis
+- **Moving Averages**: 8/13/21-day EMAs, 50/100/200-day SMAs with stacking analysis
+- **RSI Indicators**: 14-day and 30-day momentum oscillators
 - **Performance Metrics**: YTD, 1D, 1W, 2W, 1M, 2M, 3M, 6M, 1YR returns
-- **52-Week High Delta**: Distance from yearly highs
+- **52-Week High Delta**: Distance from yearly peaks
 - **Liberation Day Tracking**: Performance since April 2, 2025
+- **Consecutive Up Days**: Momentum streak tracking
+- **Gap & Volume Signals**: Intraday breakout indicators
 
-### 🔍 Advanced Analytics
-- **Trend Analysis**: Bullish/Bearish classifications
-- **Moving Average Comparisons**: Price vs MA indicators (✓/✗)
-- **Stacking Indicators**: EMA and SMA alignment signals
-- **Color-coded Performance**: Visual trend identification
+### 🏆 Multi-Timeframe Champions
+- **Elite Performers**: Stocks consistently ranking in top 5 across multiple timeframes
+- **Weighted Scoring**: Daily (4x), Weekly (3x), 2-Week (2x), Monthly (1x) weights
+- **Champion Badges**: Visual indicators for multi-timeframe consistency
+
+### 📊 Sector Analysis
+- **Equal-Weighted Portfolio Returns**: Median-based performance across timeframes
+- **Moving Average Percentages**: Sector-wide technical health metrics
+- **Real-time Sector Health**: Live updates for each thematic group
+
+### 🎯 Gainers/Losers Dashboard
+- **4-Column Compact Layout**: Daily, Weekly, 2-Week, Monthly in one row
+- **Top 5 Lists**: Best and worst performers for each timeframe
+- **All Sectors Covered**: Overall market plus each thematic basket
+- **Clean Typography**: Optimized font sizes for maximum readability
 
 ### 🎛️ Interactive Features
-- **Sortable Columns**: Click any header to sort ascending/descending
-- **Visual Sort Indicators**: Animated arrows and hover effects
-- **Responsive Design**: Works on desktop and tablet
-- **One-click Refresh**: Update all data instantly
+- **Tabbed Navigation**: Seamless switching between analysis views
+- **Live Data Toggle**: Real-time vs end-of-day pricing modes
+- **Sortable Tables**: Click any header to sort ascending/descending
+- **Drag & Drop**: Reorder columns for custom layouts
+- **Responsive Design**: Optimized for desktop and tablet viewing
+- **Instant Refresh**: Update all data with single click
 
-## 🎯 Tracked Assets
+## 🎯 Tracked Assets (142 Total)
 
-### ETFs
-| Ticker | Name | Sector |
-|--------|------|--------|
-| GLD | SPDR Gold Shares | Precious Metals |
-| FXI | iShares China Large-Cap ETF | International |
-| KWEB | KraneShares CSI China Internet ETF | Tech/International |
-| XLU | Utilities Select Sector SPDR Fund | Utilities |
-| IHI | iShares U.S. Medical Devices ETF | Healthcare |
-| XLI | Industrial Select Sector SPDR Fund | Industrials |
-| XLF | Financial Select Sector SPDR Fund | Financials |
-| XLP | Consumer Staples Select Sector SPDR Fund | Consumer Staples |
-| XLRE | Real Estate Select Sector SPDR Fund | Real Estate |
-| IGV | iShares Expanded Tech-Software Sector ETF | Technology |
-| ARKW | ARK Next Generation Internet ETF | Innovation |
-| XLV | Health Care Select Sector SPDR Fund | Healthcare |
-| SPY | SPDR S&P 500 ETF Trust | Broad Market |
-| XLE | Energy Select Sector SPDR Fund | Energy |
-| FNGS | MicroSectors FANG+ ETN | Tech Giants |
-| QQQ | Invesco QQQ Trust | NASDAQ-100 |
-| WCLD | WisdomTree Cloud Computing Fund | Cloud Computing |
-| SMH | VanEck Semiconductor ETF | Semiconductors |
-| IWM | iShares Russell 2000 ETF | Small Cap |
-| ARKK | ARK Innovation ETF | Innovation |
-| XLY | Consumer Discretionary Select Sector SPDR Fund | Consumer Discretionary |
-| SOXX | iShares Semiconductor ETF | Semiconductors |
-| ARKG | ARK Genomic Revolution ETF | Genomics |
-| IBB | iShares NASDAQ Biotechnology ETF | Biotechnology |
-| XBI | SPDR S&P Biotech ETF | Biotechnology |
+### 📊 Sector ETFs (34 tickers)
+**Broad Market**: SPY, QQQ, IWM  
+**Technology**: IGV, ARKW, WCLD, SMH, SOXX, FNGS  
+**Healthcare**: XLV, IHI, ARKG, IBB, XBI  
+**Innovation**: ARKK, ARKW, ARKG  
+**International**: FXI, KWEB  
+**Sectors**: XLU, XLI, XLF, XLP, XLRE, XLE, XLY  
+**Commodities**: GLD  
 
-### Cryptocurrencies
-- **Bitcoin (BTC)**: Leading cryptocurrency
-- **Solana (SOL)**: High-performance blockchain
+### 🚀 High Growth Momentum (47 tickers)
+**Recent IPOs**: CRCL, ZETA, RKLB  
+**Growth Leaders**: PLTR, MELI, CRWD, UBER, SPOT  
+**Fintech**: SOFI, AFRM, COIN, HOOD, LC  
+**E-commerce**: SHOP, ABNB, CVNA, DASH  
+**SaaS/Cloud**: SNOW, HUBS, TWLO, MDB, DOCU  
+**Gaming/Social**: RBLX, DKNG, PINS, SNAP  
+**And many more emerging growth companies**
+
+### 💎 Compounders (25 tickers)
+**Mega-cap Quality**: MSFT, AAPL, GOOGL, AMZN  
+**Payment Leaders**: MA, V, AXP, PYPL  
+**Software**: MSFT, CRM, ADBE, NOW  
+**Consumer**: COST, WMT, HD, NKE  
+**Healthcare**: UNH, JNJ, PFE  
+**Industrials**: CAT, LMT, RTX  
+
+### 🌟 Mag7+ (12 tickers)
+**The Magnificent 7**: AAPL, MSFT, GOOGL, AMZN, NVDA, TSLA, META  
+**Plus**: CRM, NFLX, ADBE, NOW, UBER  
+
+### 🤖 AI Platform Basket (21 tickers)
+**AI Infrastructure**: NVDA, AMD, AVGO, QCOM  
+**Cloud AI**: MSFT, GOOGL, AMZN, CRM  
+**AI Software**: PLTR, SNOW, NOW, C3AI  
+**Semiconductors**: TSM, ASML, MU, AMAT  
+**Emerging AI**: SMCI, ARM, PATH, AI  
+
+### 💰 Cryptocurrencies (3 tickers)
+**Major Cryptos**: X:BTCUSD, X:SOLUSD, X:ETHUSD  
 
 ## 🛠️ Setup
 
@@ -144,27 +171,44 @@ Modify the `periods` object in `calculatePercentageChanges()` function to adjust
 ## 📊 Technical Implementation
 
 ### Data Flow
-1. **API Calls**: Fetch 10 years of historical data per asset
-2. **Calculations**: Compute EMAs, SMAs, and percentage changes
-3. **Rendering**: Display data with color coding and indicators
-4. **Sorting**: Client-side sorting for instant responsiveness
+1. **Optimized API Calls**: Grouped endpoint fetching with individual fallbacks
+2. **Advanced Calculations**: EMAs, SMAs, RSI, consecutive streaks, breakout scoring
+3. **Multi-Tab Rendering**: Dynamic content switching with preserved state
+4. **Real-time Updates**: Live pricing toggle with market hours detection
+5. **Intelligent Sorting**: Client-side sorting with visual feedback
 
 ### Architecture
-- **Frontend**: Vanilla HTML, CSS, JavaScript (no frameworks)
+- **Frontend**: Vanilla HTML, CSS, JavaScript (no frameworks needed)
 - **Backend**: Python HTTP server for local hosting
-- **Data Source**: Polygon.io REST API
-- **Styling**: Responsive CSS with hover effects and animations
+- **Data Source**: Polygon.io REST API with grouped optimization
+- **Styling**: Advanced CSS Grid with responsive 4-column layouts
+- **Performance**: Parallel processing and optimized API usage
+
+### Key Features Implemented
+- **New IPO Detection**: Special scoring for stocks with limited historical data
+- **Multi-Timeframe Analysis**: Weighted scoring across Daily/Weekly/Monthly periods
+- **Sector Portfolio Analytics**: Equal-weighted median-based returns
+- **Compact Gainers/Losers**: 4-column layout with optimized typography
+- **Champions System**: Persistent performer identification across timeframes
 
 ## 🤝 Contributing
 
-Feel free to submit issues, feature requests, or pull requests to improve the dashboard.
+This dashboard represents a comprehensive market analysis tool with advanced features:
 
-### Potential Enhancements
-- Add more technical indicators (RSI, MACD, Bollinger Bands)
-- Export data to CSV/Excel
-- Historical performance charts
+### Recent Major Updates
+- ✅ **Multi-Tab Dashboard**: 8 specialized analysis views
+- ✅ **Gainers/Losers Tab**: 4-column compact layout with multi-timeframe analysis
+- ✅ **Champions System**: Multi-timeframe consistency tracking
+- ✅ **Sector Analysis**: Equal-weighted portfolio performance metrics
+- ✅ **AI Platform Basket**: Dedicated AI/ML company tracking
+- ✅ **Advanced Typography**: Optimized for readability and space efficiency
+
+### Future Enhancement Ideas
+- Historical performance charts and trend visualization
+- Export functionality for analysis data
 - Alert system for threshold breaches
-- Portfolio tracking capabilities
+- Portfolio tracking with position sizing
+- Machine learning predictions based on technical patterns
 
 ## 📄 License
 
