@@ -1145,6 +1145,19 @@ th.drag-over .drag-indicator {
     padding: 25px;
     margin: 15px;
     box-shadow: 0 0 20px rgba(255, 215, 0, 0.2);
+    min-width: 600px;
+    max-width: 800px;
+}
+
+/* Make Champions columns wider */
+.gl-timeframe.champions .gl-column {
+    min-width: 280px;
+}
+
+/* Increase name width for Champions section */
+.gl-timeframe.champions .gl-name {
+    max-width: 180px;
+    font-size: 0.9rem;
 }
 
 .gl-timeframe.champions::after {

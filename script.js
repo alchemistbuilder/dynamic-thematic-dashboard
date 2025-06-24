@@ -3544,6 +3544,17 @@ class StockDashboard {
             let gainersScore = 0;
             let losersScore = 0;
             let appearances = 0;
+            
+            // Find the best timeframe for this stock (highest positive change for gainers, most negative for losers)
+            let bestTimeframe = '1d';
+            let bestChange = stock.changes['1d'];
+            
+            timeframes.forEach(timeframe => {
+                if (Math.abs(stock.changes[timeframe]) > Math.abs(bestChange)) {
+                    bestTimeframe = timeframe;
+                    bestChange = stock.changes[timeframe];
+                }
+            });
 
             timeframes.forEach((timeframe, index) => {
                 // Sort all stocks by this timeframe
@@ -3577,7 +3588,9 @@ class StockDashboard {
                 gainersScore,
                 losersScore,
                 appearances,
-                dominance: Math.max(gainersScore, losersScore)
+                dominance: Math.max(gainersScore, losersScore),
+                bestTimeframe,
+                bestChange
             };
         });
 
@@ -3604,7 +3617,6 @@ class StockDashboard {
 
     createChampionItem(stock, type) {
         const itemClass = type === 'gainer' ? 'gainer' : 'loser';
-        const score = type === 'gainer' ? stock.gainersScore : stock.losersScore;
         const displayName = SHORT_NAMES[stock.ticker] || stock.name || stock.ticker;
         
         // Determine badge based on appearances
@@ -3617,14 +3629,18 @@ class StockDashboard {
             badge = '<span class="champions-badge">2x</span>';
         }
 
+        // Use the best performing timeframe for the percentage
+        const bestChange = stock.bestTimeframe ? stock.changes[stock.bestTimeframe] : 0;
+        const changeClass = bestChange >= 0 ? 'positive' : 'negative';
+
         return `
             <div class="gl-item ${itemClass}">
                 <div class="gl-stock-info">
                     <div class="gl-ticker">${stock.ticker}${badge}</div>
                     <div class="gl-name">${displayName}</div>
                 </div>
-                <div class="gl-change" style="color: #ffd700; font-weight: 700;">
-                    Score: ${score}
+                <div class="gl-change ${changeClass}">
+                    ${bestChange >= 0 ? '+' : ''}${bestChange.toFixed(2)}%
                 </div>
             </div>
         `;
