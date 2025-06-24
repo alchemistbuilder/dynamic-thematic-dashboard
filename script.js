@@ -124,7 +124,7 @@ const COMPOUNDER_TICKERS = [
     'UNH'
 ];
 
-// AI Platform Basket tickers
+// AI Platform Basket tickers (unique tickers not in other categories)
 const AI_PLATFORM_TICKERS = [
     'VRT',   // Vertiv - Infrastructure & Energy
     'VST',   // Vistra - Infrastructure & Energy  
@@ -132,18 +132,18 @@ const AI_PLATFORM_TICKERS = [
     'LEU',   // Centrus Energy - Infrastructure & Energy
     'CRDO',  // Credo Technology - Networking & Connectivity
     'CIEN',  // Ciena - Networking & Connectivity
-    'META',  // Meta Platforms - Core AI & Big Tech
-    'NVDA',  // NVIDIA - Core AI & Big Tech
-    'MSFT',  // Microsoft - Core AI & Big Tech
+    // META in COMPOUNDER_TICKERS
+    // NVDA in MAG7_PLUS_TICKERS
+    // MSFT in COMPOUNDER_TICKERS
     'DUOL',  // Duolingo - AI Software & Applications
     'CRM',   // Salesforce - AI Software & Applications
     'MNDY',  // monday.com - AI Software & Applications
     'BASE',  // Couchbase - AI Software & Applications
-    'SNOW',  // Snowflake - Cloud Infrastructure & Data
+    // SNOW in GROWTH_TICKERS
     'DDOG',  // Datadog - Cloud Infrastructure & Data
     'PSTG',  // Pure Storage - Cloud Infrastructure & Data
     'CRWV',  // CoreWeave - Cloud Infrastructure & Data
-    'CRWD',  // CrowdStrike - AI-Driven Security
+    // CRWD in GROWTH_TICKERS
     'NET',   // Cloudflare - AI-Driven Security
     'SRAD',  // Sportradar - AI & Specialized Data
     'LRCX'   // Lam Research - Semiconductor Materials & Equipment
