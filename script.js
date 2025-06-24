@@ -2218,7 +2218,7 @@ class StockDashboard {
     renderMarketSummary() {
         // Ensure all datasets are loaded
         if (this.sectorData.size === 0 || this.growthData.size === 0 || 
-            this.compounderData.size === 0 || this.mag7Data.size === 0) {
+            this.compounderData.size === 0 || this.mag7Data.size === 0 || this.aiPlatformData.size === 0) {
             // Load data if not available
             this.loadData();
             return;
@@ -2229,6 +2229,7 @@ class StockDashboard {
         const growthArray = Array.from(this.growthData.values()).filter(data => data !== null);
         const compounderArray = Array.from(this.compounderData.values()).filter(data => data !== null);
         const mag7Array = Array.from(this.mag7Data.values()).filter(data => data !== null);
+        const aiPlatformArray = Array.from(this.aiPlatformData.values()).filter(data => data !== null);
 
         const scoredSector = sectorArray.map(data => ({
             ...data,
@@ -2266,8 +2267,26 @@ class StockDashboard {
             .slice(0, 5);
         this.populateStockList('growthBearishSummary', topGrowthBearish, 'bearish');
 
+        // AI Platform insights
+        const scoredAIPlatform = aiPlatformArray.map(data => ({
+            ...data,
+            bullishScore: this.calculateBullishScore(data),
+            bearishScore: this.calculateBearishScore(data),
+            performanceScore: this.calculatePerformanceScore(data)
+        }));
+
+        const topAIPlatformBullish = scoredAIPlatform
+            .sort((a, b) => b.bullishScore - a.bullishScore)
+            .slice(0, 5);
+        this.populateStockList('aiPlatformBullishSummary', topAIPlatformBullish, 'bullish');
+
+        const topAIPlatformBearish = scoredAIPlatform
+            .sort((a, b) => b.bearishScore - a.bearishScore)
+            .slice(0, 5);
+        this.populateStockList('aiPlatformBearishSummary', topAIPlatformBearish, 'bearish');
+
         // Overall best performers (combine all datasets)
-        const allScored = [...scoredSector, ...scoredGrowth, 
+        const allScored = [...scoredSector, ...scoredGrowth, ...scoredAIPlatform,
                           ...compounderArray.map(data => ({
                               ...data,
                               bullishScore: this.calculateBullishScore(data),
@@ -2292,7 +2311,7 @@ class StockDashboard {
     renderMarketIntelligence() {
         // Ensure all datasets are loaded
         if (this.sectorData.size === 0 || this.growthData.size === 0 || 
-            this.compounderData.size === 0 || this.mag7Data.size === 0) {
+            this.compounderData.size === 0 || this.mag7Data.size === 0 || this.aiPlatformData.size === 0) {
             // Load data if not available
             this.loadData();
             return;
@@ -2305,6 +2324,7 @@ class StockDashboard {
             ...Array.from(this.sectorData.values()),
             ...Array.from(this.growthData.values()),
             ...Array.from(this.compounderData.values()),
+            ...Array.from(this.aiPlatformData.values()),
             ...Array.from(this.mag7Data.values())
         ].filter(stock => stock !== null);
         
