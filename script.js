@@ -280,8 +280,87 @@ const GROWTH_NAMES = {
     'PINS': 'Pinterest Inc',
     'ASTS': 'AST SpaceMobile Inc',
     'ZETA': 'Zeta Global Holdings Corp',
-    'CRCL': 'Circle Internet Financial Ltd',
+    'CRCL': 'Circle Internet Group Inc',
     'RKLB': 'Rocket Lab USA Inc'
+};
+
+// Compounder stock names mapping
+const COMPOUNDER_NAMES = {
+    'MELI': 'MercadoLibre Inc',
+    'CDNS': 'Cadence Design Systems Inc',
+    'MSFT': 'Microsoft Corporation',
+    'CNSWF': 'Coinsquare Ltd',
+    'SNPS': 'Synopsys Inc',
+    'WMT': 'Walmart Inc',
+    'ISRG': 'Intuitive Surgical Inc',
+    'VEEV': 'Veeva Systems Inc',
+    'COST': 'Costco Wholesale Corporation',
+    'MA': 'Mastercard Incorporated',
+    'AXP': 'American Express Company',
+    'JPM': 'JPMorgan Chase & Co',
+    'BSX': 'Boston Scientific Corporation',
+    'V': 'Visa Inc',
+    'ASML': 'ASML Holding N.V.',
+    'META': 'Meta Platforms Inc',
+    'MCO': "Moody's Corporation",
+    'AMD': 'Advanced Micro Devices Inc',
+    'FCNCA': 'First Citizens BancShares Inc',
+    'AMZN': 'Amazon.com Inc',
+    'TDG': 'TransDigm Group Incorporated',
+    'GOOGL': 'Alphabet Inc',
+    'NVO': 'Novo Nordisk A/S',
+    'CMG': 'Chipotle Mexican Grill Inc',
+    'BRK.A': 'Berkshire Hathaway Inc',
+    'BX': 'Blackstone Inc',
+    'DHR': 'Danaher Corporation',
+    'ABBV': 'AbbVie Inc',
+    'LLY': 'Eli Lilly and Company',
+    'AAPL': 'Apple Inc',
+    'VRTX': 'Vertex Pharmaceuticals Incorporated',
+    'AMGN': 'Amgen Inc',
+    'REGN': 'Regeneron Pharmaceuticals Inc',
+    'TMO': 'Thermo Fisher Scientific Inc',
+    'UNH': 'UnitedHealth Group Incorporated'
+};
+
+// AI Platform stock names mapping
+const AI_PLATFORM_NAMES = {
+    'VRT': 'Vertiv Holdings Co',
+    'VST': 'Vistra Corp',
+    'CEG': 'Constellation Energy Corporation',
+    'LEU': 'Centrus Energy Corp',
+    'CRDO': 'Credo Technology Group Holding Ltd',
+    'CIEN': 'Ciena Corporation',
+    'META': 'Meta Platforms Inc',
+    'NVDA': 'NVIDIA Corporation',
+    'MSFT': 'Microsoft Corporation',
+    'DUOL': 'Duolingo Inc',
+    'CRM': 'Salesforce Inc',
+    'MNDY': 'monday.com Ltd',
+    'BASE': 'Couchbase Inc',
+    'SNOW': 'Snowflake Inc',
+    'DDOG': 'Datadog Inc',
+    'PSTG': 'Pure Storage Inc',
+    'CRWV': 'CoreWeave Inc',
+    'CRWD': 'CrowdStrike Holdings Inc',
+    'NET': 'Cloudflare Inc',
+    'SRAD': 'Sportradar Group AG',
+    'LRCX': 'Lam Research Corporation'
+};
+
+// Mag7+ stock names mapping
+const MAG7_PLUS_NAMES = {
+    'NFLX': 'Netflix Inc',
+    'MSFT': 'Microsoft Corporation',
+    'GOOGL': 'Alphabet Inc',
+    'TSLA': 'Tesla Inc',
+    'NVDA': 'NVIDIA Corporation',
+    'AAPL': 'Apple Inc',
+    'AMZN': 'Amazon.com Inc',
+    'META': 'Meta Platforms Inc',
+    'AVGO': 'Broadcom Inc',
+    'CRWD': 'CrowdStrike Holdings Inc',
+    'NOW': 'ServiceNow Inc'
 };
 
 class StockDashboard {
@@ -1005,7 +1084,7 @@ class StockDashboard {
             
             return {
                 ticker,
-                name: STOCK_NAMES[ticker] || ticker,
+                name: STOCK_NAMES[ticker] || GROWTH_NAMES[ticker] || COMPOUNDER_NAMES[ticker] || AI_PLATFORM_NAMES[ticker] || MAG7_PLUS_NAMES[ticker] || ticker,
                 currentPrice,
                 changes,
                 movingAverages,
@@ -1249,7 +1328,7 @@ class StockDashboard {
 
         return {
             ticker,
-            name: STOCK_NAMES[ticker] || GROWTH_NAMES[ticker] || ticker,
+            name: STOCK_NAMES[ticker] || GROWTH_NAMES[ticker] || COMPOUNDER_NAMES[ticker] || AI_PLATFORM_NAMES[ticker] || MAG7_PLUS_NAMES[ticker] || ticker,
             currentPrice,
             liberationChange,
             changes,
