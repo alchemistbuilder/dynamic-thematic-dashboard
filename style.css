@@ -1129,7 +1129,7 @@ th.drag-over .drag-indicator {
 
 .gl-timeframes {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 400px));
+    grid-template-columns: repeat(auto-fit, minmax(450px, 500px));
     gap: 40px;
     margin-top: 20px;
     justify-content: center;
@@ -1168,10 +1168,10 @@ th.drag-over .drag-indicator {
 .gl-timeframe {
     background: rgba(30, 30, 30, 0.5);
     border-radius: 8px;
-    padding: 20px;
+    padding: 25px;
     border: 1px solid rgba(255, 255, 255, 0.05);
     margin-bottom: 10px;
-    max-width: 400px;
+    max-width: 500px;
     overflow: hidden;
 }
 
@@ -1185,7 +1185,7 @@ th.drag-over .drag-indicator {
 .gl-column {
     background: rgba(20, 20, 20, 0.6);
     border-radius: 6px;
-    padding: 15px;
+    padding: 20px;
     min-width: 0;
     overflow: hidden;
 }
@@ -1218,7 +1218,7 @@ th.drag-over .drag-indicator {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 15px;
+    padding: 15px 18px;
     background: rgba(255, 255, 255, 0.02);
     border-radius: 6px;
     transition: all 0.2s ease;
@@ -1245,13 +1245,13 @@ th.drag-over .drag-indicator {
 .gl-ticker {
     font-weight: 600;
     color: rgba(255, 255, 255, 0.9);
-    font-size: 0.95rem;
+    font-size: 1.05rem;
 }
 
 .gl-name {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     color: rgba(255, 255, 255, 0.6);
-    max-width: 100px;
+    max-width: 140px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1269,7 +1269,7 @@ th.drag-over .drag-indicator {
 
 .gl-change {
     font-weight: 600;
-    font-size: 0.95rem;
+    font-size: 1.05rem;
     flex-shrink: 0;
     white-space: nowrap;
 }
