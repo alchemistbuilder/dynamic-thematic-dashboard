@@ -3496,7 +3496,7 @@ class StockDashboard {
         
         return `
             <div class="gl-item ${itemClass}">
-                <div>
+                <div class="gl-stock-info">
                     <div class="gl-ticker">${stock.ticker}</div>
                     <div class="gl-name">${displayName}</div>
                 </div>
@@ -3619,7 +3619,7 @@ class StockDashboard {
 
         return `
             <div class="gl-item ${itemClass}">
-                <div>
+                <div class="gl-stock-info">
                     <div class="gl-ticker">${stock.ticker}${badge}</div>
                     <div class="gl-name">${displayName}</div>
                 </div>

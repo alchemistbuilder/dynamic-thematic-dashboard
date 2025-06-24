@@ -1129,9 +1129,10 @@ th.drag-over .drag-indicator {
 
 .gl-timeframes {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(350px, 400px));
     gap: 40px;
     margin-top: 20px;
+    justify-content: center;
 }
 
 /* Champions timeframe styling - fits in grid but with special border */
@@ -1170,6 +1171,8 @@ th.drag-over .drag-indicator {
     padding: 20px;
     border: 1px solid rgba(255, 255, 255, 0.05);
     margin-bottom: 10px;
+    max-width: 400px;
+    overflow: hidden;
 }
 
 .gl-columns {
@@ -1183,6 +1186,8 @@ th.drag-over .drag-indicator {
     background: rgba(20, 20, 20, 0.6);
     border-radius: 6px;
     padding: 15px;
+    min-width: 0;
+    overflow: hidden;
 }
 
 .gl-column.gainers {
@@ -1218,6 +1223,10 @@ th.drag-over .drag-indicator {
     border-radius: 6px;
     transition: all 0.2s ease;
     margin-bottom: 3px;
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
 }
 
 .gl-item:hover {
@@ -1242,15 +1251,27 @@ th.drag-over .drag-indicator {
 .gl-name {
     font-size: 0.75rem;
     color: rgba(255, 255, 255, 0.6);
-    max-width: 120px;
+    max-width: 100px;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+    flex-shrink: 1;
+    min-width: 0;
+}
+
+.gl-stock-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    margin-right: 10px;
 }
 
 .gl-change {
     font-weight: 600;
     font-size: 0.95rem;
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .gl-change.positive {
