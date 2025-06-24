@@ -302,29 +302,39 @@ th, td {
     background: rgba(255, 255, 255, 0.01);
 }
 
-/* Sticky columns for ticker and name */
-th:nth-child(1), th:nth-child(2),
-td:nth-child(1), td:nth-child(2) {
-    position: sticky;
-    background: rgba(255, 255, 255, 0.05);
-    z-index: 5;
-    border-right: 2px solid rgba(255, 255, 255, 0.15);
+/* FIXED: Sticky columns for ticker and name */
+table th:nth-child(1), 
+table th:nth-child(2),
+table td:nth-child(1), 
+table td:nth-child(2) {
+    position: sticky !important;
+    background: #2d2d2d !important;
+    border-right: 3px solid rgba(0, 212, 170, 0.5) !important;
+    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.5) !important;
 }
 
 /* Ticker column (first) */
-th:nth-child(1), td:nth-child(1) {
-    left: 0;
-    z-index: 6;
-    min-width: 80px;
-    width: 80px;
+table th:nth-child(1), 
+table td:nth-child(1) {
+    left: 0px !important;
+    z-index: 20 !important;
+    width: 80px !important;
+    min-width: 80px !important;
+    max-width: 80px !important;
+    text-align: left !important;
+    padding: 12px 8px 12px 16px !important;
 }
 
 /* Name column (second) */
-th:nth-child(2), td:nth-child(2) {
-    left: 80px; /* Width of ticker column */
-    z-index: 5;
-    min-width: 200px;
-    width: 200px;
+table th:nth-child(2), 
+table td:nth-child(2) {
+    left: 80px !important;
+    z-index: 19 !important;
+    width: 240px !important;
+    min-width: 240px !important;
+    max-width: 240px !important;
+    text-align: left !important;
+    padding: 12px 8px 12px 16px !important;
 }
 
 th {
@@ -341,11 +351,11 @@ th {
 }
 
 /* Enhanced sticky header styling for ticker and name columns */
-th:nth-child(1), th:nth-child(2) {
-    background: rgba(255, 255, 255, 0.08);
-    z-index: 15; /* Higher than regular headers */
-    backdrop-filter: blur(10px);
-    box-shadow: 2px 0 8px rgba(0, 0, 0, 0.2);
+table th:nth-child(1), 
+table th:nth-child(2) {
+    background: #1e1e1e !important; /* Darker solid background for headers */
+    z-index: 25 !important; /* Higher than data cells */
+    border-bottom: 2px solid rgba(0, 212, 170, 0.4) !important;
 }
 
 th:hover {
@@ -439,6 +449,12 @@ tbody tr:hover {
     transition: all 0.2s ease;
 }
 
+/* Ensure sticky columns maintain their background on row hover */
+table tbody tr:hover td:nth-child(1),
+table tbody tr:hover td:nth-child(2) {
+    background: #2d2d2d !important;
+}
+
 /* Color coding for trends */
 .bullish {
     background: rgba(0, 212, 170, 0.15) !important;
@@ -485,23 +501,22 @@ tbody tr:hover {
 }
 
 .ticker-cell {
-    font-weight: 600;
-    text-align: left;
-    padding-left: 16px;
-    color: #ffffff;
-    letter-spacing: 0.02em;
-    background: rgba(255, 255, 255, 0.05) !important;
+    font-weight: 600 !important;
+    text-align: left !important;
+    color: #ffffff !important;
+    letter-spacing: 0.02em !important;
+    background: #2d2d2d !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
 .name-cell {
-    text-align: left;
-    padding-left: 16px;
-    max-width: 200px;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    color: rgba(255, 255, 255, 0.8);
-    font-weight: 400;
-    background: rgba(255, 255, 255, 0.05) !important;
+    text-align: left !important;
+    color: rgba(255, 255, 255, 0.8) !important;
+    font-weight: 400 !important;
+    background: #2d2d2d !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }
 
 .price-cell {
@@ -831,4 +846,523 @@ th.drag-over .drag-indicator {
 .trend-description {
     color: rgba(255, 255, 255, 0.7);
     font-size: 0.8rem;
+}
+
+/* Market Intelligence Styles */
+.intelligence-content {
+    padding: 24px;
+}
+
+.intelligence-content h3 {
+    color: #ffffff;
+    font-size: 1.8rem;
+    font-weight: 300;
+    margin-bottom: 8px;
+    text-align: center;
+    letter-spacing: -0.02em;
+}
+
+.intelligence-subtitle {
+    color: rgba(255, 255, 255, 0.7);
+    text-align: center;
+    margin-bottom: 32px;
+    font-style: italic;
+}
+
+.intelligence-section {
+    margin-bottom: 40px;
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    padding: 24px;
+}
+
+.intelligence-header {
+    margin-bottom: 20px;
+}
+
+.intelligence-header h4 {
+    color: #ffffff;
+    font-size: 1.1rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.intelligence-description {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    margin: 0;
+    font-style: italic;
+}
+
+.intelligence-grid {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.grid-header {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr 1fr;
+    gap: 16px;
+    background: rgba(255, 255, 255, 0.08);
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 0.85rem;
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.intelligence-row {
+    display: grid;
+    grid-template-columns: 80px 1fr 1fr 1fr;
+    gap: 16px;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.9rem;
+    transition: background 0.2s ease;
+}
+
+.intelligence-row:hover {
+    background: rgba(255, 255, 255, 0.04);
+}
+
+.intelligence-row:last-child {
+    border-bottom: none;
+}
+
+.intelligence-ticker {
+    font-weight: 600;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+}
+
+.intelligence-metric {
+    color: rgba(255, 255, 255, 0.8);
+}
+
+.intelligence-metric.positive {
+    color: #00d4aa;
+    font-weight: 500;
+}
+
+.intelligence-metric.negative {
+    color: #ef5350;
+    font-weight: 500;
+}
+
+.intelligence-metric.neutral {
+    color: #ffc107;
+    font-weight: 500;
+}
+
+/* Side Panel Intelligence Styles */
+.intelligence-stat {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    line-height: 1.4;
+}
+
+.intelligence-pick {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    border-left: 3px solid #00d4aa;
+}
+
+.intelligence-pick .pick-ticker {
+    font-weight: 600;
+    color: #ffffff;
+    display: block;
+    margin-bottom: 4px;
+}
+
+.intelligence-pick .pick-reason {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.8rem;
+}
+
+/* Breakout Hunter Styles */
+.breakout-hunter-grid {
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.breakout-grid-header {
+    display: grid;
+    grid-template-columns: 70px 160px 60px 50px 40px 40px 40px 40px 40px 40px 50px;
+    gap: 6px;
+    background: rgba(255, 193, 7, 0.15);
+    padding: 12px 16px;
+    font-weight: 600;
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.9);
+    border-bottom: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.breakout-hunter-row {
+    display: grid;
+    grid-template-columns: 70px 160px 60px 50px 40px 40px 40px 40px 40px 40px 50px;
+    gap: 6px;
+    padding: 10px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    font-size: 0.8rem;
+    transition: background 0.2s ease;
+    align-items: center;
+}
+
+.breakout-hunter-row:hover {
+    background: rgba(255, 193, 7, 0.08);
+}
+
+.breakout-hunter-row:last-child {
+    border-bottom: none;
+}
+
+.breakout-score {
+    font-weight: 700;
+    font-size: 0.9rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    text-align: center;
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.breakout-score.high {
+    background: rgba(0, 212, 170, 0.2);
+    color: #00d4aa;
+}
+
+.breakout-score.medium {
+    background: rgba(255, 193, 7, 0.2);
+    color: #ffc107;
+}
+
+.breakout-score.low {
+    background: rgba(239, 83, 80, 0.15);
+    color: #ef5350;
+}
+
+.breakout-criteria {
+    text-align: center;
+    font-weight: 500;
+    padding: 2px 4px;
+    border-radius: 3px;
+}
+
+.breakout-criteria.strong {
+    background: rgba(0, 212, 170, 0.15);
+    color: #00d4aa;
+}
+
+.breakout-criteria.medium {
+    background: rgba(255, 193, 7, 0.15);
+    color: #ffc107;
+}
+
+.breakout-criteria.weak {
+    background: rgba(239, 83, 80, 0.1);
+    color: #ef5350;
+}
+
+.breakout-ticker {
+    font-weight: 700;
+    color: #ffffff;
+    letter-spacing: 0.02em;
+}
+
+.breakout-name {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.8rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+/* Gainers/Losers Tab Styles */
+.gainers-losers-container {
+    padding: 20px;
+    max-width: 1800px;
+    margin: 0 auto;
+}
+
+.gl-section {
+    margin-bottom: 40px;
+    background: rgba(40, 40, 40, 0.4);
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.gl-section.overall-section {
+    background: rgba(40, 40, 40, 0.6);
+    border: 2px solid rgba(0, 212, 170, 0.3);
+    margin-bottom: 50px;
+}
+
+.gl-section h2 {
+    color: #00d4aa;
+    font-size: 1.8rem;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.gl-section h3 {
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 1.3rem;
+    margin-bottom: 15px;
+}
+
+.gl-section h4 {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 1.1rem;
+    margin-bottom: 10px;
+}
+
+.gl-timeframes {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 30px;
+}
+
+/* Champions timeframe styling - fits in grid but with special border */
+.gl-timeframe.champions {
+    /* Ensure the border encompasses the entire champions timeframe */
+    position: relative;
+    border: 1px solid rgba(255, 215, 0, 0.6);
+    border-radius: 12px;
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 193, 7, 0.05) 100%);
+}
+
+.gl-timeframe.champions::after {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    border: 2px solid rgba(255, 215, 0, 0.8);
+    border-radius: 14px;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.gl-timeframes.compact {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.gl-timeframe {
+    background: rgba(30, 30, 30, 0.5);
+    border-radius: 8px;
+    padding: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.gl-columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.gl-column {
+    background: rgba(20, 20, 20, 0.6);
+    border-radius: 6px;
+    padding: 10px;
+}
+
+.gl-column.gainers {
+    border: 1px solid rgba(0, 212, 170, 0.2);
+}
+
+.gl-column.losers {
+    border: 1px solid rgba(239, 83, 80, 0.2);
+}
+
+.gl-column h4 {
+    font-size: 0.9rem;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+.gl-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.gl-list.compact {
+    gap: 5px;
+}
+
+.gl-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.02);
+    border-radius: 4px;
+    transition: all 0.2s ease;
+}
+
+.gl-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    transform: translateX(3px);
+}
+
+.gl-item.gainer {
+    border-left: 3px solid #00d4aa;
+}
+
+.gl-item.loser {
+    border-left: 3px solid #ef5350;
+}
+
+.gl-ticker {
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+    font-size: 0.95rem;
+}
+
+.gl-name {
+    font-size: 0.75rem;
+    color: rgba(255, 255, 255, 0.6);
+    max-width: 120px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.gl-change {
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.gl-change.positive {
+    color: #00d4aa;
+}
+
+.gl-change.negative {
+    color: #ef5350;
+}
+
+.gl-sections-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 30px;
+}
+
+/* Compact styles for section-specific lists */
+.gl-timeframes.compact .gl-timeframe {
+    padding: 10px;
+}
+
+.gl-timeframes.compact h4 {
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.gl-timeframes.compact .gl-columns {
+    gap: 10px;
+}
+
+.gl-timeframes.compact .gl-column {
+    padding: 8px;
+}
+
+.gl-timeframes.compact .gl-item {
+    padding: 5px 8px;
+    font-size: 0.85rem;
+}
+
+.gl-timeframes.compact .gl-ticker {
+    font-size: 0.85rem;
+}
+
+.gl-timeframes.compact .gl-change {
+    font-size: 0.85rem;
+}
+
+/* Empty state */
+.gl-empty {
+    text-align: center;
+    color: rgba(255, 255, 255, 0.4);
+    padding: 20px;
+    font-style: italic;
+}
+
+
+/* Market Status Indicator */
+.market-status-indicator {
+    text-align: center;
+    margin-bottom: 20px;
+    padding: 8px 16px;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.market-status-indicator .status-text {
+    font-size: 0.9rem;
+    color: rgba(255, 255, 255, 0.8);
+    font-style: italic;
+}
+
+.market-status-indicator.open {
+    background: rgba(0, 212, 170, 0.15);
+    border-color: rgba(0, 212, 170, 0.3);
+}
+
+.market-status-indicator.open .status-text {
+    color: #00d4aa;
+}
+
+.market-status-indicator.closed {
+    background: rgba(239, 83, 80, 0.15);
+    border-color: rgba(239, 83, 80, 0.3);
+}
+
+.market-status-indicator.closed .status-text {
+    color: #ef5350;
+}
+
+
+/* Multi-Timeframe Champions styling */
+
+.gl-timeframe.champions::before {
+    content: '👑';
+    position: absolute;
+    top: -8px;
+    right: -8px;
+    font-size: 1.5rem;
+    background: rgba(255, 215, 0, 0.9);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px solid #ffd700;
+}
+
+.gl-timeframe.champions h3 {
+    color: #ffd700;
+    text-shadow: 0 0 10px rgba(255, 215, 0, 0.5);
+}
+
+.champions-badge {
+    background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+    color: #1a1a1a;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 700;
+    margin-left: 4px;
+    text-shadow: none;
 }

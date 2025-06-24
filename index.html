@@ -15,6 +15,11 @@
                     <button class="tab-btn active" data-tab="market-summary">Market Summary</button>
                     <button class="tab-btn" data-tab="sector-overview">Sector Overview</button>
                     <button class="tab-btn" data-tab="high-growth">High Growth Momentum</button>
+                    <button class="tab-btn" data-tab="compounder">Compounder</button>
+                    <button class="tab-btn" data-tab="mag7-plus">Mag7+</button>
+                    <button class="tab-btn" data-tab="ai-platform">AI Platform Basket</button>
+                    <button class="tab-btn" data-tab="market-intelligence">Market Intelligence</button>
+                    <button class="tab-btn" data-tab="gainers-losers">Gainers/Losers</button>
                 </div>
                 <div class="controls">
                     <button id="refreshBtn" class="refresh-btn">Refresh Data</button>
@@ -161,6 +166,8 @@
                             <th class="sortable" data-column="currentPrice">Price</th>
                             <th class="sortable" data-column="ytd">% YTD</th>
                             <th class="sortable" data-column="1d">%1 D</th>
+                            <th class="sortable" data-column="gapSignal">Gap Signal</th>
+                            <th class="sortable" data-column="volumeSignal">Volume Signal</th>
                             <th class="sortable" data-column="1w">% 1 Wk</th>
                             <th class="sortable" data-column="2w">%2 Wk</th>
                             <th class="sortable" data-column="1m">%1 Mo</th>
@@ -237,6 +244,8 @@
                             <th class="sortable" data-column="currentPrice">Price</th>
                             <th class="sortable" data-column="ytd">% YTD</th>
                             <th class="sortable" data-column="1d">%1 D</th>
+                            <th class="sortable" data-column="gapSignal">Gap Signal</th>
+                            <th class="sortable" data-column="volumeSignal">Volume Signal</th>
                             <th class="sortable" data-column="1w">% 1 Wk</th>
                             <th class="sortable" data-column="2w">%2 Wk</th>
                             <th class="sortable" data-column="1m">%1 Mo</th>
@@ -273,12 +282,786 @@
                 </div>
             </div>
         </div>
+
+        <!-- Compounder Tab -->
+        <div class="tab-content" id="compounder">
+            <div class="main-content">
+                <div class="side-panel" id="sidePanelCompounder">
+                    <h3>📊 Compounder Insights</h3>
+                    
+                    <div class="insight-section">
+                        <h4>🚀 Most Bullish (Top 5)</h4>
+                        <div id="bullishListCompounder" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>⚠️ Most Bearish (Top 5)</h4>
+                        <div id="bearishListCompounder" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>📈 Best Performers (Top 5)</h4>
+                        <div id="performersListCompounder" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>💎 Breakout Candidates (Top 5)</h4>
+                        <div id="breakoutListCompounder" class="stock-list"></div>
+                    </div>
+                </div>
+                
+                <div class="dashboard">
+                    <table id="compounderTable">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-column="ticker">Ticker</th>
+                            <th class="sortable" data-column="name">Name</th>
+                            <th class="sortable draggable" data-column="liberationChange" draggable="true">
+                                <div class="drag-indicator"></div>% change since Liberation
+                            </th>
+                            <th class="sortable" data-column="currentPrice">Price</th>
+                            <th class="sortable" data-column="ytd">% YTD</th>
+                            <th class="sortable" data-column="1d">%1 D</th>
+                            <th class="sortable" data-column="gapSignal">Gap Signal</th>
+                            <th class="sortable" data-column="volumeSignal">Volume Signal</th>
+                            <th class="sortable" data-column="1w">% 1 Wk</th>
+                            <th class="sortable" data-column="2w">%2 Wk</th>
+                            <th class="sortable" data-column="1m">%1 Mo</th>
+                            <th class="sortable" data-column="2m">%2 Mo</th>
+                            <th class="sortable" data-column="3m">%3 Mo</th>
+                            <th class="sortable" data-column="6m">%6Mo</th>
+                            <th class="sortable" data-column="1y">%1YR</th>
+                            <th class="sortable" data-column="deltaFrom52WeekHigh">Δ 52w H</th>
+                            <th class="sortable" data-column="above50SMA">>50 SMA</th>
+                            <th class="sortable" data-column="above100SMA">>100 SMA</th>
+                            <th class="sortable" data-column="above200SMA">>200 SMA</th>
+                            <th class="sortable" data-column="sma50Above100Above200">50>100>200?</th>
+                            <th class="sortable" data-column="above8EMA">>8d EMA</th>
+                            <th class="sortable" data-column="above13EMA">>13d EMA</th>
+                            <th class="sortable" data-column="above21EMA">>21d EMA</th>
+                            <th class="sortable" data-column="ema8Above13Above21">ema 8>13>21</th>
+                            <th class="sortable" data-column="sma50">50 SMA</th>
+                            <th class="sortable" data-column="sma100">100 SMA</th>
+                            <th class="sortable" data-column="sma200">200 SMA</th>
+                            <th class="sortable" data-column="ema8">8d EMA</th>
+                            <th class="sortable" data-column="ema13">13d EMA</th>
+                            <th class="sortable" data-column="ema21">21d EMA</th>
+                            <th class="sortable" data-column="rsi14">14D RSI</th>
+                            <th class="sortable" data-column="rsi30">30D RSI</th>
+                            <th class="sortable" data-column="nextEarnings">Next Earnings</th>
+                            <th class="sortable" data-column="daysToEarnings">Days to Earnings</th>
+                            <th class="sortable" data-column="consecutiveUpDays"># of Days Up</th>
+                        </tr>
+                    </thead>
+                    <tbody id="compounderTableBody">
+                        <!-- Compounder stock data will be populated here -->
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mag7+ Tab -->
+        <div class="tab-content" id="mag7-plus">
+            <div class="main-content">
+                <div class="side-panel" id="sidePanelMag7">
+                    <h3>📊 Mag7+ Insights</h3>
+                    
+                    <div class="insight-section">
+                        <h4>🚀 Most Bullish (Top 5)</h4>
+                        <div id="bullishListMag7" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>⚠️ Most Bearish (Top 5)</h4>
+                        <div id="bearishListMag7" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>📈 Best Performers (Top 5)</h4>
+                        <div id="performersListMag7" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>💎 Breakout Candidates (Top 5)</h4>
+                        <div id="breakoutListMag7" class="stock-list"></div>
+                    </div>
+                </div>
+                
+                <div class="dashboard">
+                    <table id="mag7Table">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-column="ticker">Ticker</th>
+                            <th class="sortable" data-column="name">Name</th>
+                            <th class="sortable draggable" data-column="liberationChange" draggable="true">
+                                <div class="drag-indicator"></div>% change since Liberation
+                            </th>
+                            <th class="sortable" data-column="currentPrice">Price</th>
+                            <th class="sortable" data-column="ytd">% YTD</th>
+                            <th class="sortable" data-column="1d">%1 D</th>
+                            <th class="sortable" data-column="gapSignal">Gap Signal</th>
+                            <th class="sortable" data-column="volumeSignal">Volume Signal</th>
+                            <th class="sortable" data-column="1w">% 1 Wk</th>
+                            <th class="sortable" data-column="2w">%2 Wk</th>
+                            <th class="sortable" data-column="1m">%1 Mo</th>
+                            <th class="sortable" data-column="2m">%2 Mo</th>
+                            <th class="sortable" data-column="3m">%3 Mo</th>
+                            <th class="sortable" data-column="6m">%6Mo</th>
+                            <th class="sortable" data-column="1y">%1YR</th>
+                            <th class="sortable" data-column="deltaFrom52WeekHigh">Δ 52w H</th>
+                            <th class="sortable" data-column="above50SMA">>50 SMA</th>
+                            <th class="sortable" data-column="above100SMA">>100 SMA</th>
+                            <th class="sortable" data-column="above200SMA">>200 SMA</th>
+                            <th class="sortable" data-column="sma50Above100Above200">50>100>200?</th>
+                            <th class="sortable" data-column="above8EMA">>8d EMA</th>
+                            <th class="sortable" data-column="above13EMA">>13d EMA</th>
+                            <th class="sortable" data-column="above21EMA">>21d EMA</th>
+                            <th class="sortable" data-column="ema8Above13Above21">ema 8>13>21</th>
+                            <th class="sortable" data-column="sma50">50 SMA</th>
+                            <th class="sortable" data-column="sma100">100 SMA</th>
+                            <th class="sortable" data-column="sma200">200 SMA</th>
+                            <th class="sortable" data-column="ema8">8d EMA</th>
+                            <th class="sortable" data-column="ema13">13d EMA</th>
+                            <th class="sortable" data-column="ema21">21d EMA</th>
+                            <th class="sortable" data-column="rsi14">14D RSI</th>
+                            <th class="sortable" data-column="rsi30">30D RSI</th>
+                            <th class="sortable" data-column="nextEarnings">Next Earnings</th>
+                            <th class="sortable" data-column="daysToEarnings">Days to Earnings</th>
+                            <th class="sortable" data-column="consecutiveUpDays"># of Days Up</th>
+                        </tr>
+                    </thead>
+                    <tbody id="mag7TableBody">
+                        <!-- Mag7+ stock data will be populated here -->
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- AI Platform Basket Tab -->
+        <div class="tab-content" id="ai-platform">
+            <div class="main-content">
+                <div class="side-panel" id="sidePanelAIPlatform">
+                    <h3>🤖 AI Platform Insights</h3>
+                    
+                    <div class="insight-section">
+                        <h4>🚀 Most Bullish (Top 5)</h4>
+                        <div id="bullishListAIPlatform" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>⚠️ Most Bearish (Top 5)</h4>
+                        <div id="bearishListAIPlatform" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>📈 Best Performers (Top 5)</h4>
+                        <div id="performersListAIPlatform" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>💎 Breakout Candidates (Top 5)</h4>
+                        <div id="breakoutListAIPlatform" class="stock-list"></div>
+                    </div>
+                </div>
+                
+                <div class="dashboard">
+                    <table id="aiPlatformTable">
+                    <thead>
+                        <tr>
+                            <th class="sortable" data-column="ticker">Ticker</th>
+                            <th class="sortable" data-column="name">Name</th>
+                            <th class="sortable draggable" data-column="liberationChange" draggable="true">
+                                <div class="drag-indicator"></div>% change since Liberation
+                            </th>
+                            <th class="sortable" data-column="currentPrice">Price</th>
+                            <th class="sortable" data-column="ytd">% YTD</th>
+                            <th class="sortable" data-column="1d">%1 D</th>
+                            <th class="sortable" data-column="gapSignal">Gap Signal</th>
+                            <th class="sortable" data-column="volumeSignal">Volume Signal</th>
+                            <th class="sortable" data-column="1w">% 1 Wk</th>
+                            <th class="sortable" data-column="2w">%2 Wk</th>
+                            <th class="sortable" data-column="1m">%1 Mo</th>
+                            <th class="sortable" data-column="2m">%2 Mo</th>
+                            <th class="sortable" data-column="3m">%3 Mo</th>
+                            <th class="sortable" data-column="6m">%6Mo</th>
+                            <th class="sortable" data-column="1y">%1YR</th>
+                            <th class="sortable" data-column="deltaFrom52WeekHigh">Δ 52w H</th>
+                            <th class="sortable" data-column="above50SMA">>50 SMA</th>
+                            <th class="sortable" data-column="above100SMA">>100 SMA</th>
+                            <th class="sortable" data-column="above200SMA">>200 SMA</th>
+                            <th class="sortable" data-column="sma50Above100Above200">50>100>200?</th>
+                            <th class="sortable" data-column="above8EMA">>8d EMA</th>
+                            <th class="sortable" data-column="above13EMA">>13d EMA</th>
+                            <th class="sortable" data-column="above21EMA">>21d EMA</th>
+                            <th class="sortable" data-column="ema8Above13Above21">ema 8>13>21</th>
+                            <th class="sortable" data-column="sma50">50 SMA</th>
+                            <th class="sortable" data-column="sma100">100 SMA</th>
+                            <th class="sortable" data-column="sma200">200 SMA</th>
+                            <th class="sortable" data-column="ema8">8d EMA</th>
+                            <th class="sortable" data-column="ema13">13d EMA</th>
+                            <th class="sortable" data-column="ema21">21d EMA</th>
+                            <th class="sortable" data-column="rsi14">14D RSI</th>
+                            <th class="sortable" data-column="rsi30">30D RSI</th>
+                            <th class="sortable" data-column="nextEarnings">Next Earnings</th>
+                            <th class="sortable" data-column="daysToEarnings">Days to Earnings</th>
+                            <th class="sortable" data-column="consecutiveUpDays"># of Days Up</th>
+                        </tr>
+                    </thead>
+                    <tbody id="aiPlatformTableBody">
+                        <!-- AI Platform stock data will be populated here -->
+                    </tbody>
+                </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Market Intelligence Tab -->
+        <div class="tab-content" id="market-intelligence">
+            <div class="main-content">
+                <div class="side-panel" id="sidePanelIntelligence">
+                    <h3>🧠 Intelligence Overview</h3>
+                    
+                    <div class="summary-section">
+                        <h4>📊 Analysis Summary</h4>
+                        <div class="insight-section">
+                            <h5>🔍 Total Opportunities</h5>
+                            <div id="totalOpportunities" class="intelligence-stat">Loading...</div>
+                        </div>
+                        <div class="insight-section">
+                            <h5>🎯 Strongest Signal</h5>
+                            <div id="strongestSignal" class="intelligence-stat">Loading...</div>
+                        </div>
+                        <div class="insight-section">
+                            <h5>⚡ Market Regime</h5>
+                            <div id="marketRegime" class="intelligence-stat">Loading...</div>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-section">
+                        <h4>🏆 Top Picks</h4>
+                        <div class="insight-section">
+                            <h5>🥇 Best Sharpe Ratio</h5>
+                            <div id="topSharpe" class="intelligence-pick">Loading...</div>
+                        </div>
+                        <div class="insight-section">
+                            <h5>🚀 Best Momentum</h5>
+                            <div id="topMomentum" class="intelligence-pick">Loading...</div>
+                        </div>
+                        <div class="insight-section">
+                            <h5>🥷 Best Stealth</h5>
+                            <div id="topStealth" class="intelligence-pick">Loading...</div>
+                        </div>
+                        <div class="insight-section">
+                            <h5>🚀 Top Breakout</h5>
+                            <div id="topBreakout" class="intelligence-pick">Loading...</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="dashboard">
+                    <div class="intelligence-content">
+                        <h3>🧠 Market Intelligence Analysis</h3>
+                        <p class="intelligence-subtitle">Advanced pattern recognition and alpha discovery across all datasets</p>
+                        
+                        <!-- High Sharpe Ratio Section -->
+                        <div class="intelligence-section">
+                            <div class="intelligence-header">
+                                <h4>🎯 High Sharpe Ratio Candidates</h4>
+                                <p class="intelligence-description">Strong returns with controlled volatility - the holy grail of risk-adjusted performance</p>
+                            </div>
+                            <div class="intelligence-grid" id="highSharpeGrid">
+                                <div class="grid-header">
+                                    <span>Ticker</span>
+                                    <span>Liberation %</span>
+                                    <span>1M Volatility</span>
+                                    <span>Sharpe Score</span>
+                                </div>
+                                <div id="highSharpeList">Loading...</div>
+                            </div>
+                        </div>
+
+                        <!-- Momentum Acceleration Section -->
+                        <div class="intelligence-section">
+                            <div class="intelligence-header">
+                                <h4>🚀 Momentum Acceleration Plays</h4>
+                                <p class="intelligence-description">Stocks showing accelerating momentum - recent performance exceeding longer-term trends</p>
+                            </div>
+                            <div class="intelligence-grid" id="momentumAccelGrid">
+                                <div class="grid-header">
+                                    <span>Ticker</span>
+                                    <span>1W %</span>
+                                    <span>1M %</span>
+                                    <span>Up Days</span>
+                                </div>
+                                <div id="momentumAccelList">Loading...</div>
+                            </div>
+                        </div>
+
+                        <!-- Stealth Performers Section -->
+                        <div class="intelligence-section">
+                            <div class="intelligence-header">
+                                <h4>🥷 Stealth Performers</h4>
+                                <p class="intelligence-description">Under-the-radar gems with strong fundamentals but still below 52-week highs</p>
+                            </div>
+                            <div class="intelligence-grid" id="stealthGrid">
+                                <div class="grid-header">
+                                    <span>Ticker</span>
+                                    <span>Liberation %</span>
+                                    <span>52W Delta</span>
+                                    <span>RSI</span>
+                                </div>
+                                <div id="stealthList">Loading...</div>
+                            </div>
+                        </div>
+
+                        <!-- Breakout Setups Section -->
+                        <div class="intelligence-section">
+                            <div class="intelligence-header">
+                                <h4>⚡ Technical Breakout Setups</h4>
+                                <p class="intelligence-description">Stocks positioned for potential breakouts above resistance levels</p>
+                            </div>
+                            <div class="intelligence-grid" id="breakoutGrid">
+                                <div class="grid-header">
+                                    <span>Ticker</span>
+                                    <span>52W Delta</span>
+                                    <span>1W %</span>
+                                    <span>EMA Signal</span>
+                                </div>
+                                <div id="breakoutList">Loading...</div>
+                            </div>
+                        </div>
+
+                        <!-- Value with Momentum Section -->
+                        <div class="intelligence-section">
+                            <div class="intelligence-header">
+                                <h4>💎 Value with Momentum</h4>
+                                <p class="intelligence-description">Quality companies in recovery mode - strong recent trends but still discounted</p>
+                            </div>
+                            <div class="intelligence-grid" id="valueGrid">
+                                <div class="grid-header">
+                                    <span>Ticker</span>
+                                    <span>3M %</span>
+                                    <span>1M %</span>
+                                    <span>SMA Trend</span>
+                                </div>
+                                <div id="valueList">Loading...</div>
+                            </div>
+                        </div>
+
+                        <!-- Contrarian Oversold Section -->
+                        <div class="intelligence-section">
+                            <div class="intelligence-header">
+                                <h4>🔄 Contrarian Oversold Plays</h4>
+                                <p class="intelligence-description">Fundamentally sound stocks temporarily oversold - potential bounce candidates</p>
+                            </div>
+                            <div class="intelligence-grid" id="oversoldGrid">
+                                <div class="grid-header">
+                                    <span>Ticker</span>
+                                    <span>RSI</span>
+                                    <span>Liberation %</span>
+                                    <span>1W %</span>
+                                </div>
+                                <div id="oversoldList">Loading...</div>
+                            </div>
+                        </div>
+
+                        <!-- NEW: Breakout Hunter Section -->
+                        <div class="intelligence-section" style="border: 2px solid rgba(255, 193, 7, 0.3); background: rgba(255, 193, 7, 0.05);">
+                            <div class="intelligence-header">
+                                <h4>🚀 Breakout Hunter - Next CRCT/CWEB Detector</h4>
+                                <p class="intelligence-description">Real-time detection of stocks with explosive breakout potential using multi-factor scoring</p>
+                                <div class="breakout-explanation" style="margin-top: 12px; padding: 12px; background: rgba(255, 255, 255, 0.03); border-radius: 6px; font-size: 0.85rem; line-height: 1.4;">
+                                    <strong>Scoring Criteria Explained:</strong><br>
+                                    <strong>RSI:</strong> 45-80 range = momentum patterns (sweet spot or continuation)<br>
+                                    <strong>EMA:</strong> 8/13/21 EMAs within 3% = price coiling for explosive move<br>
+                                    <strong>SMA:</strong> Above 50/100 day averages = institutional trend confirmation<br>
+                                    <strong>Vol:</strong> 2σ+ volume = smart money accumulation detection<br>
+                                    <strong>Gap:</strong> 2σ+ gap = catalyst-driven momentum ignition<br>
+                                    <strong>🚀Boom:</strong> Explosive momentum patterns (>10% weekly + volume)
+                                </div>
+                            </div>
+                            <div class="breakout-hunter-grid" id="breakoutHunterGrid">
+                                <div class="breakout-grid-header">
+                                    <span>Ticker</span>
+                                    <span>Name</span>
+                                    <span>Score</span>
+                                    <span>Up Days</span>
+                                    <span>RSI</span>
+                                    <span>EMA</span>
+                                    <span>SMA</span>
+                                    <span>Vol</span>
+                                    <span>Gap</span>
+                                    <span>52W</span>
+                                    <span>🚀Boom</span>
+                                </div>
+                                <div id="breakoutHunterList">Loading...</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Gainers/Losers Tab -->
+        <div class="tab-content" id="gainers-losers">
+            <div class="gainers-losers-container">
+                <!-- Overall Market Gainers/Losers -->
+                <div class="gl-section overall-section">
+                    <h2>📊 Overall Market Gainers & Losers</h2>
+                    <div class="market-status-indicator" id="marketStatusIndicator">
+                        <span class="status-text">Loading market status...</span>
+                    </div>
+                    <div class="gl-timeframes">
+                        <!-- Daily -->
+                        <div class="gl-timeframe">
+                            <h3>📅 Daily</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="overall-gainers-1d" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="overall-losers-1d" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Weekly -->
+                        <div class="gl-timeframe">
+                            <h3>📅 Weekly</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="overall-gainers-1w" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="overall-losers-1w" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 2 Weeks -->
+                        <div class="gl-timeframe">
+                            <h3>📅 2 Weeks</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="overall-gainers-2w" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="overall-losers-2w" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Monthly -->
+                        <div class="gl-timeframe">
+                            <h3>📅 Monthly</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="overall-gainers-1m" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="overall-losers-1m" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Multi-Timeframe Champions -->
+                        <div class="gl-timeframe champions">
+                            <h3>🏆 Multi-Timeframe Champions</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Elite Gainers</h4>
+                                    <div id="overall-champions-gainers" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Consistent Losers</h4>
+                                    <div id="overall-champions-losers" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Sector ETFs -->
+                <div class="gl-section">
+                    <h2>🏢 Sector ETFs</h2>
+                    <div class="gl-timeframes">
+                        <!-- Daily -->
+                        <div class="gl-timeframe">
+                            <h3>📅 Daily</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="sector-gainers-1d" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="sector-losers-1d" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Weekly -->
+                        <div class="gl-timeframe">
+                            <h3>📅 Weekly</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="sector-gainers-1w" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="sector-losers-1w" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 2 Weeks -->
+                        <div class="gl-timeframe">
+                            <h3>📅 2 Weeks</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="sector-gainers-2w" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="sector-losers-2w" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Monthly -->
+                        <div class="gl-timeframe">
+                            <h3>📅 Monthly</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="sector-gainers-1m" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="sector-losers-1m" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Growth Stocks -->
+                <div class="gl-section">
+                    <h2>🚀 Growth Stocks</h2>
+                    <div class="gl-timeframes">
+                        <!-- Daily -->
+                        <div class="gl-timeframe">
+                            <h3>📅 Daily</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="growth-gainers-1d" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="growth-losers-1d" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Weekly -->
+                        <div class="gl-timeframe">
+                            <h3>📅 Weekly</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="growth-gainers-1w" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="growth-losers-1w" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 2 Weeks -->
+                        <div class="gl-timeframe">
+                            <h3>📅 2 Weeks</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="growth-gainers-2w" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="growth-losers-2w" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Monthly -->
+                        <div class="gl-timeframe">
+                            <h3>📅 Monthly</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="growth-gainers-1m" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="growth-losers-1m" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Compounders -->
+                <div class="gl-section">
+                    <h2>💎 Compounders</h2>
+                    <div class="gl-timeframes">
+                        <!-- Daily -->
+                        <div class="gl-timeframe">
+                            <h3>📅 Daily</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="compounder-gainers-1d" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="compounder-losers-1d" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Weekly -->
+                        <div class="gl-timeframe">
+                            <h3>📅 Weekly</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="compounder-gainers-1w" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="compounder-losers-1w" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 2 Weeks -->
+                        <div class="gl-timeframe">
+                            <h3>📅 2 Weeks</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="compounder-gainers-2w" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="compounder-losers-2w" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Monthly -->
+                        <div class="gl-timeframe">
+                            <h3>📅 Monthly</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="compounder-gainers-1m" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="compounder-losers-1m" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Mag7+ -->
+                <div class="gl-section">
+                    <h2>🌟 Mag7+</h2>
+                    <div class="gl-timeframes">
+                        <!-- Daily -->
+                        <div class="gl-timeframe">
+                            <h3>📅 Daily</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="mag7-gainers-1d" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="mag7-losers-1d" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Weekly -->
+                        <div class="gl-timeframe">
+                            <h3>📅 Weekly</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="mag7-gainers-1w" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="mag7-losers-1w" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 2 Weeks -->
+                        <div class="gl-timeframe">
+                            <h3>📅 2 Weeks</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="mag7-gainers-2w" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="mag7-losers-2w" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Monthly -->
+                        <div class="gl-timeframe">
+                            <h3>📅 Monthly</h3>
+                            <div class="gl-columns">
+                                <div class="gl-column gainers">
+                                    <h4>🚀 Top 5 Gainers</h4>
+                                    <div id="mag7-gainers-1m" class="gl-list"></div>
+                                </div>
+                                <div class="gl-column losers">
+                                    <h4>📉 Top 5 Losers</h4>
+                                    <div id="mag7-losers-1m" class="gl-list"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
         
         <div class="loading" id="loading" style="display: none;">
             Loading stock data...
         </div>
     </div>
     
-    <script src="script.js?v=23"></script>
+    <script src="script.js?v=33"></script>
 </body>
 </html>

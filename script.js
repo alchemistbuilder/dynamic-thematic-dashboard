@@ -85,6 +85,85 @@ const GROWTH_TICKERS = [
     'RKLB'
 ];
 
+// Compounder tickers (Quality long-term growth stocks)
+const COMPOUNDER_TICKERS = [
+    'MELI',
+    'CDNS',
+    'MSFT',
+    'CNSWF',
+    'SNPS',
+    'WMT',
+    'ISRG',
+    'VEEV',
+    'COST',
+    'MA',
+    'AXP',
+    'JPM',
+    'BSX',
+    'V',
+    'ASML',
+    'META',
+    'MCO',
+    'AMD',
+    'FCNCA',
+    'AMZN',
+    'TDG',
+    'GOOGL',
+    'NVO',
+    'CMG',
+    'BRK.A',
+    'BX',
+    'DHR',
+    'ABBV',
+    'LLY',
+    'AAPL',
+    'VRTX',
+    'AMGN',
+    'REGN',
+    'TMO',
+    'UNH'
+];
+
+// AI Platform Basket tickers
+const AI_PLATFORM_TICKERS = [
+    'VRT',   // Vertiv - Infrastructure & Energy
+    'VST',   // Vistra - Infrastructure & Energy  
+    'CEG',   // Constellation Energy - Infrastructure & Energy
+    'LEU',   // Centrus Energy - Infrastructure & Energy
+    'CRDO',  // Credo Technology - Networking & Connectivity
+    'CIEN',  // Ciena - Networking & Connectivity
+    'META',  // Meta Platforms - Core AI & Big Tech
+    'NVDA',  // NVIDIA - Core AI & Big Tech
+    'MSFT',  // Microsoft - Core AI & Big Tech
+    'DUOL',  // Duolingo - AI Software & Applications
+    'CRM',   // Salesforce - AI Software & Applications
+    'MNDY',  // monday.com - AI Software & Applications
+    'BASE',  // Couchbase - AI Software & Applications
+    'SNOW',  // Snowflake - Cloud Infrastructure & Data
+    'DDOG',  // Datadog - Cloud Infrastructure & Data
+    'PSTG',  // Pure Storage - Cloud Infrastructure & Data
+    'CRWV',  // CoreWeave - Cloud Infrastructure & Data
+    'CRWD',  // CrowdStrike - AI-Driven Security
+    'NET',   // Cloudflare - AI-Driven Security
+    'SRAD',  // Sportradar - AI & Specialized Data
+    'LRCX'   // Lam Research - Semiconductor Materials & Equipment
+];
+
+// Mag7+ tickers (Magnificent 7 plus additional tech leaders)
+const MAG7_PLUS_TICKERS = [
+    'NFLX',
+    'MSFT',
+    'GOOGL',
+    'TSLA',
+    'NVDA',
+    'AAPL',
+    'AMZN',
+    'META',
+    'AVGO',
+    'CRWD',
+    'NOW'
+];
+
 // Crypto currencies (for sector overview only)
 const CRYPTO_TICKERS = ['X:BTCUSD', 'X:SOLUSD'];
 
@@ -118,6 +197,37 @@ const STOCK_NAMES = {
     'ARKG': 'ARK Genomic Revolution ETF',
     'IBB': 'iShares NASDAQ Biotechnology ETF',
     'XBI': 'SPDR S&P Biotech ETF',
+    'X:BTCUSD': 'Bitcoin',
+    'X:SOLUSD': 'Solana'
+};
+
+// Shortened names for gainers/losers display
+const SHORT_NAMES = {
+    'GLD': 'Gold ETF',
+    'FXI': 'China ETF',
+    'KWEB': 'China Internet',
+    'XLU': 'Utilities',
+    'IHI': 'Medical Devices',
+    'XLI': 'Industrials',
+    'XLF': 'Financials',
+    'XLP': 'Staples',
+    'XLRE': 'Real Estate',
+    'IGV': 'Tech Software',
+    'ARKW': 'ARK Internet',
+    'XLV': 'Healthcare',
+    'SPY': 'S&P 500',
+    'XLE': 'Energy',
+    'FNGS': 'FANG+',
+    'QQQ': 'Nasdaq 100',
+    'WCLD': 'Cloud',
+    'SMH': 'Semiconductors',
+    'IWM': 'Russell 2000',
+    'ARKK': 'ARK Innovation',
+    'XLY': 'Discretionary',
+    'SOXX': 'Semis',
+    'ARKG': 'ARK Genomics',
+    'IBB': 'Biotech',
+    'XBI': 'Biotech Small',
     'X:BTCUSD': 'Bitcoin',
     'X:SOLUSD': 'Solana'
 };
@@ -178,6 +288,9 @@ class StockDashboard {
     constructor() {
         this.sectorData = new Map();
         this.growthData = new Map();
+        this.compounderData = new Map();
+        this.mag7Data = new Map();
+        this.aiPlatformData = new Map();
         this.currentTab = 'market-summary';
         this.sortColumn = null;
         this.sortDirection = 'asc';
@@ -194,6 +307,9 @@ class StockDashboard {
     get stockData() {
         if (this.currentTab === 'sector-overview') return this.sectorData;
         if (this.currentTab === 'high-growth') return this.growthData;
+        if (this.currentTab === 'compounder') return this.compounderData;
+        if (this.currentTab === 'mag7-plus') return this.mag7Data;
+        if (this.currentTab === 'ai-platform') return this.aiPlatformData;
         return new Map(); // Market summary doesn't have its own data
     }
 
@@ -409,6 +525,13 @@ class StockDashboard {
         // Render appropriate data
         if (tabId === 'market-summary') {
             this.renderMarketSummary();
+        } else if (tabId === 'market-intelligence') {
+            this.renderMarketIntelligence();
+        } else if (tabId === 'gainers-losers') {
+            this.renderGainersLosers();
+        } else if (tabId === 'ai-platform') {
+            this.renderTable();
+            // AI platform uses standard table rendering with custom insights
         } else {
             this.renderTable();
             
@@ -491,13 +614,22 @@ class StockDashboard {
         
         // Get all tickers for current tab
         let tickers = [];
-        if (this.currentTab === 'sector-overview') {
-            tickers = [...SECTOR_TICKERS, ...CRYPTO_TICKERS];
-        } else if (this.currentTab === 'high-growth') {
-            tickers = GROWTH_TICKERS;
-        } else {
-            // Market summary - don't update live prices
-            return;
+        switch (this.currentTab) {
+            case 'sector-overview':
+                tickers = [...SECTOR_TICKERS, ...CRYPTO_TICKERS];
+                break;
+            case 'high-growth':
+                tickers = GROWTH_TICKERS;
+                break;
+            case 'compounder':
+                tickers = COMPOUNDER_TICKERS;
+                break;
+            case 'mag7-plus':
+                tickers = MAG7_PLUS_TICKERS;
+                break;
+            default:
+                // Market summary - don't update live prices
+                return;
         }
         
         // Fetch current quotes for all tickers
@@ -572,9 +704,14 @@ class StockDashboard {
 
     updatePriceCell(ticker, quoteData) {
         // Find the row for this ticker
-        const tbody = document.getElementById(
-            this.currentTab === 'sector-overview' ? 'stockTableBody' : 'growthTableBody'
-        );
+        const tbodyMapping = {
+            'sector-overview': 'stockTableBody',
+            'high-growth': 'growthTableBody',
+            'compounder': 'compounderTableBody',
+            'mag7-plus': 'mag7TableBody',
+            'ai-platform': 'aiPlatformTableBody'
+        };
+        const tbody = document.getElementById(tbodyMapping[this.currentTab]);
         
         const rows = tbody.querySelectorAll('tr');
         rows.forEach(row => {
@@ -629,24 +766,323 @@ class StockDashboard {
     }
 
     async fetchAllStockData() {
-        // Fetch sector data (ETFs + crypto)
-        await this.fetchDataForTab('sector-overview');
+        console.log('Using grouped endpoint for maximum speed...');
         
-        // Fetch growth data (individual stocks)
+        try {
+            // Get all unique stock tickers (excluding crypto for grouped endpoint)
+            const allStockTickers = [
+                ...new Set([
+                    ...SECTOR_TICKERS,
+                    ...GROWTH_TICKERS,
+                    ...COMPOUNDER_TICKERS,
+                    ...MAG7_PLUS_TICKERS,
+                    ...AI_PLATFORM_TICKERS
+                ])
+            ];
+            
+            // Fetch all stock data in a single grouped call
+            const stockData = await this.fetchGroupedStockData(allStockTickers);
+            
+            // Process data for each tab
+            await Promise.all([
+                this.processGroupedDataForTab('sector-overview', SECTOR_TICKERS, stockData),
+                this.processGroupedDataForTab('high-growth', GROWTH_TICKERS, stockData),
+                this.processGroupedDataForTab('compounder', COMPOUNDER_TICKERS, stockData),
+                this.processGroupedDataForTab('mag7-plus', MAG7_PLUS_TICKERS, stockData),
+                this.processGroupedDataForTab('ai-platform', AI_PLATFORM_TICKERS, stockData)
+            ]);
+            
+            // Fetch crypto separately (grouped endpoint doesn't support crypto)
+            await this.fetchCryptoData();
+            
+            // Fetch earnings for individual stock tabs
+            await Promise.all([
+                this.fetchAllEarningsData(GROWTH_TICKERS, this.growthData),
+                this.fetchAllEarningsData(COMPOUNDER_TICKERS, this.compounderData),
+                this.fetchAllEarningsData(MAG7_PLUS_TICKERS, this.mag7Data),
+                this.fetchAllEarningsData(AI_PLATFORM_TICKERS, this.aiPlatformData)
+            ]);
+            
+            console.log('Grouped data fetch completed successfully!');
+            
+        } catch (error) {
+            console.error('Grouped fetch failed, falling back to individual calls:', error);
+            // Fallback to original method if grouped fails
+            await this.fetchAllStockDataFallback();
+        }
+    }
+
+    async fetchGroupedStockData(tickers) {
+        console.log(`Fetching grouped data for ${tickers.length} tickers...`);
+        
+        // Get yesterday's date for grouped daily data
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const dateStr = yesterday.toISOString().split('T')[0];
+        
+        // Use grouped daily bars endpoint
+        const groupedUrl = `https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/${dateStr}?adjusted=true&apikey=${API_KEY}`;
+        
+        const response = await fetch(groupedUrl);
+        if (!response.ok) {
+            throw new Error(`Grouped API failed: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        
+        if (!data.results || data.results.length === 0) {
+            throw new Error('No grouped data available');
+        }
+        
+        console.log(`Grouped endpoint returned ${data.results.length} stocks`);
+        
+        // Convert to map for easy lookup
+        const groupedData = new Map();
+        data.results.forEach(result => {
+            groupedData.set(result.T, result); // T is ticker symbol
+        });
+        
+        // Debug CRCL in grouped data
+        console.log('=== CRCL GROUPED DATA DEBUG ===');
+        console.log('CRCL in grouped data:', groupedData.has('CRCL'));
+        if (groupedData.has('CRCL')) {
+            console.log('CRCL grouped data:', groupedData.get('CRCL'));
+        } else {
+            console.log('CRCL not found in grouped data');
+            console.log('Available tickers sample:', Array.from(groupedData.keys()).slice(0, 20));
+        }
+        console.log('===================================');
+        
+        // Now fetch historical data for technical indicators
+        // We still need this for moving averages calculation
+        const historicalData = new Map();
+        
+        // Fetch in smaller batches to avoid overwhelming the API
+        const batchSize = 20;
+        for (let i = 0; i < tickers.length; i += batchSize) {
+            const batch = tickers.slice(i, i + batchSize);
+            const batchPromises = batch.map(ticker => this.fetchHistoricalData(ticker));
+            const batchResults = await Promise.allSettled(batchPromises);
+            
+            batchResults.forEach((result, index) => {
+                const ticker = batch[index];
+                if (result.status === 'fulfilled' && result.value) {
+                    historicalData.set(ticker, result.value);
+                } else if (ticker === 'CRCL') {
+                    console.log('=== CRCL HISTORICAL DATA ERROR ===');
+                    console.log('CRCL fetch result:', result);
+                    if (result.status === 'rejected') {
+                        console.log('CRCL fetch error:', result.reason);
+                    }
+                    console.log('=====================================');
+                }
+            });
+            
+            // Small delay between batches
+            if (i + batchSize < tickers.length) {
+                await new Promise(resolve => setTimeout(resolve, 500));
+            }
+        }
+        
+        return { grouped: groupedData, historical: historicalData };
+    }
+
+    async fetchHistoricalData(ticker) {
+        try {
+            // Get 2 years of data for technical indicators
+            const endDate = new Date();
+            const startDate = new Date();
+            startDate.setFullYear(startDate.getFullYear() - 2);
+            
+            const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${startDate.toISOString().split('T')[0]}/${endDate.toISOString().split('T')[0]}?adjusted=true&sort=asc&apikey=${API_KEY}`;
+            
+            const response = await fetch(url);
+            if (!response.ok) return null;
+            
+            const data = await response.json();
+            return data.results || [];
+        } catch (error) {
+            console.error(`Error fetching historical data for ${ticker}:`, error);
+            return null;
+        }
+    }
+
+    async processGroupedDataForTab(tabType, tickers, stockData) {
+        const dataMap = this.getDataMapForTab(tabType);
+        const missingTickers = [];
+        
+        tickers.forEach(ticker => {
+            const grouped = stockData.grouped.get(ticker);
+            const historical = stockData.historical.get(ticker);
+            
+            if (grouped && historical) {
+                // Process the data similar to individual fetchStockData
+                const processedData = this.processStockDataFromGrouped(ticker, grouped, historical);
+                if (processedData) {
+                    dataMap.set(ticker, processedData);
+                }
+            } else if (historical && historical.length > 0) {
+                // For stocks not in grouped data (e.g., new IPOs), fetch individual data
+                console.log(`${ticker} not in grouped data, will fetch individually`);
+                missingTickers.push(ticker);
+            } else {
+                console.warn(`No data available for ${ticker}`);
+            }
+        });
+        
+        // Fetch missing tickers individually
+        if (missingTickers.length > 0) {
+            console.log(`Fetching ${missingTickers.length} missing tickers individually:`, missingTickers);
+            await this.fetchMissingTickers(missingTickers, dataMap);
+        }
+        
+        console.log(`Processed ${dataMap.size} stocks for ${tabType}`);
+    }
+
+    async fetchMissingTickers(tickers, dataMap) {
+        // Fetch individual ticker data for stocks not in grouped endpoint
+        for (const ticker of tickers) {
+            try {
+                const data = await this.fetchStockData(ticker);
+                if (data) {
+                    dataMap.set(ticker, data);
+                    console.log(`Successfully fetched ${ticker} individually`);
+                }
+            } catch (error) {
+                console.error(`Failed to fetch ${ticker}:`, error);
+            }
+        }
+    }
+
+    getDataMapForTab(tabType) {
+        switch (tabType) {
+            case 'sector-overview': return this.sectorData;
+            case 'high-growth': return this.growthData;
+            case 'compounder': return this.compounderData;
+            case 'mag7-plus': return this.mag7Data;
+            case 'ai-platform': return this.aiPlatformData;
+            default: return new Map();
+        }
+    }
+
+    processStockDataFromGrouped(ticker, groupedData, historicalData) {
+        try {
+            // Debug CRCL data fetching
+            if (ticker === 'CRCL') {
+                console.log('=== CRCL DATA FETCHING DEBUG ===');
+                console.log('CRCL Grouped Data:', groupedData);
+                console.log('CRCL Historical Data length:', historicalData?.length);
+                console.log('CRCL Historical Data sample:', historicalData?.slice(-5));
+            }
+            
+            // Current price from grouped data
+            const currentPrice = groupedData.c; // Close price
+            const currentVolume = groupedData.v; // Current day volume
+            
+            // Calculate technical indicators using historical data
+            const movingAverages = this.calculateMovingAverages(historicalData);
+            const rsiData = this.calculateRSI(historicalData);
+            const changes = this.calculatePercentageChanges(historicalData, currentPrice);
+            const week52High = this.calculate52WeekHigh(historicalData);
+            const comparisons = this.calculateComparisons(currentPrice, movingAverages, week52High);
+            const consecutiveUpDays = this.calculateConsecutiveUpDays(historicalData);
+            
+            // NEW: Calculate volume and volatility signals
+            const volumeSignal = this.calculateVolumeSignal(historicalData, currentVolume);
+            const gapSignal = this.calculateGapSignal(historicalData, groupedData);
+            const breakoutScore = this.calculateBreakoutScore({
+                consecutiveUpDays,
+                rsiData,
+                movingAverages,
+                comparisons,
+                volumeSignal,
+                gapSignal,
+                currentPrice
+            });
+            
+            // Calculate Liberation Day change
+            const liberationChange = this.calculateLiberationDayChange(historicalData, currentPrice);
+            
+            return {
+                ticker,
+                name: STOCK_NAMES[ticker] || ticker,
+                currentPrice,
+                changes,
+                movingAverages,
+                rsiData,
+                comparisons,
+                consecutiveUpDays,
+                liberationChange,
+                volumeSignal,
+                gapSignal,
+                breakoutScore,
+                nextEarnings: 'N/A', // Will be populated later
+                daysToEarnings: 'N/A'
+            };
+        } catch (error) {
+            console.error(`Error processing data for ${ticker}:`, error);
+            return null;
+        }
+    }
+
+    async fetchCryptoData() {
+        console.log('Fetching crypto data separately...');
+        
+        // Crypto needs to be fetched individually as grouped endpoint doesn't support it
+        const cryptoPromises = CRYPTO_TICKERS.map(ticker => this.fetchStockData(ticker));
+        const cryptoResults = await Promise.allSettled(cryptoPromises);
+        
+        cryptoResults.forEach((result, index) => {
+            const ticker = CRYPTO_TICKERS[index];
+            if (result.status === 'fulfilled' && result.value) {
+                this.sectorData.set(ticker, result.value);
+            }
+        });
+    }
+
+    async fetchAllStockDataFallback() {
+        console.log('Using fallback method...');
+        
+        // Original sequential approach with delays between tabs
+        await this.fetchDataForTab('sector-overview');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
         await this.fetchDataForTab('high-growth');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        await this.fetchDataForTab('compounder');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        await this.fetchDataForTab('mag7-plus');
     }
 
     async fetchDataForTab(tabType) {
         let tickers, dataMap, tickerType;
         
-        if (tabType === 'sector-overview') {
-            tickers = [...SECTOR_TICKERS, ...CRYPTO_TICKERS];
-            dataMap = this.sectorData;
-            tickerType = 'sector';
-        } else {
-            tickers = GROWTH_TICKERS;
-            dataMap = this.growthData;
-            tickerType = 'growth';
+        switch (tabType) {
+            case 'sector-overview':
+                tickers = [...SECTOR_TICKERS, ...CRYPTO_TICKERS];
+                dataMap = this.sectorData;
+                tickerType = 'sector';
+                break;
+            case 'high-growth':
+                tickers = GROWTH_TICKERS;
+                dataMap = this.growthData;
+                tickerType = 'growth';
+                break;
+            case 'compounder':
+                tickers = COMPOUNDER_TICKERS;
+                dataMap = this.compounderData;
+                tickerType = 'compounder';
+                break;
+            case 'mag7-plus':
+                tickers = MAG7_PLUS_TICKERS;
+                dataMap = this.mag7Data;
+                tickerType = 'mag7+';
+                break;
+            default:
+                console.error(`Unknown tab type: ${tabType}`);
+                return;
         }
         
         console.log(`Fetching ${tickerType} data for tickers:`, tickers);
@@ -669,8 +1105,8 @@ class StockDashboard {
             console.log(`Successfully fetched ${tickerType} data for ${successCount}/${tickers.length} tickers`);
             
             // Fetch earnings data (individual stocks only, not ETFs/crypto)
-            if (tabType === 'high-growth') {
-                await this.fetchAllEarningsData(GROWTH_TICKERS, dataMap);
+            if (tabType === 'high-growth' || tabType === 'compounder' || tabType === 'mag7-plus') {
+                await this.fetchAllEarningsData(tickers, dataMap);
             }
         } else {
             // Yahoo Finance - sequential loading with delays
@@ -854,9 +1290,12 @@ class StockDashboard {
             changes['ytd'] = null;
         }
         
+        // Calculate daily change specially - use previous trading day close
+        changes['1d'] = this.calculateDailyChange(data, currentPrice);
+        
         // Calculate other periods
         Object.entries(periods).forEach(([period, days]) => {
-            if (days !== null) {
+            if (days !== null && period !== '1d') { // Skip 1d since we handled it specially
                 const targetDate = now - (days * 24 * 60 * 60 * 1000);
                 const historicalPrice = this.findClosestPrice(data, targetDate);
                 
@@ -869,6 +1308,61 @@ class StockDashboard {
         });
 
         return changes;
+    }
+
+    calculateDailyChange(data, currentPrice) {
+        if (data.length < 2) return null;
+        
+        // Sort data to ensure chronological order
+        const sortedData = [...data].sort((a, b) => a.t - b.t);
+        
+        // Get today's date (market day)
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+        
+        // Find today's data point and previous day's data point
+        let todayData = null;
+        let previousDayData = null;
+        
+        // Look for today's data
+        for (let i = sortedData.length - 1; i >= 0; i--) {
+            const dataDate = new Date(sortedData[i].t);
+            const dataDateStr = dataDate.toISOString().split('T')[0];
+            
+            if (dataDateStr === todayStr) {
+                todayData = sortedData[i];
+                // Previous trading day is the one before today's data
+                if (i > 0) {
+                    previousDayData = sortedData[i - 1];
+                }
+                break;
+            }
+        }
+        
+        // If we don't have today's data, use the most recent data point
+        if (!todayData && sortedData.length > 0) {
+            todayData = sortedData[sortedData.length - 1];
+            if (sortedData.length > 1) {
+                previousDayData = sortedData[sortedData.length - 2];
+            }
+        }
+        
+        // Determine which price to use as reference
+        let referencePrice;
+        if (previousDayData) {
+            // Use previous trading day's close as reference
+            referencePrice = previousDayData.c;
+        } else {
+            // Fallback: use yesterday's close if available
+            const yesterdayTimestamp = Date.now() - (24 * 60 * 60 * 1000);
+            referencePrice = this.findClosestPrice(data, yesterdayTimestamp);
+        }
+        
+        if (referencePrice && referencePrice !== currentPrice) {
+            return ((currentPrice - referencePrice) / referencePrice) * 100;
+        }
+        
+        return null;
     }
 
     calculateLiberationDayChange(data, currentPrice) {
@@ -1012,6 +1506,29 @@ class StockDashboard {
         if (recentData.length === 0) return null;
         
         return Math.max(...recentData.map(point => point.h)); // Use high prices
+    }
+
+    calculateLiberationDayChange(historicalData, currentPrice) {
+        // Liberation Day: April 2, 2025
+        const liberationDate = LIBERATION_DAY.getTime();
+        
+        // Find the price closest to Liberation Day
+        let liberationPrice = null;
+        let closestDate = Infinity;
+        
+        for (const dataPoint of historicalData) {
+            const pointDate = dataPoint.t;
+            const dateDiff = Math.abs(pointDate - liberationDate);
+            
+            if (dateDiff < closestDate) {
+                closestDate = dateDiff;
+                liberationPrice = dataPoint.c; // Close price
+            }
+        }
+        
+        if (!liberationPrice) return null;
+        
+        return ((currentPrice - liberationPrice) / liberationPrice) * 100;
     }
 
     calculateComparisons(currentPrice, mas, week52High) {
@@ -1229,14 +1746,49 @@ class StockDashboard {
                 return data.daysToEarnings;
             case 'consecutiveUpDays':
                 return data.consecutiveUpDays || 0;
+            case 'gapSignal':
+                const gapSignal = data.gapSignal?.signal || 'Normal';
+                const gapRankings = {
+                    'Gap Up 3σ': 5,
+                    'Gap Up 2σ': 4,
+                    'Normal': 3,
+                    'Gap Down 2σ': 2,
+                    'Gap Down 3σ': 1,
+                    'No Data': 0
+                };
+                return gapRankings[gapSignal] || 3;
+            case 'volumeSignal':
+                const volumeSignal = data.volumeSignal?.signal || 'Normal';
+                const volumeRankings = {
+                    'Spike 3σ': 4,
+                    'Spike 2σ': 3,
+                    'Normal': 2,
+                    'Low Vol': 1,
+                    'No Data': 0
+                };
+                return volumeRankings[volumeSignal] || 2;
             default:
                 return 0;
         }
     }
 
     renderTable() {
-        const tbodyId = this.currentTab === 'sector-overview' ? 'stockTableBody' : 'growthTableBody';
+        const tbodyMapping = {
+            'sector-overview': 'stockTableBody',
+            'high-growth': 'growthTableBody',
+            'compounder': 'compounderTableBody',
+            'mag7-plus': 'mag7TableBody',
+            'ai-platform': 'aiPlatformTableBody'
+        };
+        
+        const tbodyId = tbodyMapping[this.currentTab];
         const tbody = document.getElementById(tbodyId);
+        
+        if (!tbody) {
+            console.error(`Table body not found for tab: ${this.currentTab}`);
+            return;
+        }
+        
         tbody.innerHTML = '';
 
         // Convert Map to Array for sorting
@@ -1380,7 +1932,13 @@ class StockDashboard {
         }));
 
         // Get appropriate list IDs based on current tab
-        const suffix = this.currentTab === 'sector-overview' ? '' : 'Growth';
+        const suffixMapping = {
+            'sector-overview': '',
+            'high-growth': 'Growth',
+            'compounder': 'Compounder',
+            'mag7-plus': 'Mag7'
+        };
+        const suffix = suffixMapping[this.currentTab] || '';
         
         // Top 5 Most Bullish
         const topBullish = scoredStocks
@@ -1524,6 +2082,21 @@ class StockDashboard {
             return value ? 'positive' : 'negative';
         };
 
+        // NEW: Format Gap and Volume signals
+        const formatGapSignal = (gapData) => {
+            if (!gapData || !gapData.signal) return 'N/A';
+            const className = gapData.signal.includes('Gap Up') ? 'positive' : 
+                             gapData.signal.includes('Gap Down') ? 'negative' : '';
+            return `<span class="${className}">${gapData.signal}</span>`;
+        };
+
+        const formatVolumeSignal = (volumeData) => {
+            if (!volumeData || !volumeData.signal) return 'N/A';
+            const className = volumeData.signal.includes('Spike') ? 'positive' : 
+                             volumeData.signal === 'Low Vol' ? 'negative' : '';
+            return `<span class="${className}">${volumeData.signal}</span>`;
+        };
+
         return `
             <td class="ticker-cell">${data.ticker}</td>
             <td class="name-cell">${data.name}</td>
@@ -1531,6 +2104,8 @@ class StockDashboard {
             <td class="price-cell">${formatPrice(data.currentPrice)}</td>
             <td>${formatPercent(data.changes['ytd'])}</td>
             <td>${formatPercent(data.changes['1d'])}</td>
+            <td>${formatGapSignal(data.gapSignal)}</td>
+            <td>${formatVolumeSignal(data.volumeSignal)}</td>
             <td>${formatPercent(data.changes['1w'])}</td>
             <td>${formatPercent(data.changes['2w'])}</td>
             <td>${formatPercent(data.changes['1m'])}</td>
@@ -1562,16 +2137,19 @@ class StockDashboard {
     }
 
     renderMarketSummary() {
-        // Ensure both datasets are loaded
-        if (this.sectorData.size === 0 || this.growthData.size === 0) {
+        // Ensure all datasets are loaded
+        if (this.sectorData.size === 0 || this.growthData.size === 0 || 
+            this.compounderData.size === 0 || this.mag7Data.size === 0) {
             // Load data if not available
             this.loadData();
             return;
         }
 
-        // Get scored stocks for both datasets
+        // Get scored stocks for all datasets
         const sectorArray = Array.from(this.sectorData.values()).filter(data => data !== null);
         const growthArray = Array.from(this.growthData.values()).filter(data => data !== null);
+        const compounderArray = Array.from(this.compounderData.values()).filter(data => data !== null);
+        const mag7Array = Array.from(this.mag7Data.values()).filter(data => data !== null);
 
         const scoredSector = sectorArray.map(data => ({
             ...data,
@@ -1609,8 +2187,20 @@ class StockDashboard {
             .slice(0, 5);
         this.populateStockList('growthBearishSummary', topGrowthBearish, 'bearish');
 
-        // Overall best performers (combine both datasets)
-        const allScored = [...scoredSector, ...scoredGrowth];
+        // Overall best performers (combine all datasets)
+        const allScored = [...scoredSector, ...scoredGrowth, 
+                          ...compounderArray.map(data => ({
+                              ...data,
+                              bullishScore: this.calculateBullishScore(data),
+                              bearishScore: this.calculateBearishScore(data),
+                              performanceScore: this.calculatePerformanceScore(data)
+                          })),
+                          ...mag7Array.map(data => ({
+                              ...data,
+                              bullishScore: this.calculateBullishScore(data),
+                              bearishScore: this.calculateBearishScore(data),
+                              performanceScore: this.calculatePerformanceScore(data)
+                          }))];
         const overallPerformers = allScored
             .sort((a, b) => b.performanceScore - a.performanceScore)
             .slice(0, 5);
@@ -1618,6 +2208,418 @@ class StockDashboard {
 
         // Update statistics
         this.updateMarketStats(scoredSector, scoredGrowth);
+    }
+
+    renderMarketIntelligence() {
+        // Ensure all datasets are loaded
+        if (this.sectorData.size === 0 || this.growthData.size === 0 || 
+            this.compounderData.size === 0 || this.mag7Data.size === 0) {
+            // Load data if not available
+            this.loadData();
+            return;
+        }
+
+        console.log('🧠 Running Market Intelligence Analysis...');
+        
+        // Get all stocks across datasets
+        const allStocks = [
+            ...Array.from(this.sectorData.values()),
+            ...Array.from(this.growthData.values()),
+            ...Array.from(this.compounderData.values()),
+            ...Array.from(this.mag7Data.values())
+        ].filter(stock => stock !== null);
+        
+        // Debug CRCL presence in allStocks
+        const crclStock = allStocks.find(stock => stock.ticker === 'CRCL');
+        console.log('=== CRCL IN ALL STOCKS DEBUG ===');
+        console.log('CRCL found in allStocks:', !!crclStock);
+        console.log('Growth data size:', this.growthData.size);
+        console.log('Growth data has CRCL:', this.growthData.has('CRCL'));
+        if (crclStock) {
+            console.log('CRCL basic data check:', {
+                ticker: crclStock.ticker,
+                name: crclStock.name,
+                currentPrice: crclStock.currentPrice,
+                hasChanges: !!crclStock.changes,
+                hasMovingAverages: !!crclStock.movingAverages,
+                hasRSI: !!crclStock.rsiData
+            });
+        }
+        console.log('Total stocks in allStocks:', allStocks.length);
+        console.log('====================================');
+
+        // Run analysis
+        const analysis = this.analyzeMarketData(allStocks);
+        
+        // Update side panel
+        this.updateIntelligenceSidePanel(analysis);
+        
+        // Update main content sections
+        this.updateIntelligenceSections(analysis);
+        
+        console.log('✅ Market Intelligence Analysis Complete');
+    }
+
+    analyzeMarketData(allStocks) {
+        // 1. HIGH SHARPE RATIO CANDIDATES
+        const highSharpeStocks = allStocks
+            .filter(s => s.liberationChange > 15) // Good returns since Liberation
+            .filter(s => (s.changes['1m'] || 0) > -5 && (s.changes['1m'] || 0) < 25) // Controlled monthly volatility
+            .filter(s => (s.changes['1w'] || 0) > -3 && (s.changes['1w'] || 0) < 15) // Stable weekly moves
+            .map(s => ({
+                ...s,
+                sharpeScore: s.liberationChange / (Math.abs(s.changes['1m'] || 10) + 1) // Return/volatility proxy
+            }))
+            .sort((a, b) => b.sharpeScore - a.sharpeScore)
+            .slice(0, 8);
+
+        // 2. MOMENTUM ACCELERATION PLAYS
+        const momentumAccel = allStocks
+            .filter(s => (s.changes['1w'] || 0) > (s.changes['1m'] || 0) / 4) // Weekly > monthly/4 (accelerating)
+            .filter(s => (s.changes['2w'] || 0) > (s.changes['1m'] || 0) / 2) // 2-week > monthly/2
+            .filter(s => (s.consecutiveUpDays || 0) >= 2) // Recent momentum
+            .map(s => ({
+                ...s,
+                accelScore: (s.changes['1w'] || 0) - (s.changes['1m'] || 0) / 4
+            }))
+            .sort((a, b) => b.accelScore - a.accelScore)
+            .slice(0, 6);
+
+        // 3. STEALTH PERFORMERS
+        const stealthPerformers = allStocks
+            .filter(s => s.liberationChange > 20) // Strong Liberation performance
+            .filter(s => (s.comparisons.deltaFrom52WeekHigh || -100) < -15) // Still well below 52w high
+            .filter(s => s.comparisons.ema8Above13Above21 && 
+                        ['ST BULLISH', 'EMA Bullish', 'Uptrend Maintained'].includes(s.comparisons.ema8Above13Above21))
+            .filter(s => (s.rsiData.rsi14 || 50) < 70) // Not overbought
+            .sort((a, b) => (b.liberationChange || 0) - (a.liberationChange || 0))
+            .slice(0, 6);
+
+        // 4. TECHNICAL BREAKOUT SETUPS
+        const breakoutSetups = allStocks
+            .filter(s => (s.comparisons.deltaFrom52WeekHigh || -100) > -8) // Very close to 52w high
+            .filter(s => (s.changes['1w'] || 0) > 0) // Positive weekly momentum
+            .filter(s => (s.consecutiveUpDays || 0) >= 1) // Recent upward movement
+            .filter(s => s.comparisons.above50SMA && s.comparisons.above100SMA) // Above key SMAs
+            .sort((a, b) => (b.comparisons.deltaFrom52WeekHigh || -100) - (a.comparisons.deltaFrom52WeekHigh || -100))
+            .slice(0, 5);
+
+        // 5. VALUE WITH MOMENTUM
+        const valueWithMomentum = allStocks
+            .filter(s => (s.changes['3m'] || 0) > 10) // Strong 3-month trend
+            .filter(s => (s.changes['1m'] || 0) > 5) // Positive recent momentum
+            .filter(s => (s.comparisons.deltaFrom52WeekHigh || -100) < -20) // Still discounted from highs
+            .filter(s => s.comparisons.sma50Above100Above200 === 'BULLISH' || s.comparisons.sma50Above100Above200 === 'Healthy')
+            .sort((a, b) => (b.changes['3m'] || 0) - (a.changes['3m'] || 0))
+            .slice(0, 6);
+
+        // 6. CONTRARIAN OVERSOLD PLAYS
+        const oversoldBounce = allStocks
+            .filter(s => (s.rsiData.rsi14 || 50) < 35) // Oversold RSI
+            .filter(s => (s.changes['1w'] || 0) > -10) // Not in free fall
+            .filter(s => s.liberationChange > 0) // Still positive long-term
+            .filter(s => s.comparisons.above200SMA) // Above long-term trend
+            .sort((a, b) => (a.rsiData.rsi14 || 50) - (b.rsiData.rsi14 || 50)) // Most oversold first
+            .slice(0, 5);
+
+        // 7. NEW: BREAKOUT HUNTER ANALYSIS
+        const breakoutHunterCandidates = allStocks
+            .map(stock => {
+                // Calculate breakout score if not already calculated
+                if (!stock.breakoutScore) {
+                    stock.breakoutScore = this.calculateBreakoutScore(stock);
+                }
+                
+                // Debug CRCL and ZETA specifically
+                if (stock.ticker === 'CRCL' || stock.ticker === 'ZETA') {
+                    console.log(`=== ${stock.ticker} BREAKOUT HUNTER DEBUG ===`);
+                    console.log(`${stock.ticker} Stock Data:`, stock);
+                    console.log(`${stock.ticker} Breakout Score:`, stock.breakoutScore);
+                    console.log(`${stock.ticker} Volume Signal:`, stock.volumeSignal);
+                    console.log(`${stock.ticker} Gap Signal:`, stock.gapSignal);
+                    console.log(`${stock.ticker} Consecutive Up Days:`, stock.consecutiveUpDays);
+                    console.log(`${stock.ticker} Changes:`, stock.changes);
+                    console.log(`${stock.ticker} Comparisons:`, stock.comparisons);
+                    console.log(`${stock.ticker} Moving Averages:`, stock.movingAverages);
+                    console.log(`${stock.ticker} RSI Data:`, stock.rsiData);
+                }
+                
+                return stock;
+            })
+            .filter(stock => {
+                // More inclusive filtering - catch different breakout patterns
+                const score = stock.breakoutScore.totalScore;
+                const isNewIPO = stock.breakoutScore.isNewIPO;
+                const hasVolumeSpike = stock.volumeSignal?.signal?.includes('Spike');
+                const hasGapUp = stock.gapSignal?.signal?.includes('Gap Up');
+                const strongMomentum = (stock.consecutiveUpDays || 0) >= 3;
+                const moderateMomentum = (stock.consecutiveUpDays || 0) >= 2;
+                const recentGains = (stock.changes['1w'] || 0) > 5;
+                const moderateGains = (stock.changes['1w'] || 0) > 2;
+                const strongLiberation = (stock.liberationChange || 0) > 30;
+                
+                // Debug CRCL and ZETA filtering
+                if (stock.ticker === 'CRCL' || stock.ticker === 'ZETA') {
+                    console.log(`${stock.ticker} Filter Check:`);
+                    console.log('- Score:', score, '(>= 5)', score >= 5);
+                    console.log('- Is New IPO:', isNewIPO);
+                    console.log('- Volume Spike:', hasVolumeSpike);
+                    console.log('- Gap Up:', hasGapUp);
+                    console.log('- Strong Momentum:', strongMomentum, '(3+ up days)');
+                    console.log('- Moderate Momentum:', moderateMomentum, '(2+ up days)');
+                    console.log('- Recent Gains:', recentGains, '(>5% 1w)');
+                    console.log('- Strong Liberation:', strongLiberation, '(>30%)');
+                }
+                
+                // Special criteria for new IPOs (more lenient)
+                if (isNewIPO) {
+                    const passesNewIPO = score >= 4 || hasVolumeSpike || hasGapUp || 
+                                        (moderateMomentum && moderateGains) || strongLiberation;
+                    if (stock.ticker === 'CRCL' || stock.ticker === 'ZETA') {
+                        console.log('- NEW IPO PASSES:', passesNewIPO);
+                        console.log('=====================================');
+                    }
+                    return passesNewIPO;
+                }
+                
+                // Regular criteria for established stocks
+                const passesRegular = score >= 5 || hasVolumeSpike || hasGapUp || 
+                                     (strongMomentum && recentGains) || 
+                                     (score >= 4 && strongLiberation);
+                
+                if (stock.ticker === 'CRCL' || stock.ticker === 'ZETA') {
+                    console.log('- REGULAR PASSES:', passesRegular);
+                    console.log('=====================================');
+                }
+                
+                return passesRegular;
+            })
+            .sort((a, b) => b.breakoutScore.totalScore - a.breakoutScore.totalScore)
+            .slice(0, 25); // Top 25 breakout candidates (increased from 20)
+
+        return {
+            highSharpe: highSharpeStocks,
+            momentum: momentumAccel,
+            stealth: stealthPerformers,
+            breakouts: breakoutSetups,
+            value: valueWithMomentum,
+            oversold: oversoldBounce,
+            breakoutHunter: breakoutHunterCandidates,
+            totalStocks: allStocks.length
+        };
+    }
+
+    updateIntelligenceSidePanel(analysis) {
+        // Calculate summary stats
+        const totalOpportunities = analysis.highSharpe.length + analysis.momentum.length + 
+                                 analysis.stealth.length + analysis.breakouts.length + 
+                                 analysis.value.length + analysis.oversold.length + 
+                                 analysis.breakoutHunter.length;
+
+        // Find strongest signal category
+        const categories = [
+            { name: 'High Sharpe', count: analysis.highSharpe.length, type: 'Quality' },
+            { name: 'Momentum', count: analysis.momentum.length, type: 'Growth' },
+            { name: 'Stealth', count: analysis.stealth.length, type: 'Hidden' },
+            { name: 'Breakouts', count: analysis.breakouts.length, type: 'Technical' },
+            { name: 'Value', count: analysis.value.length, type: 'Recovery' },
+            { name: 'Oversold', count: analysis.oversold.length, type: 'Contrarian' },
+            { name: 'Breakout Hunter', count: analysis.breakoutHunter.length, type: 'Explosive' }
+        ];
+        const strongestCategory = categories.reduce((max, cat) => cat.count > max.count ? cat : max);
+
+        // Determine market regime
+        const bullishSignals = analysis.momentum.length + analysis.breakouts.length;
+        const bearishSignals = analysis.oversold.length;
+        const regime = bullishSignals > bearishSignals * 2 ? 'Risk-On' : 
+                      bearishSignals > bullishSignals ? 'Risk-Off' : 'Mixed';
+
+        // Update side panel
+        document.getElementById('totalOpportunities').textContent = `${totalOpportunities} signals detected`;
+        document.getElementById('strongestSignal').textContent = `${strongestCategory.name} (${strongestCategory.count} stocks)`;
+        document.getElementById('marketRegime').textContent = `${regime} Environment`;
+
+        // Update top picks
+        if (analysis.highSharpe.length > 0) {
+            const topSharpe = analysis.highSharpe[0];
+            document.getElementById('topSharpe').innerHTML = `
+                <div class="pick-ticker">${topSharpe.ticker}</div>
+                <div class="pick-reason">Sharpe: ${topSharpe.sharpeScore.toFixed(2)} • ${this.formatPercent(topSharpe.liberationChange)}</div>
+            `;
+        }
+
+        if (analysis.momentum.length > 0) {
+            const topMomentum = analysis.momentum[0];
+            document.getElementById('topMomentum').innerHTML = `
+                <div class="pick-ticker">${topMomentum.ticker}</div>
+                <div class="pick-reason">${topMomentum.consecutiveUpDays || 0} days up • ${this.formatPercent(topMomentum.changes['1w'])}</div>
+            `;
+        }
+
+        if (analysis.stealth.length > 0) {
+            const topStealth = analysis.stealth[0];
+            document.getElementById('topStealth').innerHTML = `
+                <div class="pick-ticker">${topStealth.ticker}</div>
+                <div class="pick-reason">${this.formatPercent(topStealth.liberationChange)} • ${this.formatPercent(topStealth.comparisons.deltaFrom52WeekHigh)} from 52W</div>
+            `;
+        }
+
+        // NEW: Top Breakout Hunter Pick
+        if (analysis.breakoutHunter.length > 0) {
+            const topBreakout = analysis.breakoutHunter[0];
+            const scoreElement = document.getElementById('topBreakout');
+            if (scoreElement) {
+                scoreElement.innerHTML = `
+                    <div class="pick-ticker">${topBreakout.ticker}</div>
+                    <div class="pick-reason">Score: ${topBreakout.breakoutScore.totalScore}/22 • ${topBreakout.consecutiveUpDays || 0} days up</div>
+                `;
+            }
+        }
+    }
+
+    updateIntelligenceSections(analysis) {
+        // High Sharpe Ratio
+        this.populateIntelligenceGrid('highSharpeList', analysis.highSharpe, (stock) => [
+            stock.ticker,
+            this.formatPercent(stock.liberationChange),
+            this.formatPercent(Math.abs(stock.changes['1m'] || 0)),
+            stock.sharpeScore.toFixed(2)
+        ]);
+
+        // Momentum Acceleration
+        this.populateIntelligenceGrid('momentumAccelList', analysis.momentum, (stock) => [
+            stock.ticker,
+            this.formatPercent(stock.changes['1w']),
+            this.formatPercent(stock.changes['1m']),
+            `${stock.consecutiveUpDays || 0} days`
+        ]);
+
+        // Stealth Performers
+        this.populateIntelligenceGrid('stealthList', analysis.stealth, (stock) => [
+            stock.ticker,
+            this.formatPercent(stock.liberationChange),
+            this.formatPercent(stock.comparisons.deltaFrom52WeekHigh),
+            (stock.rsiData.rsi14 || 0).toFixed(0)
+        ]);
+
+        // Breakout Setups
+        this.populateIntelligenceGrid('breakoutList', analysis.breakouts, (stock) => [
+            stock.ticker,
+            this.formatPercent(stock.comparisons.deltaFrom52WeekHigh),
+            this.formatPercent(stock.changes['1w']),
+            stock.comparisons.ema8Above13Above21 || 'N/A'
+        ]);
+
+        // Value with Momentum
+        this.populateIntelligenceGrid('valueList', analysis.value, (stock) => [
+            stock.ticker,
+            this.formatPercent(stock.changes['3m']),
+            this.formatPercent(stock.changes['1m']),
+            stock.comparisons.sma50Above100Above200 || 'N/A'
+        ]);
+
+        // Oversold Plays
+        this.populateIntelligenceGrid('oversoldList', analysis.oversold, (stock) => [
+            stock.ticker,
+            (stock.rsiData.rsi14 || 0).toFixed(0),
+            this.formatPercent(stock.liberationChange),
+            this.formatPercent(stock.changes['1w'])
+        ]);
+
+        // NEW: Breakout Hunter
+        this.populateBreakoutHunterGrid('breakoutHunterList', analysis.breakoutHunter);
+    }
+
+    populateBreakoutHunterGrid(containerId, stocks) {
+        const container = document.getElementById(containerId);
+        
+        if (stocks.length === 0) {
+            container.innerHTML = '<div style="padding: 20px; text-align: center; color: rgba(255,255,255,0.6);">No breakout candidates detected</div>';
+            return;
+        }
+
+        container.innerHTML = stocks.map(stock => {
+            const score = stock.breakoutScore;
+            const criteria = score.criteria;
+            const isNewIPO = score.isNewIPO;
+            
+            // Determine score class
+            const scoreClass = score.totalScore >= 15 ? 'high' : 
+                              score.totalScore >= 10 ? 'medium' : 'low';
+            
+            // Format criteria with color coding
+            const formatCriteria = (value, maxValue) => {
+                const percentage = value / maxValue;
+                const className = percentage >= 0.7 ? 'strong' : 
+                                 percentage >= 0.4 ? 'medium' : 'weak';
+                return `<span class="breakout-criteria ${className}">${value}</span>`;
+            };
+
+            // Special display for new IPOs
+            if (isNewIPO) {
+                return `
+                    <div class="breakout-hunter-row" style="background: rgba(255, 193, 7, 0.1); border-left: 3px solid #ffc107;">
+                        <div class="breakout-ticker">${stock.ticker} 🆕</div>
+                        <div class="breakout-name">${stock.name}</div>
+                        <div class="breakout-score ${scoreClass}">${score.totalScore}</div>
+                        ${formatCriteria(criteria.consecutiveUpDays || 0, 5)}
+                        <span class="breakout-criteria medium">IPO</span>
+                        <span class="breakout-criteria medium">IPO</span>
+                        <span class="breakout-criteria medium">IPO</span>
+                        ${formatCriteria(criteria.volumeSpike || 0, 4)}
+                        ${formatCriteria(criteria.gapSignal || 0, 3)}
+                        <span class="breakout-criteria strong">🆕</span>
+                        ${formatCriteria(criteria.recentPerformance || 0, 8)}
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="breakout-hunter-row">
+                    <div class="breakout-ticker">${stock.ticker}</div>
+                    <div class="breakout-name">${stock.name}</div>
+                    <div class="breakout-score ${scoreClass}">${score.totalScore}</div>
+                    ${formatCriteria(criteria.consecutiveUpDays, 5)}
+                    ${formatCriteria(criteria.rsiSweetSpot, 3)}
+                    ${formatCriteria(criteria.emaCompression, 2)}
+                    ${formatCriteria(criteria.smaBreakthrough, 3)}
+                    ${formatCriteria(criteria.volumeSpike, 4)}
+                    ${formatCriteria(criteria.gapSignal, 3)}
+                    ${formatCriteria(criteria.weekHigh52Proximity, 2)}
+                    ${formatCriteria(criteria.momentumExplosion || 0, 5)}
+                </div>
+            `;
+        }).join('');
+    }
+
+    populateIntelligenceGrid(containerId, stocks, formatFunction) {
+        const container = document.getElementById(containerId);
+        
+        if (stocks.length === 0) {
+            container.innerHTML = '<div style="padding: 20px; text-align: center; color: rgba(255,255,255,0.6);">No opportunities found in this category</div>';
+            return;
+        }
+
+        container.innerHTML = stocks.map(stock => {
+            const data = formatFunction(stock);
+            return `
+                <div class="intelligence-row">
+                    <div class="intelligence-ticker">${data[0]}</div>
+                    <div class="intelligence-metric ${this.getMetricClass(data[1])}">${data[1]}</div>
+                    <div class="intelligence-metric ${this.getMetricClass(data[2])}">${data[2]}</div>
+                    <div class="intelligence-metric">${data[3]}</div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    getMetricClass(value) {
+        if (typeof value === 'string' && value.includes('%')) {
+            const numValue = parseFloat(value.replace('%', '').replace('+', ''));
+            if (numValue > 0) return 'positive';
+            if (numValue < 0) return 'negative';
+        }
+        return '';
     }
 
     updateMarketStats(sectorData, growthData) {
@@ -1845,6 +2847,294 @@ class StockDashboard {
         return trends.slice(0, 6); // Limit to 6 trends max for readability
     }
 
+    // NEW: Volume Signal Calculation
+    calculateVolumeSignal(historicalData, currentVolume) {
+        if (!historicalData || historicalData.length < 20 || !currentVolume) {
+            return { signal: 'No Data', ratio: 0 };
+        }
+
+        // Get last 20 days of volume data
+        const recentVolumes = historicalData.slice(-20).map(day => day.v);
+        const avgVolume = recentVolumes.reduce((sum, vol) => sum + vol, 0) / recentVolumes.length;
+        
+        // Calculate standard deviation
+        const variance = recentVolumes.reduce((sum, vol) => sum + Math.pow(vol - avgVolume, 2), 0) / recentVolumes.length;
+        const stdDev = Math.sqrt(variance);
+        
+        const volumeRatio = currentVolume / avgVolume;
+        const zScore = (currentVolume - avgVolume) / stdDev;
+        
+        let signal = 'Normal';
+        if (zScore >= 3) {
+            signal = 'Spike 3σ';
+        } else if (zScore >= 2) {
+            signal = 'Spike 2σ';
+        } else if (zScore <= -1.5) {
+            signal = 'Low Vol';
+        }
+        
+        return { signal, ratio: volumeRatio, zScore };
+    }
+
+    // NEW: Gap Signal Calculation  
+    calculateGapSignal(historicalData, groupedData) {
+        if (!historicalData || historicalData.length < 20 || !groupedData) {
+            return { signal: 'No Data', gapPercent: 0 };
+        }
+
+        // Get yesterday's close vs today's open to detect gaps
+        const todayOpen = groupedData.o; // Open price
+        const yesterdayClose = historicalData[historicalData.length - 1]?.c;
+        
+        if (!todayOpen || !yesterdayClose) {
+            return { signal: 'No Data', gapPercent: 0 };
+        }
+
+        const gapPercent = ((todayOpen - yesterdayClose) / yesterdayClose) * 100;
+        
+        // Calculate recent volatility (20-day standard deviation of daily changes)
+        const recentChanges = historicalData.slice(-20).map((day, i, arr) => {
+            if (i === 0) return 0;
+            return ((day.c - arr[i-1].c) / arr[i-1].c) * 100;
+        }).slice(1);
+        
+        const avgChange = recentChanges.reduce((sum, change) => sum + change, 0) / recentChanges.length;
+        const variance = recentChanges.reduce((sum, change) => sum + Math.pow(change - avgChange, 2), 0) / recentChanges.length;
+        const volatilityStdDev = Math.sqrt(variance);
+        
+        const zScore = Math.abs(gapPercent) / volatilityStdDev;
+        
+        let signal = 'Normal';
+        if (gapPercent > 0) {
+            if (zScore >= 3) {
+                signal = 'Gap Up 3σ';
+            } else if (zScore >= 2) {
+                signal = 'Gap Up 2σ';
+            }
+        } else if (gapPercent < 0) {
+            if (zScore >= 3) {
+                signal = 'Gap Down 3σ';
+            } else if (zScore >= 2) {
+                signal = 'Gap Down 2σ';
+            }
+        }
+        
+        return { signal, gapPercent, zScore };
+    }
+
+    // NEW: Detect newly public stocks (IPOs with limited data)
+    isNewlyPublicStock(data) {
+        // Check if key technical indicators are missing (sign of limited history)
+        const missingSMA200 = !data.movingAverages?.sma200;
+        const missingSMA100 = !data.movingAverages?.sma100;
+        const missingRSI = !data.rsiData?.rsi14;
+        
+        // If multiple key indicators are missing, likely a new IPO
+        return (missingSMA200 && missingSMA100) || missingRSI;
+    }
+
+    // NEW: Special scoring for newly public stocks
+    calculateNewIPOScore(data) {
+        let score = 0;
+        const criteria = {};
+        
+        // For new IPOs, focus on available metrics
+        
+        // 1. Recent Performance (0-10 points) - increased weight
+        const weeklyGain = data.changes?.['1w'] || 0;
+        const twoWeekGain = data.changes?.['2w'] || 0;
+        const monthlyGain = data.changes?.['1m'] || 0;
+        const liberationGain = data.liberationChange || 0;
+        
+        let performanceScore = 0;
+        
+        // Weekly performance (0-3 points)
+        if (weeklyGain > 20) performanceScore += 3;
+        else if (weeklyGain > 10) performanceScore += 2;
+        else if (weeklyGain > 5) performanceScore += 1;
+        
+        // Two-week performance (0-2 points)
+        if (twoWeekGain > 25) performanceScore += 2;
+        else if (twoWeekGain > 10) performanceScore += 1;
+        
+        // Liberation performance (0-5 points)
+        if (liberationGain > 100) performanceScore += 5;
+        else if (liberationGain > 50) performanceScore += 4;
+        else if (liberationGain > 30) performanceScore += 3;
+        else if (liberationGain > 15) performanceScore += 2;
+        else if (liberationGain > 5) performanceScore += 1;
+        
+        criteria.recentPerformance = Math.min(performanceScore, 10);
+        score += criteria.recentPerformance;
+        
+        // 2. Volume and Gap signals still work for new stocks
+        const volumeSignal = data.volumeSignal?.signal || 'Normal';
+        if (volumeSignal === 'Spike 3σ') {
+            criteria.volumeSpike = 4;
+            score += 4;
+        } else if (volumeSignal === 'Spike 2σ') {
+            criteria.volumeSpike = 3;
+            score += 3;
+        } else if (data.volumeSignal?.ratio > 1.5) {
+            criteria.volumeSpike = 2;
+            score += 2;
+        } else if (data.volumeSignal?.ratio > 1.2) {
+            criteria.volumeSpike = 1;
+            score += 1;
+        } else {
+            criteria.volumeSpike = 0;
+        }
+        
+        const gapSignal = data.gapSignal?.signal || 'Normal';
+        if (gapSignal === 'Gap Up 3σ') {
+            criteria.gapSignal = 3;
+            score += 3;
+        } else if (gapSignal === 'Gap Up 2σ') {
+            criteria.gapSignal = 2;
+            score += 2;
+        } else if (data.gapSignal?.gapPercent > 2) {
+            criteria.gapSignal = 1;
+            score += 1;
+        } else {
+            criteria.gapSignal = 0;
+        }
+        
+        // 3. Consecutive days (works for new stocks)
+        const upDays = data.consecutiveUpDays || 0;
+        criteria.consecutiveUpDays = Math.min(upDays, 5);
+        score += criteria.consecutiveUpDays;
+        
+        // 4. NEW IPO BONUS - Being newly public with momentum is extra bullish
+        if (weeklyGain > 5 || liberationGain > 20) {
+            criteria.newIPOBonus = 4; // Higher bonus for momentum IPOs
+            score += 4;
+        } else {
+            criteria.newIPOBonus = 2;
+            score += 2;
+        }
+        
+        // 5. Price action strength (for stocks with some EMA data)
+        if (data.movingAverages?.ema8 && data.currentPrice > data.movingAverages.ema8) {
+            criteria.priceStrength = 1;
+            score += 1;
+        } else {
+            criteria.priceStrength = 0;
+        }
+        
+        return { totalScore: score, criteria, isNewIPO: true };
+    }
+
+    // NEW: Breakout Score Calculation
+    calculateBreakoutScore(data) {
+        // Check if this is a newly public stock (limited historical data)
+        const isNewIPO = this.isNewlyPublicStock(data);
+        
+        // Use special scoring for new IPOs
+        if (isNewIPO) {
+            return this.calculateNewIPOScore(data);
+        }
+        
+        let score = 0;
+        const criteria = {};
+        
+        // 1. Consecutive Up Days (0-5 points)
+        const upDays = data.consecutiveUpDays || 0;
+        criteria.consecutiveUpDays = Math.min(upDays, 5);
+        score += criteria.consecutiveUpDays;
+        
+        // 2. RSI Pattern (0-3 points) - Updated for momentum continuation
+        const rsi = data.rsiData?.rsi14 || 50;
+        if (rsi >= 45 && rsi <= 65) {
+            criteria.rsiSweetSpot = 3; // Sweet spot - momentum without overbought
+        } else if (rsi >= 65 && rsi <= 80) {
+            criteria.rsiSweetSpot = 2; // Momentum continuation - still valid for breakouts
+        } else if (rsi >= 40 && rsi <= 45) {
+            criteria.rsiSweetSpot = 2; // Building momentum
+        } else if (rsi > 80) {
+            criteria.rsiSweetSpot = 1; // Extreme momentum - risky but possible
+        } else {
+            criteria.rsiSweetSpot = 0; // Oversold or other
+        }
+        score += criteria.rsiSweetSpot;
+        
+        // 3. EMA Compression (0-2 points)
+        const ema8 = data.movingAverages?.ema8;
+        const ema13 = data.movingAverages?.ema13;
+        const ema21 = data.movingAverages?.ema21;
+        if (ema8 && ema13 && ema21) {
+            const emaSpread = ((Math.max(ema8, ema13, ema21) - Math.min(ema8, ema13, ema21)) / data.currentPrice) * 100;
+            criteria.emaCompression = emaSpread < 3 ? 2 : (emaSpread < 5 ? 1 : 0);
+        } else {
+            criteria.emaCompression = 0;
+        }
+        score += criteria.emaCompression;
+        
+        // 4. Key SMA Breakthrough (0-3 points)
+        let smaBreakthrough = 0;
+        if (data.comparisons?.above50SMA) smaBreakthrough += 1;
+        if (data.comparisons?.above100SMA) smaBreakthrough += 1;
+        if (data.comparisons?.sma50Above100Above200 === 'BULLISH') smaBreakthrough += 1;
+        criteria.smaBreakthrough = smaBreakthrough;
+        score += criteria.smaBreakthrough;
+        
+        // 5. Volume Spike (0-4 points)
+        const volumeSignal = data.volumeSignal?.signal || 'Normal';
+        if (volumeSignal === 'Spike 3σ') {
+            criteria.volumeSpike = 4;
+        } else if (volumeSignal === 'Spike 2σ') {
+            criteria.volumeSpike = 3;
+        } else if (data.volumeSignal?.ratio > 1.5) {
+            criteria.volumeSpike = 1;
+        } else {
+            criteria.volumeSpike = 0;
+        }
+        score += criteria.volumeSpike;
+        
+        // 6. Gap Signal (0-3 points)
+        const gapSignal = data.gapSignal?.signal || 'Normal';
+        if (gapSignal === 'Gap Up 3σ') {
+            criteria.gapSignal = 3;
+        } else if (gapSignal === 'Gap Up 2σ') {
+            criteria.gapSignal = 2;
+        } else {
+            criteria.gapSignal = 0;
+        }
+        score += criteria.gapSignal;
+        
+        // 7. 52-Week High Proximity (0-2 points)
+        const delta52w = data.comparisons?.deltaFrom52WeekHigh || -100;
+        if (delta52w > -5) {
+            criteria.weekHigh52Proximity = 2;
+        } else if (delta52w > -15) {
+            criteria.weekHigh52Proximity = 1;
+        } else {
+            criteria.weekHigh52Proximity = 0;
+        }
+        score += criteria.weekHigh52Proximity;
+        
+        // 8. NEW: Momentum Explosion Bonus (0-5 points)
+        // Special pattern for explosive breakouts that don't fit traditional molds
+        let momentumExplosion = 0;
+        const weeklyGain = data.changes?.['1w'] || 0;
+        const monthlyGain = data.changes?.['1m'] || 0;
+        const liberationGain = data.liberationChange || 0;
+        
+        // Explosive recent performance
+        if (weeklyGain > 15) momentumExplosion += 2;
+        else if (weeklyGain > 10) momentumExplosion += 1;
+        
+        // Strong liberation performance
+        if (liberationGain > 50) momentumExplosion += 1;
+        
+        // Volume + momentum combo
+        if ((data.volumeSignal?.ratio > 2) && weeklyGain > 5) momentumExplosion += 2;
+        
+        criteria.momentumExplosion = Math.min(momentumExplosion, 5);
+        score += criteria.momentumExplosion;
+        
+        return { totalScore: score, criteria };
+    }
+
     async fetchAllEarningsData(tickers, dataMap) {
         console.log('Fetching earnings data for growth stock tickers...');
         
@@ -1987,6 +3277,258 @@ class StockDashboard {
         setTimeout(() => {
             errorDiv.remove();
         }, 5000);
+    }
+
+    // Gainers/Losers functionality
+    renderGainersLosers() {
+        // Ensure all datasets are loaded
+        if (this.sectorData.size === 0 || this.growthData.size === 0 || 
+            this.compounderData.size === 0 || this.mag7Data.size === 0 || 
+            this.aiPlatformData.size === 0) {
+            // Load data if not available
+            this.loadData();
+            return;
+        }
+
+        console.log('📊 Rendering Gainers/Losers Analysis...');
+        
+        // Update market status indicator
+        this.updateMarketStatusIndicator();
+        
+        // Get all stocks across all categories
+        const allStocks = this.getAllStocksData();
+        
+        // Calculate gainers/losers for different timeframes
+        const timeframes = ['1d', '1w', '2w', '1m'];
+        
+        // Render overall market gainers/losers
+        timeframes.forEach(timeframe => {
+            this.renderTimeframeGainersLosers('overall', allStocks, timeframe);
+        });
+        
+        // Render multi-timeframe champions
+        this.renderMultiTimeframeChampions(allStocks);
+        
+        // Render section-specific gainers/losers
+        const sections = [
+            { id: 'sector', data: Array.from(this.sectorData.values()).filter(d => d !== null) },
+            { id: 'growth', data: Array.from(this.growthData.values()).filter(d => d !== null) },
+            { id: 'compounder', data: Array.from(this.compounderData.values()).filter(d => d !== null) },
+            { id: 'mag7', data: Array.from(this.mag7Data.values()).filter(d => d !== null) },
+            { id: 'ai-platform', data: Array.from(this.aiPlatformData.values()).filter(d => d !== null) }
+        ];
+        
+        sections.forEach(section => {
+            timeframes.forEach(timeframe => {
+                this.renderTimeframeGainersLosers(section.id, section.data, timeframe);
+            });
+        });
+    }
+
+    getAllStocksData() {
+        // Combine all unique stocks from all datasets
+        const allStocksMap = new Map();
+        
+        // Add stocks from each dataset
+        [this.sectorData, this.growthData, this.compounderData, this.mag7Data, this.aiPlatformData].forEach(dataMap => {
+            dataMap.forEach((data, ticker) => {
+                if (data && !allStocksMap.has(ticker)) {
+                    allStocksMap.set(ticker, data);
+                }
+            });
+        });
+        
+        return Array.from(allStocksMap.values());
+    }
+
+    renderTimeframeGainersLosers(sectionId, stocksData, timeframe) {
+        // Get container IDs
+        const gainersId = `${sectionId}-gainers-${timeframe}`;
+        const losersId = `${sectionId}-losers-${timeframe}`;
+        
+        const gainersContainer = document.getElementById(gainersId);
+        const losersContainer = document.getElementById(losersId);
+        
+        if (!gainersContainer || !losersContainer) {
+            console.warn(`Containers not found for ${sectionId} ${timeframe}`);
+            return;
+        }
+        
+        // Filter stocks with valid data for this timeframe
+        const validStocks = stocksData.filter(stock => 
+            stock.changes && 
+            stock.changes[timeframe] !== null && 
+            stock.changes[timeframe] !== undefined
+        );
+        
+        if (validStocks.length === 0) {
+            gainersContainer.innerHTML = '<div class="gl-empty">No data available</div>';
+            losersContainer.innerHTML = '<div class="gl-empty">No data available</div>';
+            return;
+        }
+        
+        // Sort by performance
+        const sortedStocks = [...validStocks].sort((a, b) => 
+            (b.changes[timeframe] || -999999) - (a.changes[timeframe] || -999999)
+        );
+        
+        // Get top 5 gainers and losers
+        const topGainers = sortedStocks.slice(0, 5);
+        const topLosers = sortedStocks.slice(-5).reverse();
+        
+        // Render gainers
+        gainersContainer.innerHTML = topGainers.map(stock => 
+            this.createGainerLoserItem(stock, timeframe, 'gainer')
+        ).join('');
+        
+        // Render losers
+        losersContainer.innerHTML = topLosers.map(stock => 
+            this.createGainerLoserItem(stock, timeframe, 'loser')
+        ).join('');
+    }
+
+    createGainerLoserItem(stock, timeframe, type) {
+        const change = stock.changes[timeframe];
+        const changeClass = change >= 0 ? 'positive' : 'negative';
+        const itemClass = type === 'gainer' ? 'gainer' : 'loser';
+        
+        // Use short names for display, fallback to regular name, then ticker
+        const displayName = SHORT_NAMES[stock.ticker] || stock.name || stock.ticker;
+        
+        return `
+            <div class="gl-item ${itemClass}">
+                <div>
+                    <div class="gl-ticker">${stock.ticker}</div>
+                    <div class="gl-name">${displayName}</div>
+                </div>
+                <div class="gl-change ${changeClass}">
+                    ${change >= 0 ? '+' : ''}${change.toFixed(2)}%
+                </div>
+            </div>
+        `;
+    }
+
+    updateMarketStatusIndicator() {
+        const indicator = document.getElementById('marketStatusIndicator');
+        if (!indicator) return;
+        
+        const now = new Date();
+        const isMarketOpen = this.isMarketOpen();
+        
+        indicator.className = `market-status-indicator ${isMarketOpen ? 'open' : 'closed'}`;
+        
+        if (isMarketOpen) {
+            indicator.innerHTML = '<span class="status-text">🟢 Market Open - Showing intraday changes from previous close</span>';
+        } else {
+            indicator.innerHTML = '<span class="status-text">🔴 Market Closed - Showing end-of-day changes from previous close</span>';
+        }
+    }
+
+    renderMultiTimeframeChampions(allStocks) {
+        const timeframes = ['1d', '1w', '2w', '1m'];
+        const validStocks = allStocks.filter(stock => 
+            stock.changes && 
+            timeframes.every(tf => 
+                stock.changes[tf] !== null && 
+                stock.changes[tf] !== undefined
+            )
+        );
+
+        if (validStocks.length === 0) {
+            document.getElementById('overall-champions-gainers').innerHTML = '<div class="gl-empty">No data available</div>';
+            document.getElementById('overall-champions-losers').innerHTML = '<div class="gl-empty">No data available</div>';
+            return;
+        }
+
+        // Score stocks based on their rankings across timeframes
+        const championScores = validStocks.map(stock => {
+            let gainersScore = 0;
+            let losersScore = 0;
+            let appearances = 0;
+
+            timeframes.forEach((timeframe, index) => {
+                // Sort all stocks by this timeframe
+                const sorted = [...validStocks].sort((a, b) => 
+                    (b.changes[timeframe] || -999999) - (a.changes[timeframe] || -999999)
+                );
+
+                const stockIndex = sorted.findIndex(s => s.ticker === stock.ticker);
+                const ranking = stockIndex + 1;
+                const totalStocks = sorted.length;
+
+                // Weight: Daily=4, Weekly=3, 2Week=2, Monthly=1
+                const weight = 4 - index;
+
+                // Top 5 gainers scoring
+                if (ranking <= 5) {
+                    gainersScore += (6 - ranking) * weight; // 5pts for #1, 4pts for #2, etc.
+                    appearances++;
+                }
+
+                // Top 5 losers scoring (from the bottom)
+                if (ranking > totalStocks - 5) {
+                    const bottomRank = totalStocks - ranking + 1; // 1=worst, 2=2nd worst, etc.
+                    losersScore += bottomRank * weight;
+                    appearances++;
+                }
+            });
+
+            return {
+                ...stock,
+                gainersScore,
+                losersScore,
+                appearances,
+                dominance: Math.max(gainersScore, losersScore)
+            };
+        });
+
+        // Get elite gainers (high gainers score, multiple appearances)
+        const eliteGainers = championScores
+            .filter(stock => stock.gainersScore > 0 && stock.appearances >= 2)
+            .sort((a, b) => b.gainersScore - a.gainersScore)
+            .slice(0, 5);
+
+        // Get consistent losers (high losers score, multiple appearances)
+        const consistentLosers = championScores
+            .filter(stock => stock.losersScore > 0 && stock.appearances >= 2)
+            .sort((a, b) => b.losersScore - a.losersScore)
+            .slice(0, 5);
+
+        // Render elite gainers
+        document.getElementById('overall-champions-gainers').innerHTML = 
+            eliteGainers.map(stock => this.createChampionItem(stock, 'gainer')).join('');
+
+        // Render consistent losers
+        document.getElementById('overall-champions-losers').innerHTML = 
+            consistentLosers.map(stock => this.createChampionItem(stock, 'loser')).join('');
+    }
+
+    createChampionItem(stock, type) {
+        const itemClass = type === 'gainer' ? 'gainer' : 'loser';
+        const score = type === 'gainer' ? stock.gainersScore : stock.losersScore;
+        const displayName = SHORT_NAMES[stock.ticker] || stock.name || stock.ticker;
+        
+        // Determine badge based on appearances
+        let badge = '';
+        if (stock.appearances >= 4) {
+            badge = '<span class="champions-badge">4x</span>';
+        } else if (stock.appearances >= 3) {
+            badge = '<span class="champions-badge">3x</span>';
+        } else if (stock.appearances >= 2) {
+            badge = '<span class="champions-badge">2x</span>';
+        }
+
+        return `
+            <div class="gl-item ${itemClass}">
+                <div>
+                    <div class="gl-ticker">${stock.ticker}${badge}</div>
+                    <div class="gl-name">${displayName}</div>
+                </div>
+                <div class="gl-change" style="color: #ffd700; font-weight: 700;">
+                    Score: ${score}
+                </div>
+            </div>
+        `;
     }
 }
 
