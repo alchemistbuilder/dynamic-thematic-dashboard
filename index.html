@@ -219,6 +219,79 @@
 
         <!-- High Growth Momentum Tab -->
         <div class="tab-content" id="high-growth">
+            <!-- Sector Analysis Section -->
+            <div class="sector-analysis">
+                <h3>📊 High Growth Momentum Sector Analysis</h3>
+                <div class="sector-metrics">
+                    <div class="sector-returns">
+                        <h4>📈 Equal-Weighted Portfolio Returns</h4>
+                        <div class="returns-grid">
+                            <div class="return-item">
+                                <span class="return-label">1D</span>
+                                <span class="return-value" id="growth-return-1d">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">1W</span>
+                                <span class="return-value" id="growth-return-1w">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">2W</span>
+                                <span class="return-value" id="growth-return-2w">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">1M</span>
+                                <span class="return-value" id="growth-return-1m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">2M</span>
+                                <span class="return-value" id="growth-return-2m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">3M</span>
+                                <span class="return-value" id="growth-return-3m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">6M</span>
+                                <span class="return-value" id="growth-return-6m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">YTD</span>
+                                <span class="return-value" id="growth-return-ytd">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sector-ma-stats">
+                        <h4>📊 % Above Moving Averages</h4>
+                        <div class="ma-stats-grid">
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 50 SMA</span>
+                                <span class="ma-value" id="growth-above-50sma">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 100 SMA</span>
+                                <span class="ma-value" id="growth-above-100sma">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 200 SMA</span>
+                                <span class="ma-value" id="growth-above-200sma">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 8 EMA</span>
+                                <span class="ma-value" id="growth-above-8ema">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 13 EMA</span>
+                                <span class="ma-value" id="growth-above-13ema">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 21 EMA</span>
+                                <span class="ma-value" id="growth-above-21ema">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="main-content">
                 <div class="side-panel" id="sidePanelGrowth">
                     <h3>📊 Growth Insights</h3>
@@ -241,79 +314,6 @@
                     <div class="insight-section">
                         <h4>💎 Breakout Candidates (Top 5)</h4>
                         <div id="breakoutListGrowth" class="stock-list"></div>
-                    </div>
-                </div>
-                
-                <!-- Sector Analysis Section -->
-                <div class="sector-analysis">
-                    <h3>📊 High Growth Momentum Sector Analysis</h3>
-                    <div class="sector-metrics">
-                        <div class="sector-returns">
-                            <h4>📈 Equal-Weighted Portfolio Returns</h4>
-                            <div class="returns-grid">
-                                <div class="return-item">
-                                    <span class="return-label">1D</span>
-                                    <span class="return-value" id="growth-return-1d">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">1W</span>
-                                    <span class="return-value" id="growth-return-1w">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">2W</span>
-                                    <span class="return-value" id="growth-return-2w">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">1M</span>
-                                    <span class="return-value" id="growth-return-1m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">2M</span>
-                                    <span class="return-value" id="growth-return-2m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">3M</span>
-                                    <span class="return-value" id="growth-return-3m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">6M</span>
-                                    <span class="return-value" id="growth-return-6m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">YTD</span>
-                                    <span class="return-value" id="growth-return-ytd">--</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="sector-ma-stats">
-                            <h4>📊 % Above Moving Averages</h4>
-                            <div class="ma-stats-grid">
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 50 SMA</span>
-                                    <span class="ma-value" id="growth-above-50sma">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 100 SMA</span>
-                                    <span class="ma-value" id="growth-above-100sma">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 200 SMA</span>
-                                    <span class="ma-value" id="growth-above-200sma">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 8 EMA</span>
-                                    <span class="ma-value" id="growth-above-8ema">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 13 EMA</span>
-                                    <span class="ma-value" id="growth-above-13ema">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 21 EMA</span>
-                                    <span class="ma-value" id="growth-above-21ema">--</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
                 
@@ -370,6 +370,79 @@
 
         <!-- Compounder Tab -->
         <div class="tab-content" id="compounder">
+            <!-- Sector Analysis Section -->
+            <div class="sector-analysis">
+                <h3>📊 Compounder Sector Analysis</h3>
+                <div class="sector-metrics">
+                    <div class="sector-returns">
+                        <h4>📈 Equal-Weighted Portfolio Returns</h4>
+                        <div class="returns-grid">
+                            <div class="return-item">
+                                <span class="return-label">1D</span>
+                                <span class="return-value" id="compounder-return-1d">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">1W</span>
+                                <span class="return-value" id="compounder-return-1w">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">2W</span>
+                                <span class="return-value" id="compounder-return-2w">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">1M</span>
+                                <span class="return-value" id="compounder-return-1m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">2M</span>
+                                <span class="return-value" id="compounder-return-2m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">3M</span>
+                                <span class="return-value" id="compounder-return-3m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">6M</span>
+                                <span class="return-value" id="compounder-return-6m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">YTD</span>
+                                <span class="return-value" id="compounder-return-ytd">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sector-ma-stats">
+                        <h4>📊 % Above Moving Averages</h4>
+                        <div class="ma-stats-grid">
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 50 SMA</span>
+                                <span class="ma-value" id="compounder-above-50sma">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 100 SMA</span>
+                                <span class="ma-value" id="compounder-above-100sma">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 200 SMA</span>
+                                <span class="ma-value" id="compounder-above-200sma">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 8 EMA</span>
+                                <span class="ma-value" id="compounder-above-8ema">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 13 EMA</span>
+                                <span class="ma-value" id="compounder-above-13ema">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 21 EMA</span>
+                                <span class="ma-value" id="compounder-above-21ema">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="main-content">
                 <div class="side-panel" id="sidePanelCompounder">
                     <h3>📊 Compounder Insights</h3>
@@ -392,79 +465,6 @@
                     <div class="insight-section">
                         <h4>💎 Breakout Candidates (Top 5)</h4>
                         <div id="breakoutListCompounder" class="stock-list"></div>
-                    </div>
-                </div>
-                
-                <!-- Sector Analysis Section -->
-                <div class="sector-analysis">
-                    <h3>📊 Compounder Sector Analysis</h3>
-                    <div class="sector-metrics">
-                        <div class="sector-returns">
-                            <h4>📈 Equal-Weighted Portfolio Returns</h4>
-                            <div class="returns-grid">
-                                <div class="return-item">
-                                    <span class="return-label">1D</span>
-                                    <span class="return-value" id="compounder-return-1d">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">1W</span>
-                                    <span class="return-value" id="compounder-return-1w">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">2W</span>
-                                    <span class="return-value" id="compounder-return-2w">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">1M</span>
-                                    <span class="return-value" id="compounder-return-1m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">2M</span>
-                                    <span class="return-value" id="compounder-return-2m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">3M</span>
-                                    <span class="return-value" id="compounder-return-3m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">6M</span>
-                                    <span class="return-value" id="compounder-return-6m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">YTD</span>
-                                    <span class="return-value" id="compounder-return-ytd">--</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="sector-ma-stats">
-                            <h4>📊 % Above Moving Averages</h4>
-                            <div class="ma-stats-grid">
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 50 SMA</span>
-                                    <span class="ma-value" id="compounder-above-50sma">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 100 SMA</span>
-                                    <span class="ma-value" id="compounder-above-100sma">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 200 SMA</span>
-                                    <span class="ma-value" id="compounder-above-200sma">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 8 EMA</span>
-                                    <span class="ma-value" id="compounder-above-8ema">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 13 EMA</span>
-                                    <span class="ma-value" id="compounder-above-13ema">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 21 EMA</span>
-                                    <span class="ma-value" id="compounder-above-21ema">--</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
                 
@@ -521,6 +521,79 @@
 
         <!-- Mag7+ Tab -->
         <div class="tab-content" id="mag7-plus">
+            <!-- Sector Analysis Section -->
+            <div class="sector-analysis">
+                <h3>📊 Mag7+ Sector Analysis</h3>
+                <div class="sector-metrics">
+                    <div class="sector-returns">
+                        <h4>📈 Equal-Weighted Portfolio Returns</h4>
+                        <div class="returns-grid">
+                            <div class="return-item">
+                                <span class="return-label">1D</span>
+                                <span class="return-value" id="mag7-return-1d">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">1W</span>
+                                <span class="return-value" id="mag7-return-1w">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">2W</span>
+                                <span class="return-value" id="mag7-return-2w">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">1M</span>
+                                <span class="return-value" id="mag7-return-1m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">2M</span>
+                                <span class="return-value" id="mag7-return-2m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">3M</span>
+                                <span class="return-value" id="mag7-return-3m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">6M</span>
+                                <span class="return-value" id="mag7-return-6m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">YTD</span>
+                                <span class="return-value" id="mag7-return-ytd">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sector-ma-stats">
+                        <h4>📊 % Above Moving Averages</h4>
+                        <div class="ma-stats-grid">
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 50 SMA</span>
+                                <span class="ma-value" id="mag7-above-50sma">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 100 SMA</span>
+                                <span class="ma-value" id="mag7-above-100sma">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 200 SMA</span>
+                                <span class="ma-value" id="mag7-above-200sma">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 8 EMA</span>
+                                <span class="ma-value" id="mag7-above-8ema">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 13 EMA</span>
+                                <span class="ma-value" id="mag7-above-13ema">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 21 EMA</span>
+                                <span class="ma-value" id="mag7-above-21ema">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="main-content">
                 <div class="side-panel" id="sidePanelMag7">
                     <h3>📊 Mag7+ Insights</h3>
@@ -543,79 +616,6 @@
                     <div class="insight-section">
                         <h4>💎 Breakout Candidates (Top 5)</h4>
                         <div id="breakoutListMag7" class="stock-list"></div>
-                    </div>
-                </div>
-                
-                <!-- Sector Analysis Section -->
-                <div class="sector-analysis">
-                    <h3>📊 Mag7+ Sector Analysis</h3>
-                    <div class="sector-metrics">
-                        <div class="sector-returns">
-                            <h4>📈 Equal-Weighted Portfolio Returns</h4>
-                            <div class="returns-grid">
-                                <div class="return-item">
-                                    <span class="return-label">1D</span>
-                                    <span class="return-value" id="mag7-return-1d">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">1W</span>
-                                    <span class="return-value" id="mag7-return-1w">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">2W</span>
-                                    <span class="return-value" id="mag7-return-2w">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">1M</span>
-                                    <span class="return-value" id="mag7-return-1m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">2M</span>
-                                    <span class="return-value" id="mag7-return-2m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">3M</span>
-                                    <span class="return-value" id="mag7-return-3m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">6M</span>
-                                    <span class="return-value" id="mag7-return-6m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">YTD</span>
-                                    <span class="return-value" id="mag7-return-ytd">--</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="sector-ma-stats">
-                            <h4>📊 % Above Moving Averages</h4>
-                            <div class="ma-stats-grid">
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 50 SMA</span>
-                                    <span class="ma-value" id="mag7-above-50sma">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 100 SMA</span>
-                                    <span class="ma-value" id="mag7-above-100sma">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 200 SMA</span>
-                                    <span class="ma-value" id="mag7-above-200sma">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 8 EMA</span>
-                                    <span class="ma-value" id="mag7-above-8ema">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 13 EMA</span>
-                                    <span class="ma-value" id="mag7-above-13ema">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 21 EMA</span>
-                                    <span class="ma-value" id="mag7-above-21ema">--</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
                 
@@ -672,6 +672,79 @@
 
         <!-- AI Platform Basket Tab -->
         <div class="tab-content" id="ai-platform">
+            <!-- Sector Analysis Section -->
+            <div class="sector-analysis">
+                <h3>📊 AI Platform Sector Analysis</h3>
+                <div class="sector-metrics">
+                    <div class="sector-returns">
+                        <h4>📈 Equal-Weighted Portfolio Returns</h4>
+                        <div class="returns-grid">
+                            <div class="return-item">
+                                <span class="return-label">1D</span>
+                                <span class="return-value" id="ai-platform-return-1d">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">1W</span>
+                                <span class="return-value" id="ai-platform-return-1w">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">2W</span>
+                                <span class="return-value" id="ai-platform-return-2w">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">1M</span>
+                                <span class="return-value" id="ai-platform-return-1m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">2M</span>
+                                <span class="return-value" id="ai-platform-return-2m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">3M</span>
+                                <span class="return-value" id="ai-platform-return-3m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">6M</span>
+                                <span class="return-value" id="ai-platform-return-6m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">YTD</span>
+                                <span class="return-value" id="ai-platform-return-ytd">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="sector-ma-stats">
+                        <h4>📊 % Above Moving Averages</h4>
+                        <div class="ma-stats-grid">
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 50 SMA</span>
+                                <span class="ma-value" id="ai-platform-above-50sma">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 100 SMA</span>
+                                <span class="ma-value" id="ai-platform-above-100sma">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 200 SMA</span>
+                                <span class="ma-value" id="ai-platform-above-200sma">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 8 EMA</span>
+                                <span class="ma-value" id="ai-platform-above-8ema">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 13 EMA</span>
+                                <span class="ma-value" id="ai-platform-above-13ema">--</span>
+                            </div>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 21 EMA</span>
+                                <span class="ma-value" id="ai-platform-above-21ema">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <div class="main-content">
                 <div class="side-panel" id="sidePanelAIPlatform">
                     <h3>🤖 AI Platform Insights</h3>
@@ -694,79 +767,6 @@
                     <div class="insight-section">
                         <h4>💎 Breakout Candidates (Top 5)</h4>
                         <div id="breakoutListAIPlatform" class="stock-list"></div>
-                    </div>
-                </div>
-                
-                <!-- Sector Analysis Section -->
-                <div class="sector-analysis">
-                    <h3>📊 AI Platform Sector Analysis</h3>
-                    <div class="sector-metrics">
-                        <div class="sector-returns">
-                            <h4>📈 Equal-Weighted Portfolio Returns</h4>
-                            <div class="returns-grid">
-                                <div class="return-item">
-                                    <span class="return-label">1D</span>
-                                    <span class="return-value" id="ai-platform-return-1d">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">1W</span>
-                                    <span class="return-value" id="ai-platform-return-1w">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">2W</span>
-                                    <span class="return-value" id="ai-platform-return-2w">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">1M</span>
-                                    <span class="return-value" id="ai-platform-return-1m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">2M</span>
-                                    <span class="return-value" id="ai-platform-return-2m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">3M</span>
-                                    <span class="return-value" id="ai-platform-return-3m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">6M</span>
-                                    <span class="return-value" id="ai-platform-return-6m">--</span>
-                                </div>
-                                <div class="return-item">
-                                    <span class="return-label">YTD</span>
-                                    <span class="return-value" id="ai-platform-return-ytd">--</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="sector-ma-stats">
-                            <h4>📊 % Above Moving Averages</h4>
-                            <div class="ma-stats-grid">
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 50 SMA</span>
-                                    <span class="ma-value" id="ai-platform-above-50sma">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 100 SMA</span>
-                                    <span class="ma-value" id="ai-platform-above-100sma">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 200 SMA</span>
-                                    <span class="ma-value" id="ai-platform-above-200sma">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 8 EMA</span>
-                                    <span class="ma-value" id="ai-platform-above-8ema">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 13 EMA</span>
-                                    <span class="ma-value" id="ai-platform-above-13ema">--</span>
-                                </div>
-                                <div class="ma-stat">
-                                    <span class="ma-label">Above 21 EMA</span>
-                                    <span class="ma-value" id="ai-platform-above-21ema">--</span>
-                                </div>
-                            </div>
-                        </div>
                     </div>
                 </div>
                 
