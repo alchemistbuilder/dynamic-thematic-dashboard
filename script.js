@@ -4,6 +4,23 @@ const FMP_API_KEY = 'm1HzjYgss43pOkJZcWTr2tuKvRvOPM4W'; // Premium FMP API key
 const LIBERATION_DAY = new Date('2025-04-02');
 const USE_POLYGON = true; // Set to false to use Yahoo Finance
 
+// Check if we're on Vercel and should use the API proxy
+const USE_API_PROXY = window.location.hostname.includes('vercel.app') || 
+                      window.location.hostname !== 'localhost';
+
+// Helper function to make API calls through proxy when on Vercel
+async function fetchPolygonData(polygonUrl) {
+    if (USE_API_PROXY) {
+        // Use the proxy endpoint to hide API key
+        const encodedUrl = encodeURIComponent(polygonUrl.replace(/&apikey=.*$/, ''));
+        const proxyUrl = `/api/stocks?url=${encodedUrl}`;
+        return fetch(proxyUrl);
+    } else {
+        // Local development - use direct API call
+        return fetch(polygonUrl);
+    }
+}
+
 // Sector Overview tickers (ETFs + Crypto)
 const SECTOR_TICKERS = [
     'GLD',
@@ -747,7 +764,7 @@ class StockDashboard {
             // Use snapshot endpoint for real-time data
             const endpoint = `https://api.polygon.io/v2/snapshot/locale/us/markets/stocks/tickers/${ticker}?apikey=${API_KEY}`;
             
-            const response = await fetch(endpoint);
+            const response = await fetchPolygonData(endpoint);
             if (!response.ok) throw new Error(`HTTP ${response.status}`);
             
             const data = await response.json();
@@ -770,7 +787,7 @@ class StockDashboard {
                 // Fallback for crypto or if snapshot fails
                 if (ticker.startsWith('X:')) {
                     // For crypto, use the forex endpoint
-                    const cryptoResponse = await fetch(
+                    const cryptoResponse = await fetchPolygonData(
                         `https://api.polygon.io/v2/aggs/ticker/${ticker}/prev?apikey=${API_KEY}`
                     );
                     const cryptoData = await cryptoResponse.json();
@@ -911,7 +928,7 @@ class StockDashboard {
         // Use grouped daily bars endpoint
         const groupedUrl = `https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/${dateStr}?adjusted=true&apikey=${API_KEY}`;
         
-        const response = await fetch(groupedUrl);
+        const response = await fetchPolygonData(groupedUrl);
         if (!response.ok) {
             throw new Error(`Grouped API failed: ${response.status}`);
         }
@@ -984,7 +1001,7 @@ class StockDashboard {
             
             const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${startDate.toISOString().split('T')[0]}/${endDate.toISOString().split('T')[0]}?adjusted=true&sort=asc&apikey=${API_KEY}`;
             
-            const response = await fetch(url);
+            const response = await fetchPolygonData(url);
             if (!response.ok) return null;
             
             const data = await response.json();
@@ -1231,7 +1248,7 @@ class StockDashboard {
             const polygonUrl = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${startDate}/${endDate}?adjusted=true&sort=asc&limit=5000&apikey=${API_KEY}`;
             
             try {
-                const response = await fetch(polygonUrl);
+                const response = await fetchPolygonData(polygonUrl);
                 
                 if (!response.ok) {
                     console.error(`HTTP ${response.status} for ${ticker}`);

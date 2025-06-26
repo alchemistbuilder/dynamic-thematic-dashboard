@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CRCL Debug</title>
+    <style>
+        body {
+            font-family: monospace;
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+        }
+        pre {
+            background: #2a2a2a;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <h1>CRCL Debug Tool</h1>
+    <div id="output"></div>
+    
+    <script>
+        const API_KEY = 'WLIqlQJDbnkp9ke0IEtulkjvpfM7e9Nq';
+        const output = document.getElementById('output');
+        
+        async function debugCRCL() {
+            output.innerHTML = '<h2>Fetching CRCL data...</h2>';
+            
+            try {
+                // Get basic quote data
+                const quoteUrl = `https://api.polygon.io/v2/aggs/ticker/CRCL/prev?adjusted=true&apiKey=${API_KEY}`;
+                const quoteResponse = await fetch(quoteUrl);
+                const quoteData = await quoteResponse.json();
+                
+                output.innerHTML += '<h3>Quote Data:</h3><pre>' + JSON.stringify(quoteData, null, 2) + '</pre>';
+                
+                // Get historical data
+                const fromDate = new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString().split('T')[0];
+                const toDate = new Date().toISOString().split('T')[0];
+                const histUrl = `https://api.polygon.io/v2/aggs/ticker/CRCL/range/1/day/${fromDate}/${toDate}?adjusted=true&sort=asc&limit=5000&apiKey=${API_KEY}`;
+                
+                const histResponse = await fetch(histUrl);
+                const histData = await histResponse.json();
+                
+                output.innerHTML += '<h3>Historical Data Points:</h3><pre>Count: ' + (histData.results?.length || 0) + '</pre>';
+                
+                if (histData.results && histData.results.length > 0) {
+                    const first = histData.results[0];
+                    const last = histData.results[histData.results.length - 1];
+                    
+                    output.innerHTML += '<h3>Data Range:</h3><pre>' + 
+                        'First: ' + new Date(first.t).toISOString().split('T')[0] + '\n' +
+                        'Last: ' + new Date(last.t).toISOString().split('T')[0] + '\n' +
+                        'Total Days: ' + histData.results.length + 
+                        '</pre>';
+                    
+                    // Calculate some indicators
+                    const prices = histData.results.map(d => d.c);
+                    const hasEnoughForSMA = prices.length >= 200;
+                    const hasEnoughForRSI = prices.length >= 15;
+                    
+                    output.innerHTML += '<h3>Indicator Availability:</h3><pre>' + 
+                        'Can calculate 200 SMA: ' + hasEnoughForSMA + ' (need 200 days)\n' +
+                        'Can calculate RSI: ' + hasEnoughForRSI + ' (need 15 days)\n' +
+                        'Actual data points: ' + prices.length +
+                        '</pre>';
+                    
+                    // Check recent performance
+                    if (prices.length > 0) {
+                        const currentPrice = last.c;
+                        const weekAgoIndex = Math.max(0, prices.length - 6);
+                        const weekAgoPrice = histData.results[weekAgoIndex].c;
+                        const weeklyChange = ((currentPrice - weekAgoPrice) / weekAgoPrice) * 100;
+                        
+                        output.innerHTML += '<h3>Recent Performance:</h3><pre>' + 
+                            'Current Price: $' + currentPrice.toFixed(2) + '\n' +
+                            'Weekly Change: ' + weeklyChange.toFixed(2) + '%' +
+                            '</pre>';
+                    }
+                }
+                
+                // Get volume data
+                const volumeUrl = `https://api.polygon.io/v3/quotes/CRCL?timestamp.gte=${fromDate}&timestamp.lte=${toDate}&limit=1&apiKey=${API_KEY}`;
+                const volumeResponse = await fetch(volumeUrl);
+                const volumeData = await volumeResponse.json();
+                
+                output.innerHTML += '<h3>Volume/Quote Status:</h3><pre>' + JSON.stringify(volumeData.status, null, 2) + '</pre>';
+                
+            } catch (error) {
+                output.innerHTML += '<h3 style="color: red;">Error:</h3><pre>' + error.toString() + '</pre>';
+            }
+        }
+        
+        debugCRCL();
+    </script>
+</body>
+</html>

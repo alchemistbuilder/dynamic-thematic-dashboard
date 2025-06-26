@@ -1,0 +1,10 @@
+{
+  "functions": {
+    "api/stocks.js": {
+      "maxDuration": 10
+    }
+  },
+  "env": {
+    "POLYGON_API_KEY": "@polygon-api-key"
+  }
+}
