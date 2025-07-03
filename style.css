@@ -710,9 +710,13 @@ th.drag-over .drag-indicator {
 
 .stat-value {
     color: #ffffff;
-    font-size: 1.4rem;
-    font-weight: 600;
-    line-height: 1.3;
+    font-size: 0.9rem;
+    font-weight: 400;
+    line-height: 1.2;
+}
+
+.stat-value div {
+    margin-bottom: 2px;
 }
 
 /* Highlights Section */
@@ -1588,4 +1592,129 @@ th.drag-over .drag-indicator {
     font-weight: 700;
     margin-left: 4px;
     text-shadow: none;
+}
+
+/* Table Controls */
+.table-controls {
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 12px;
+}
+
+/* Column Dropdown */
+.column-dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.column-dropdown-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 6px;
+    padding: 6px 12px;
+    color: #ffffff;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.column-dropdown-btn:hover {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.3);
+}
+
+.column-dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background: rgba(30, 30, 30, 0.95);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    min-width: 300px;
+    max-height: 400px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(20px);
+    z-index: 1000;
+    overflow: hidden;
+}
+
+.column-dropdown.open .column-dropdown-content {
+    display: block;
+}
+
+.dropdown-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 16px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: rgba(255, 255, 255, 0.9);
+}
+
+.dropdown-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.action-btn {
+    background: rgba(0, 212, 170, 0.2);
+    border: 1px solid rgba(0, 212, 170, 0.3);
+    border-radius: 4px;
+    padding: 4px 8px;
+    color: #00d4aa;
+    cursor: pointer;
+    font-size: 0.75rem;
+    transition: all 0.2s ease;
+    font-family: inherit;
+}
+
+.action-btn:hover {
+    background: rgba(0, 212, 170, 0.3);
+    border-color: rgba(0, 212, 170, 0.5);
+}
+
+.dropdown-columns {
+    max-height: 320px;
+    overflow-y: auto;
+    padding: 8px;
+}
+
+.column-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 8px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+    transition: all 0.2s ease;
+    border-radius: 4px;
+}
+
+.column-toggle:hover {
+    background: rgba(255, 255, 255, 0.1);
+    color: rgba(255, 255, 255, 1);
+}
+
+.column-toggle input[type="checkbox"] {
+    accent-color: #00d4aa;
+    cursor: pointer;
+}
+
+.column-toggle label {
+    cursor: pointer;
+    flex: 1;
+}
+
+/* Column hiding styles */
+.column-hidden {
+    display: none !important;
 }

@@ -6,7 +6,7 @@ import threading
 import time
 
 def start_server():
-    PORT = 8001
+    PORT = 8002
     Handler = http.server.SimpleHTTPRequestHandler
     
     with socketserver.TCPServer(("", PORT), Handler) as httpd:

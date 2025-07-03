@@ -387,17 +387,151 @@ class StockDashboard {
         this.compounderData = new Map();
         this.mag7Data = new Map();
         this.aiPlatformData = new Map();
-        this.currentTab = 'market-summary';
+        this.currentTab = 'sector-overview';
         this.sortColumn = null;
         this.sortDirection = 'asc';
         this.liveUpdateInterval = null;
         this.liveUpdateEnabled = false;
+        
+        // Column visibility state
+        this.hiddenColumns = new Set();
+        
         this.init();
     }
 
     init() {
         this.bindEvents();
         this.loadData();
+        this.initializeColumnControls();
+    }
+
+    initializeColumnControls() {
+        // Define all available columns (complete list from table headers)
+        this.allColumns = [
+            { id: 'ticker', name: 'Ticker' },
+            { id: 'name', name: 'Name' },
+            { id: 'liberationChange', name: '% change since Liberation' },
+            { id: 'currentPrice', name: 'Price' },
+            { id: 'ytd', name: '% YTD' },
+            { id: '1d', name: '%1 D' },
+            { id: 'gapSignal', name: 'Gap Signal' },
+            { id: 'volumeSignal', name: 'Volume Signal' },
+            { id: '1w', name: '% 1 Wk' },
+            { id: '2w', name: '%2 Wk' },
+            { id: '1m', name: '%1 Mo' },
+            { id: '2m', name: '%2 Mo' },
+            { id: '3m', name: '%3 Mo' },
+            { id: '6m', name: '%6Mo' },
+            { id: '1y', name: '%1YR' },
+            { id: 'deltaFrom52WeekHigh', name: 'Δ 52w H' },
+            { id: 'above50SMA', name: '>50 SMA' },
+            { id: 'above100SMA', name: '>100 SMA' },
+            { id: 'above200SMA', name: '>200 SMA' },
+            { id: 'sma50Above100Above200', name: '50>100>200?' },
+            { id: 'above8EMA', name: '>8d EMA' },
+            { id: 'above13EMA', name: '>13d EMA' },
+            { id: 'above21EMA', name: '>21d EMA' },
+            { id: 'ema8Above13Above21', name: 'ema 8>13>21' },
+            { id: 'sma50', name: '50 SMA' },
+            { id: 'sma100', name: '100 SMA' },
+            { id: 'sma200', name: '200 SMA' },
+            { id: 'ema8', name: '8d EMA' },
+            { id: 'ema13', name: '13d EMA' },
+            { id: 'ema21', name: '21d EMA' },
+            { id: 'rsi14', name: '14D RSI' },
+            { id: 'rsi30', name: '30D RSI' },
+            { id: 'nextEarnings', name: 'Next Earnings' },
+            { id: 'daysToEarnings', name: 'Days to Earnings' },
+            { id: 'consecutiveUpDays', name: '# of Days Up' }
+        ];
+        
+        this.populateColumnToggles();
+        this.loadColumnPreferences();
+    }
+
+    populateColumnToggles() {
+        // Populate all column toggle containers
+        const togglesContainers = document.querySelectorAll('.column-toggles');
+        
+        togglesContainers.forEach(togglesContainer => {
+            togglesContainer.innerHTML = '';
+            
+            this.allColumns.forEach(column => {
+                const isVisible = !this.hiddenColumns.has(column.id);
+                
+                const toggleDiv = document.createElement('div');
+                toggleDiv.className = 'column-toggle';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `toggle-${column.id}-${Math.random().toString(36).substr(2, 9)}`;
+                checkbox.checked = isVisible;
+                checkbox.addEventListener('change', () => this.toggleColumn(column.id, checkbox.checked));
+                
+                const label = document.createElement('label');
+                label.htmlFor = checkbox.id;
+                label.textContent = column.name;
+                
+                toggleDiv.appendChild(checkbox);
+                toggleDiv.appendChild(label);
+                togglesContainer.appendChild(toggleDiv);
+            });
+        });
+    }
+
+    toggleColumn(columnId, show) {
+        if (show) {
+            this.hiddenColumns.delete(columnId);
+        } else {
+            this.hiddenColumns.add(columnId);
+        }
+        
+        // Apply visibility to all tables
+        this.applyColumnVisibility(columnId, show);
+        
+        // Save to localStorage
+        localStorage.setItem('hiddenColumns', JSON.stringify([...this.hiddenColumns]));
+    }
+
+    applyColumnVisibility(columnId, show) {
+        // Find all headers for this column across all tables
+        const headers = document.querySelectorAll(`th[data-column="${columnId}"]`);
+        
+        headers.forEach(header => {
+            const table = header.closest('table');
+            const headerRow = header.parentNode;
+            const columnIndex = Array.from(headerRow.children).indexOf(header);
+            
+            // Hide/show header
+            header.classList.toggle('column-hidden', !show);
+            
+            // Hide/show all cells in this column
+            const tbody = table.querySelector('tbody');
+            if (tbody) {
+                const rows = tbody.querySelectorAll('tr');
+                rows.forEach(row => {
+                    const cell = row.children[columnIndex];
+                    if (cell) {
+                        cell.classList.toggle('column-hidden', !show);
+                    }
+                });
+            }
+        });
+    }
+
+    loadColumnPreferences() {
+        const saved = localStorage.getItem('hiddenColumns');
+        if (saved) {
+            this.hiddenColumns = new Set(JSON.parse(saved));
+            
+            // Apply saved preferences
+            this.hiddenColumns.forEach(columnId => {
+                this.applyColumnVisibility(columnId, false);
+            });
+            
+            // Update toggles to reflect current state
+            this.populateColumnToggles();
+        }
     }
 
     get stockData() {
@@ -776,8 +910,25 @@ class StockDashboard {
                 
                 // Use the most recent price available
                 const currentPrice = min?.c || dayData?.c || prevDayData?.c || 0;
-                const prevClose = prevDayData?.c || currentPrice;
-                const changePercent = ((currentPrice - prevClose) / prevClose) * 100;
+                
+                // Use the API's pre-calculated daily change percentage if available
+                let changePercent = data.ticker.todaysChangePerc;
+                
+                // Debug: log the API response to see what we're getting
+                console.log(`DEBUG ${ticker}: todaysChangePerc=${changePercent}, ticker data:`, data.ticker);
+                
+                // Fallback to manual calculation if API doesn't provide it
+                if (changePercent === undefined || changePercent === null) {
+                    let referencePrice;
+                    if (dayData?.o) {
+                        referencePrice = dayData.o;  // Today's open
+                    } else if (prevDayData?.c) {
+                        referencePrice = prevDayData.c;  // Previous day's close
+                    } else {
+                        referencePrice = currentPrice;  // Fallback
+                    }
+                    changePercent = ((currentPrice - referencePrice) / referencePrice) * 100;
+                }
                 
                 return {
                     price: currentPrice,
@@ -920,10 +1071,27 @@ class StockDashboard {
     async fetchGroupedStockData(tickers) {
         console.log(`Fetching grouped data for ${tickers.length} tickers...`);
         
-        // Get yesterday's date for grouped daily data
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const dateStr = yesterday.toISOString().split('T')[0];
+        // Get the most recent trading day (today if markets are open, yesterday if closed)
+        const today = new Date();
+        const currentHour = today.getHours();
+        const isWeekend = today.getDay() === 0 || today.getDay() === 6;
+        const isMarketHours = currentHour >= 9 && currentHour < 16; // 9 AM - 4 PM ET roughly
+        
+        // Use today's date if it's a weekday and markets are likely open or recently closed
+        // Otherwise use yesterday (previous trading day)
+        let targetDate;
+        if (isWeekend || (currentHour < 9 && today.getDay() === 1)) {
+            // Weekend or early Monday - use Friday's data
+            targetDate = new Date(today);
+            const daysBack = isWeekend ? (today.getDay() === 0 ? 2 : 1) : 3; // Sunday: 2, Saturday: 1, Monday: 3
+            targetDate.setDate(targetDate.getDate() - daysBack);
+        } else {
+            // Weekday - use today's date (Polygon will return most recent available data)
+            targetDate = new Date(today);
+        }
+        
+        const dateStr = targetDate.toISOString().split('T')[0];
+        console.log(`Using date: ${dateStr} for grouped data`);
         
         // Use grouped daily bars endpoint
         const groupedUrl = `https://api.polygon.io/v2/aggs/grouped/locale/us/market/stocks/${dateStr}?adjusted=true&apikey=${API_KEY}`;
@@ -989,7 +1157,33 @@ class StockDashboard {
             }
         }
         
-        return { grouped: groupedData, historical: historicalData };
+        // Fetch current prices for accurate daily change calculation
+        console.log('Fetching current prices for accurate daily changes...');
+        const currentPrices = new Map();
+        
+        // Fetch current prices in batches for better performance
+        const priceBatchSize = 50;
+        for (let i = 0; i < tickers.length; i += priceBatchSize) {
+            const batch = tickers.slice(i, i + priceBatchSize);
+            const pricePromises = batch.map(ticker => this.fetchCurrentPrice(ticker));
+            const priceResults = await Promise.allSettled(pricePromises);
+            
+            priceResults.forEach((result, index) => {
+                const ticker = batch[index];
+                if (result.status === 'fulfilled' && result.value) {
+                    currentPrices.set(ticker, result.value);
+                }
+            });
+            
+            // Small delay between batches
+            if (i + priceBatchSize < tickers.length) {
+                await new Promise(resolve => setTimeout(resolve, 200));
+            }
+        }
+        
+        console.log(`Got current prices for ${currentPrices.size} tickers`);
+        
+        return { grouped: groupedData, historical: historicalData, currentPrices: currentPrices };
     }
 
     async fetchHistoricalData(ticker) {
@@ -1012,6 +1206,102 @@ class StockDashboard {
         }
     }
 
+    async fetchCurrentPrice(ticker) {
+        try {
+            // First try real-time quote endpoint for current data
+            const quoteUrl = `https://api.polygon.io/v2/last/trade/${ticker}?apikey=${API_KEY}`;
+            const quoteResponse = await fetchPolygonData(quoteUrl);
+            
+            if (quoteResponse.ok) {
+                const quoteData = await quoteResponse.json();
+                const currentPrice = quoteData.results?.p || 0;
+                
+                // Get yesterday's close price from previous day aggregates
+                const prevUrl = `https://api.polygon.io/v2/aggs/ticker/${ticker}/prev?adjusted=true&apikey=${API_KEY}`;
+                const prevResponse = await fetchPolygonData(prevUrl);
+                
+                if (prevResponse.ok) {
+                    const prevData = await prevResponse.json();
+                    if (prevData.results && prevData.results.length > 0) {
+                        const prevClose = prevData.results[0].c;
+                        const changePercent = ((currentPrice - prevClose) / prevClose) * 100;
+                        
+                        // Debug ARKW specifically
+                        if (ticker === 'ARKW') {
+                            console.log(`ARKW REAL-TIME DEBUG: prev_close=${prevClose}, current=${currentPrice}, change%=${changePercent.toFixed(2)}%`);
+                        }
+                        
+                        return {
+                            price: currentPrice,
+                            change: currentPrice - prevClose,
+                            changePercent: changePercent
+                        };
+                    }
+                }
+            }
+            
+            // Fallback to original method
+            const today = new Date().toISOString().split('T')[0];
+            const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/range/1/day/${today}/${today}?adjusted=true&apikey=${API_KEY}`;
+            
+            const response = await fetchPolygonData(url);
+            if (!response.ok) {
+                // Fallback to previous day if today's data is not available
+                return await this.fetchPreviousDayPrice(ticker);
+            }
+            
+            const data = await response.json();
+            
+            if (data.results && data.results.length > 0) {
+                const todayData = data.results[0];
+                const changePercent = ((todayData.c - todayData.o) / todayData.o) * 100;
+                
+                // Debug ARKW specifically
+                if (ticker === 'ARKW') {
+                    const dataDate = new Date(todayData.t).toISOString().split('T')[0];
+                    console.log(`ARKW DEBUG: date=${dataDate}, open=${todayData.o}, close=${todayData.c}, change%=${changePercent.toFixed(2)}%`);
+                }
+                
+                return {
+                    price: todayData.c,
+                    change: todayData.c - todayData.o,
+                    changePercent: changePercent
+                };
+            }
+            
+            // Fallback to previous day if no results
+            return await this.fetchPreviousDayPrice(ticker);
+        } catch (error) {
+            console.error(`Error fetching current price for ${ticker}:`, error);
+            return null;
+        }
+    }
+
+    async fetchPreviousDayPrice(ticker) {
+        try {
+            const url = `https://api.polygon.io/v2/aggs/ticker/${ticker}/prev?adjusted=true&apikey=${API_KEY}`;
+            
+            const response = await fetchPolygonData(url);
+            if (!response.ok) return null;
+            
+            const data = await response.json();
+            
+            if (data.results && data.results.length > 0) {
+                const prevData = data.results[0];
+                return {
+                    price: prevData.c,
+                    change: prevData.c - prevData.o,
+                    changePercent: ((prevData.c - prevData.o) / prevData.o) * 100
+                };
+            }
+            
+            return null;
+        } catch (error) {
+            console.error(`Error fetching previous day price for ${ticker}:`, error);
+            return null;
+        }
+    }
+
     async processGroupedDataForTab(tabType, tickers, stockData) {
         const dataMap = this.getDataMapForTab(tabType);
         const missingTickers = [];
@@ -1019,10 +1309,11 @@ class StockDashboard {
         tickers.forEach(ticker => {
             const grouped = stockData.grouped.get(ticker);
             const historical = stockData.historical.get(ticker);
+            const currentPrice = stockData.currentPrices.get(ticker);
             
             if (grouped && historical) {
                 // Process the data similar to individual fetchStockData
-                const processedData = this.processStockDataFromGrouped(ticker, grouped, historical);
+                const processedData = this.processStockDataFromGrouped(ticker, grouped, historical, currentPrice);
                 if (processedData) {
                     dataMap.set(ticker, processedData);
                 }
@@ -1070,7 +1361,7 @@ class StockDashboard {
         }
     }
 
-    processStockDataFromGrouped(ticker, groupedData, historicalData) {
+    processStockDataFromGrouped(ticker, groupedData, historicalData, currentPriceData) {
         try {
             // Debug CRCL data fetching
             if (ticker === 'CRCL') {
@@ -1078,16 +1369,26 @@ class StockDashboard {
                 console.log('CRCL Grouped Data:', groupedData);
                 console.log('CRCL Historical Data length:', historicalData?.length);
                 console.log('CRCL Historical Data sample:', historicalData?.slice(-5));
+                console.log('CRCL Current Price Data:', currentPriceData);
             }
             
-            // Current price from grouped data
-            const currentPrice = groupedData.c; // Close price
+            // Use current price from real-time data if available, otherwise fall back to grouped data
+            const currentPrice = currentPriceData?.price || groupedData.c;
             const currentVolume = groupedData.v; // Current day volume
             
             // Calculate technical indicators using historical data
             const movingAverages = this.calculateMovingAverages(historicalData);
             const rsiData = this.calculateRSI(historicalData);
             const changes = this.calculatePercentageChanges(historicalData, currentPrice);
+            
+            // Override daily change with current price data if available
+            if (currentPriceData && currentPriceData.changePercent !== undefined) {
+                console.log(`${ticker}: Using current price data changePercent: ${currentPriceData.changePercent}%`);
+                changes['1d'] = currentPriceData.changePercent;
+            } else {
+                console.log(`${ticker}: Using calculated daily change: ${changes['1d']?.toFixed(2)}%`);
+            }
+            
             const week52High = this.calculate52WeekHigh(historicalData);
             const comparisons = this.calculateComparisons(currentPrice, movingAverages, week52High);
             const consecutiveUpDays = this.calculateConsecutiveUpDays(historicalData);
@@ -1421,53 +1722,16 @@ class StockDashboard {
         // Sort data to ensure chronological order
         const sortedData = [...data].sort((a, b) => a.t - b.t);
         
-        // Get today's date (market day)
-        const today = new Date();
-        const todayStr = today.toISOString().split('T')[0]; // YYYY-MM-DD format
+        // Use previous day's close as the reference price (standard for daily % change)
+        const previousData = sortedData[sortedData.length - 2];
+        const referencePrice = previousData.c;
         
-        // Find today's data point and previous day's data point
-        let todayData = null;
-        let previousDayData = null;
-        
-        // Look for today's data
-        for (let i = sortedData.length - 1; i >= 0; i--) {
-            const dataDate = new Date(sortedData[i].t);
-            const dataDateStr = dataDate.toISOString().split('T')[0];
-            
-            if (dataDateStr === todayStr) {
-                todayData = sortedData[i];
-                // Previous trading day is the one before today's data
-                if (i > 0) {
-                    previousDayData = sortedData[i - 1];
-                }
-                break;
-            }
+        if (!referencePrice || referencePrice <= 0) {
+            return null;
         }
         
-        // If we don't have today's data, use the most recent data point
-        if (!todayData && sortedData.length > 0) {
-            todayData = sortedData[sortedData.length - 1];
-            if (sortedData.length > 1) {
-                previousDayData = sortedData[sortedData.length - 2];
-            }
-        }
-        
-        // Determine which price to use as reference
-        let referencePrice;
-        if (previousDayData) {
-            // Use previous trading day's close as reference
-            referencePrice = previousDayData.c;
-        } else {
-            // Fallback: use yesterday's close if available
-            const yesterdayTimestamp = Date.now() - (24 * 60 * 60 * 1000);
-            referencePrice = this.findClosestPrice(data, yesterdayTimestamp);
-        }
-        
-        if (referencePrice && referencePrice !== currentPrice) {
-            return ((currentPrice - referencePrice) / referencePrice) * 100;
-        }
-        
-        return null;
+        // Calculate percentage change: current price vs previous day's close
+        return ((currentPrice - referencePrice) / referencePrice) * 100;
     }
 
     calculateLiberationDayChange(data, currentPrice) {
@@ -1926,6 +2190,16 @@ class StockDashboard {
 
         // Update side panel with rankings
         this.updateSidePanel(stockArray);
+        
+        // Apply column visibility after rendering
+        this.applyAllColumnVisibility();
+    }
+
+    applyAllColumnVisibility() {
+        // Apply visibility for all hidden columns
+        this.hiddenColumns.forEach(columnId => {
+            this.applyColumnVisibility(columnId, false);
+        });
     }
 
     calculateBullishScore(data) {
@@ -2241,98 +2515,6 @@ class StockDashboard {
         `;
     }
 
-    renderMarketSummary() {
-        // Ensure all datasets are loaded
-        if (this.sectorData.size === 0 || this.growthData.size === 0 || 
-            this.compounderData.size === 0 || this.mag7Data.size === 0 || this.aiPlatformData.size === 0) {
-            // Load data if not available
-            this.loadData();
-            return;
-        }
-
-        // Get scored stocks for all datasets
-        const sectorArray = Array.from(this.sectorData.values()).filter(data => data !== null);
-        const growthArray = Array.from(this.growthData.values()).filter(data => data !== null);
-        const compounderArray = Array.from(this.compounderData.values()).filter(data => data !== null);
-        const mag7Array = Array.from(this.mag7Data.values()).filter(data => data !== null);
-        const aiPlatformArray = Array.from(this.aiPlatformData.values()).filter(data => data !== null);
-
-        const scoredSector = sectorArray.map(data => ({
-            ...data,
-            bullishScore: this.calculateBullishScore(data),
-            bearishScore: this.calculateBearishScore(data),
-            performanceScore: this.calculatePerformanceScore(data)
-        }));
-
-        const scoredGrowth = growthArray.map(data => ({
-            ...data,
-            bullishScore: this.calculateBullishScore(data),
-            bearishScore: this.calculateBearishScore(data),
-            performanceScore: this.calculatePerformanceScore(data)
-        }));
-
-        // Populate sector summaries (Top 5)
-        const topSectorBullish = scoredSector
-            .sort((a, b) => b.bullishScore - a.bullishScore)
-            .slice(0, 5);
-        this.populateStockList('sectorBullishSummary', topSectorBullish, 'bullish');
-
-        const topSectorBearish = scoredSector
-            .sort((a, b) => b.bearishScore - a.bearishScore)
-            .slice(0, 5);
-        this.populateStockList('sectorBearishSummary', topSectorBearish, 'bearish');
-
-        // Populate growth summaries (Top 5)
-        const topGrowthBullish = scoredGrowth
-            .sort((a, b) => b.bullishScore - a.bullishScore)
-            .slice(0, 5);
-        this.populateStockList('growthBullishSummary', topGrowthBullish, 'bullish');
-
-        const topGrowthBearish = scoredGrowth
-            .sort((a, b) => b.bearishScore - a.bearishScore)
-            .slice(0, 5);
-        this.populateStockList('growthBearishSummary', topGrowthBearish, 'bearish');
-
-        // AI Platform insights
-        const scoredAIPlatform = aiPlatformArray.map(data => ({
-            ...data,
-            bullishScore: this.calculateBullishScore(data),
-            bearishScore: this.calculateBearishScore(data),
-            performanceScore: this.calculatePerformanceScore(data)
-        }));
-
-        const topAIPlatformBullish = scoredAIPlatform
-            .sort((a, b) => b.bullishScore - a.bullishScore)
-            .slice(0, 5);
-        this.populateStockList('aiPlatformBullishSummary', topAIPlatformBullish, 'bullish');
-
-        const topAIPlatformBearish = scoredAIPlatform
-            .sort((a, b) => b.bearishScore - a.bearishScore)
-            .slice(0, 5);
-        this.populateStockList('aiPlatformBearishSummary', topAIPlatformBearish, 'bearish');
-
-        // Overall best performers (combine all datasets)
-        const allScored = [...scoredSector, ...scoredGrowth, ...scoredAIPlatform,
-                          ...compounderArray.map(data => ({
-                              ...data,
-                              bullishScore: this.calculateBullishScore(data),
-                              bearishScore: this.calculateBearishScore(data),
-                              performanceScore: this.calculatePerformanceScore(data)
-                          })),
-                          ...mag7Array.map(data => ({
-                              ...data,
-                              bullishScore: this.calculateBullishScore(data),
-                              bearishScore: this.calculateBearishScore(data),
-                              performanceScore: this.calculatePerformanceScore(data)
-                          }))];
-        const overallPerformers = allScored
-            .sort((a, b) => b.performanceScore - a.performanceScore)
-            .slice(0, 5);
-        this.populateStockList('overallPerformersSummary', overallPerformers, 'performer');
-
-        // Update statistics
-        this.updateMarketStats(scoredSector, scoredGrowth);
-    }
 
     renderMarketIntelligence() {
         // Ensure all datasets are loaded
@@ -2747,115 +2929,148 @@ class StockDashboard {
         return '';
     }
 
+    calculateSMAStats(data, elementId) {
+        if (!data || data.length === 0) {
+            document.getElementById(elementId).innerHTML = 'No data';
+            return;
+        }
+        
+        const above50SMA = data.filter(s => s.comparisons && s.comparisons.above50SMA === true).length;
+        const above100SMA = data.filter(s => s.comparisons && s.comparisons.above100SMA === true).length;
+        const total = data.length;
+        
+        const pct50 = total > 0 ? ((above50SMA / total) * 100).toFixed(0) : 0;
+        const pct100 = total > 0 ? ((above100SMA / total) * 100).toFixed(0) : 0;
+
+        document.getElementById(elementId).innerHTML = `
+            <div>${above50SMA}/${total} Above 50 SMA (${pct50}%)</div>
+            <div>${above100SMA}/${total} Above 100 SMA (${pct100}%)</div>
+        `;
+    }
+
     updateMarketStats(sectorData, growthData) {
-        // Sector stats
-        const sectorBullish = sectorData.filter(s => s.bullishScore > 50).length;
-        const sectorTotal = sectorData.length;
-        const sectorAvgPerf = sectorData.reduce((sum, s) => sum + (s.liberationChange || 0), 0) / sectorTotal;
+        // Helper function to calculate and display SMA stats
+        const updateCategoryStats = (data, elementId) => {
+            const above50SMA = data.filter(s => s.comparisons && s.comparisons.above50SMA === true).length;
+            const above100SMA = data.filter(s => s.comparisons && s.comparisons.above100SMA === true).length;
+            const total = data.length;
+            
+            const pct50 = total > 0 ? ((above50SMA / total) * 100).toFixed(0) : 0;
+            const pct100 = total > 0 ? ((above100SMA / total) * 100).toFixed(0) : 0;
 
-        document.getElementById('sectorStats').innerHTML = `
-            <div>${sectorBullish}/${sectorTotal} Bullish</div>
-            <div style="font-size: 0.9rem; color: ${sectorAvgPerf >= 0 ? '#00d4aa' : '#ef5350'}">
-                Avg: ${sectorAvgPerf >= 0 ? '+' : ''}${sectorAvgPerf.toFixed(1)}%
-            </div>
-        `;
+            document.getElementById(elementId).innerHTML = `
+                <div>${above50SMA}/${total} Above 50 SMA (${pct50}%)</div>
+                <div>${above100SMA}/${total} Above 100 SMA (${pct100}%)</div>
+            `;
+        };
 
-        // Growth stats
-        const growthBullish = growthData.filter(s => s.bullishScore > 50).length;
-        const growthTotal = growthData.length;
-        const growthAvgPerf = growthData.reduce((sum, s) => sum + (s.liberationChange || 0), 0) / growthTotal;
+        // Update all category stats
+        updateCategoryStats(sectorData, 'sectorStats');
+        updateCategoryStats(growthData, 'growthStats');
+        
+        // Get data for other categories
+        const compounderArray = Array.from(this.compounderData.values()).filter(data => data !== null);
+        const mag7Array = Array.from(this.mag7Data.values()).filter(data => data !== null);  
+        const aiPlatformArray = Array.from(this.aiPlatformData.values()).filter(data => data !== null);
+        
+        updateCategoryStats(compounderArray, 'compounderStats');
+        updateCategoryStats(mag7Array, 'mag7Stats');
+        updateCategoryStats(aiPlatformArray, 'aiPlatformStats');
 
-        document.getElementById('growthStats').innerHTML = `
-            <div>${growthBullish}/${growthTotal} Bullish</div>
-            <div style="font-size: 0.9rem; color: ${growthAvgPerf >= 0 ? '#00d4aa' : '#ef5350'}">
-                Avg: ${growthAvgPerf >= 0 ? '+' : ''}${growthAvgPerf.toFixed(1)}%
-            </div>
-        `;
-
-        // Momentum stats (consecutive up days)
+        // Combined data for notable highlights
         const allData = [...sectorData, ...growthData];
-        const strongMomentum = allData.filter(s => (s.consecutiveUpDays || 0) >= 3).length;
-        const totalStocks = allData.length;
-
-        document.getElementById('momentumStats').innerHTML = `
-            <div>${strongMomentum}/${totalStocks} Hot Streaks</div>
-            <div style="font-size: 0.9rem; color: rgba(255,255,255,0.7)">
-                3+ consecutive up days
-            </div>
-        `;
 
         // Populate notable highlights sections
         this.populateNotableHighlights(allData, sectorData, growthData);
     }
 
     populateNotableHighlights(allData, sectorData, growthData) {
-        // Hot Streaks (3+ consecutive up days)
-        const hotStreaks = allData
-            .filter(s => (s.consecutiveUpDays || 0) >= 3)
-            .sort((a, b) => (b.consecutiveUpDays || 0) - (a.consecutiveUpDays || 0))
+        // Pre-calculate all conditions in a single pass to avoid multiple array iterations
+        const processedData = allData.map(stock => {
+            const consecutiveUpDays = stock.consecutiveUpDays || 0;
+            const weeklyChange = stock.changes['1w'] || 0;
+            const deltaFrom52WeekHigh = stock.comparisons?.deltaFrom52WeekHigh || -100;
+            const emaStatus = stock.comparisons?.ema8Above13Above21 || '';
+            
+            return {
+                ...stock,
+                consecutiveUpDays,
+                weeklyChange,
+                deltaFrom52WeekHigh,
+                emaStatus,
+                isHotStreak: consecutiveUpDays >= 3,
+                isMomentumPlay: weeklyChange > 2,
+                isBreakoutCandidate: deltaFrom52WeekHigh > -10 && 
+                    ['ST BULLISH', 'EMA Bullish', 'Breaking Out', 'Uptrend Maintained'].includes(emaStatus)
+            };
+        });
+        
+        // Single pass filtering and sorting
+        const hotStreaks = processedData
+            .filter(s => s.isHotStreak)
+            .sort((a, b) => b.consecutiveUpDays - a.consecutiveUpDays)
             .slice(0, 8);
 
-        const hotStreaksList = document.getElementById('hotStreaksList');
-        if (hotStreaksList) {
-            hotStreaksList.innerHTML = `
-                <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                    <span>Ticker</span>
-                    <span>Consecutive Days</span>
-                </div>
-                ${hotStreaks.length > 0 ? hotStreaks.map(stock => `
-                    <div class="hot-streak-item">
-                        <span class="stock-ticker-highlight">${stock.ticker}</span>
-                        <span class="streak-days">${stock.consecutiveUpDays || 0} days</span>
-                    </div>
-                `).join('') : '<div style="color: rgba(255,255,255,0.6);">No hot streaks found</div>'}
-            `;
-        }
-
-        // Top Momentum Plays (high recent performance)
-        const momentumPlays = allData
-            .filter(s => (s.changes['1w'] || 0) > 2) // At least 2% up in past week
-            .sort((a, b) => (b.changes['1w'] || 0) - (a.changes['1w'] || 0))
+        const momentumPlays = processedData
+            .filter(s => s.isMomentumPlay)
+            .sort((a, b) => b.weeklyChange - a.weeklyChange)
             .slice(0, 6);
 
-        const momentumPlaysList = document.getElementById('momentumPlaysList');
-        if (momentumPlaysList) {
-            momentumPlaysList.innerHTML = `
-                <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                    <span>Ticker</span>
-                    <span>% 1 Week</span>
-                </div>
-                ${momentumPlays.length > 0 ? momentumPlays.map(stock => `
-                    <div class="momentum-item">
-                        <span class="stock-ticker-highlight">${stock.ticker}</span>
-                        <span class="positive">${this.formatPercent(stock.changes['1w'])}</span>
-                    </div>
-                `).join('') : '<div style="color: rgba(255,255,255,0.6);">No strong momentum found</div>'}
-            `;
-        }
-
-        // Breakout Watch (near 52-week highs with good trends)
-        const breakoutWatch = allData
-            .filter(s => (s.comparisons.deltaFrom52WeekHigh || -100) > -10) // Within 10% of 52w high
-            .filter(s => s.comparisons.ema8Above13Above21 && 
-                        ['ST BULLISH', 'EMA Bullish', 'Breaking Out', 'Uptrend Maintained'].includes(s.comparisons.ema8Above13Above21))
-            .sort((a, b) => (b.comparisons.deltaFrom52WeekHigh || -100) - (a.comparisons.deltaFrom52WeekHigh || -100))
+        const breakoutWatch = processedData
+            .filter(s => s.isBreakoutCandidate)
+            .sort((a, b) => b.deltaFrom52WeekHigh - a.deltaFrom52WeekHigh)
             .slice(0, 6);
 
-        const breakoutWatchList = document.getElementById('breakoutWatchList');
-        if (breakoutWatchList) {
-            breakoutWatchList.innerHTML = `
-                <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1);">
-                    <span>Ticker</span>
-                    <span>Δ from 52W High</span>
-                </div>
-                ${breakoutWatch.length > 0 ? breakoutWatch.map(stock => `
-                    <div class="momentum-item">
-                        <span class="stock-ticker-highlight">${stock.ticker}</span>
-                        <span class="positive">${this.formatPercent(stock.comparisons.deltaFrom52WeekHigh)}</span>
+        // Batch DOM updates using requestAnimationFrame for better performance
+        requestAnimationFrame(() => {
+            const hotStreaksList = document.getElementById('hotStreaksList');
+            if (hotStreaksList) {
+                hotStreaksList.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <span>Ticker</span>
+                        <span>Consecutive Days</span>
                     </div>
-                `).join('') : '<div style="color: rgba(255,255,255,0.6);">No breakout candidates</div>'}
-            `;
-        }
+                    ${hotStreaks.length > 0 ? hotStreaks.map(stock => `
+                        <div class="hot-streak-item">
+                            <span class="stock-ticker-highlight">${stock.ticker}</span>
+                            <span class="streak-days">${stock.consecutiveUpDays} days</span>
+                        </div>
+                    `).join('') : '<div style="color: rgba(255,255,255,0.6);">No hot streaks found</div>'}
+                `;
+            }
+
+            const momentumPlaysList = document.getElementById('momentumPlaysList');
+            if (momentumPlaysList) {
+                momentumPlaysList.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <span>Ticker</span>
+                        <span>% 1 Week</span>
+                    </div>
+                    ${momentumPlays.length > 0 ? momentumPlays.map(stock => `
+                        <div class="momentum-item">
+                            <span class="stock-ticker-highlight">${stock.ticker}</span>
+                            <span class="positive">${this.formatPercent(stock.weeklyChange)}</span>
+                        </div>
+                    `).join('') : '<div style="color: rgba(255,255,255,0.6);">No strong momentum found</div>'}
+                `;
+            }
+
+            const breakoutWatchList = document.getElementById('breakoutWatchList');
+            if (breakoutWatchList) {
+                breakoutWatchList.innerHTML = `
+                    <div style="display: flex; justify-content: space-between; font-weight: 600; font-size: 0.8rem; color: rgba(255,255,255,0.7); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 1px solid rgba(255,255,255,0.1);">
+                        <span>Ticker</span>
+                        <span>Δ from 52W High</span>
+                    </div>
+                    ${breakoutWatch.length > 0 ? breakoutWatch.map(stock => `
+                        <div class="momentum-item">
+                            <span class="stock-ticker-highlight">${stock.ticker}</span>
+                            <span class="positive">${this.formatPercent(stock.deltaFrom52WeekHigh)}</span>
+                        </div>
+                    `).join('') : '<div style="color: rgba(255,255,255,0.6);">No breakout candidates</div>'}
+                `;
+            }
+        });
 
         // Cross-Tab Notable Items  
         this.populateCrossTabNotables(allData, sectorData, growthData);
@@ -3392,6 +3607,129 @@ class StockDashboard {
         }
     }
 
+    renderMarketSummary() {
+        console.log('📊 Rendering Market Summary...');
+        
+        // Ensure all datasets are loaded
+        if (this.sectorData.size === 0 || this.growthData.size === 0 || 
+            this.compounderData.size === 0 || this.mag7Data.size === 0 || 
+            this.aiPlatformData.size === 0) {
+            console.warn('Data not fully loaded for market summary');
+            return;
+        }
+        
+        // Get data arrays for each category
+        const sectorData = Array.from(this.sectorData.values()).filter(d => d !== null);
+        const growthData = Array.from(this.growthData.values()).filter(d => d !== null);
+        const compounderData = Array.from(this.compounderData.values()).filter(d => d !== null);
+        const mag7Data = Array.from(this.mag7Data.values()).filter(d => d !== null);
+        const aiPlatformData = Array.from(this.aiPlatformData.values()).filter(d => d !== null);
+        
+        // Update market stats
+        this.updateMarketStats(sectorData, growthData);
+        
+        // Populate summary side panels for each category
+        this.populateMarketSummaryPanels(sectorData, growthData, compounderData, mag7Data, aiPlatformData);
+        
+        console.log('✅ Market Summary rendered successfully');
+    }
+
+    populateMarketSummaryPanels(sectorData, growthData, compounderData, mag7Data, aiPlatformData) {
+        // Optimized scoring function that calculates all scores at once
+        const calculateAllScores = (data) => {
+            // Cache frequently accessed nested properties
+            const comparisons = data.comparisons || {};
+            const changes = data.changes || {};
+            
+            // Calculate bullish score
+            let bullishScore = 0;
+            const smaTrend = comparisons.sma50Above100Above200;
+            if (smaTrend === 'BULLISH') bullishScore += 40;
+            else if (smaTrend === 'Healthy') bullishScore += 30;
+            else if (smaTrend === 'At Support') bullishScore += 20;
+            
+            const emaTrend = comparisons.ema8Above13Above21;
+            if (emaTrend === 'ST BULLISH') bullishScore += 40;
+            else if (emaTrend === 'EMA Bullish') bullishScore += 35;
+            else if (emaTrend === 'Uptrend Maintained') bullishScore += 30;
+            else if (emaTrend === 'Breaking Out') bullishScore += 25;
+            else if (emaTrend === 'Early Recovery') bullishScore += 20;
+            
+            const libChange = data.liberationChange || 0;
+            const ytdChange = changes.ytd || 0;
+            const oneMonthChange = changes['1m'] || 0;
+            bullishScore += (libChange * 0.5) + (ytdChange * 0.25);
+            
+            if (comparisons.above50SMA) bullishScore += 10;
+            if (comparisons.above100SMA) bullishScore += 10;
+            if (comparisons.above200SMA) bullishScore += 10;
+            
+            const upDays = data.consecutiveUpDays || 0;
+            if (upDays >= 5) bullishScore += 25;
+            else if (upDays >= 3) bullishScore += 15;
+            else if (upDays >= 1) bullishScore += 5;
+            
+            // Calculate bearish score
+            let bearishScore = 0;
+            if (smaTrend === 'BEARISH') bearishScore += 40;
+            else if (smaTrend === 'FALSE') bearishScore += 20;
+            
+            if (emaTrend === 'ST BEARISH') bearishScore += 40;
+            else if (emaTrend === 'EMA Bearish') bearishScore += 30;
+            
+            if (libChange < 0) bearishScore += Math.abs(libChange) * 0.5;
+            if (ytdChange < 0) bearishScore += Math.abs(ytdChange) * 0.25;
+            
+            if (!comparisons.above50SMA) bearishScore += 10;
+            if (!comparisons.above100SMA) bearishScore += 10;
+            if (!comparisons.above200SMA) bearishScore += 10;
+            
+            const delta52w = comparisons.deltaFrom52WeekHigh || 0;
+            if (delta52w < -20) bearishScore += Math.abs(delta52w) * 0.3;
+            
+            // Calculate performance score
+            const performanceScore = (libChange * 0.4) + (ytdChange * 0.4) + (oneMonthChange * 0.2);
+            
+            return {
+                ...data,
+                bullishScore,
+                bearishScore,
+                performanceScore
+            };
+        };
+        
+        // Calculate scores for all data sets in one pass
+        const scoredSectorData = sectorData.map(calculateAllScores);
+        const scoredGrowthData = growthData.map(calculateAllScores);
+        const scoredCompounderData = compounderData.map(calculateAllScores);
+        const scoredMag7Data = mag7Data.map(calculateAllScores);
+        const scoredAiPlatformData = aiPlatformData.map(calculateAllScores);
+        
+        // Combine all scored data
+        const allScoredData = [...scoredSectorData, ...scoredGrowthData, ...scoredCompounderData, ...scoredMag7Data, ...scoredAiPlatformData];
+        
+        // Use batch DOM updates to reduce reflows
+        const fragment = document.createDocumentFragment();
+        
+        // Sort and populate all sections
+        const topSectorBullish = [...scoredSectorData].sort((a, b) => b.bullishScore - a.bullishScore).slice(0, 5);
+        const topSectorBearish = [...scoredSectorData].sort((a, b) => b.bearishScore - a.bearishScore).slice(0, 5);
+        const topGrowthBullish = [...scoredGrowthData].sort((a, b) => b.bullishScore - a.bullishScore).slice(0, 5);
+        const topGrowthBearish = [...scoredGrowthData].sort((a, b) => b.bearishScore - a.bearishScore).slice(0, 5);
+        const topAiBullish = [...scoredAiPlatformData].sort((a, b) => b.bullishScore - a.bullishScore).slice(0, 5);
+        const topAiBearish = [...scoredAiPlatformData].sort((a, b) => b.bearishScore - a.bearishScore).slice(0, 5);
+        const topOverallPerformers = [...allScoredData].sort((a, b) => b.performanceScore - a.performanceScore).slice(0, 5);
+        
+        // Populate all sections
+        this.populateStockList('sectorBullishSummary', topSectorBullish, 'bullish');
+        this.populateStockList('sectorBearishSummary', topSectorBearish, 'bearish');
+        this.populateStockList('growthBullishSummary', topGrowthBullish, 'bullish');
+        this.populateStockList('growthBearishSummary', topGrowthBearish, 'bearish');
+        this.populateStockList('aiPlatformBullishSummary', topAiBullish, 'bullish');
+        this.populateStockList('aiPlatformBearishSummary', topAiBearish, 'bearish');
+        this.populateStockList('overallPerformersSummary', topOverallPerformers, 'performer');
+    }
+
     showError(message) {
         const dashboard = document.querySelector('.dashboard');
         const errorDiv = document.createElement('div');
@@ -3679,6 +4017,7 @@ class StockDashboard {
 
         const stocks = Array.from(sectorData.values()).filter(stock => stock !== null);
         
+        
         // Calculate equal-weighted portfolio returns
         const timeframes = ['1d', '1w', '2w', '1m', '2m', '3m', '6m', 'ytd'];
         const returns = {};
@@ -3757,7 +4096,67 @@ class StockDashboard {
     }
 }
 
+// Global functions for column controls
+function toggleColumnDropdown(event) {
+    // Close all other dropdowns first
+    document.querySelectorAll('.column-dropdown').forEach(dropdown => {
+        dropdown.classList.remove('open');
+        const arrow = dropdown.querySelector('.column-dropdown-arrow');
+        if (arrow) arrow.textContent = '▼';
+    });
+    
+    // Open the clicked dropdown
+    const clickedDropdown = event.target.closest('.column-dropdown');
+    const arrow = clickedDropdown.querySelector('.column-dropdown-arrow');
+    
+    clickedDropdown.classList.add('open');
+    if (arrow) arrow.textContent = '▲';
+}
+
+function showAllColumns() {
+    const dashboard = window.dashboard;
+    if (dashboard) {
+        dashboard.allColumns.forEach(column => {
+            dashboard.hiddenColumns.delete(column.id);
+            dashboard.applyColumnVisibility(column.id, true);
+        });
+        dashboard.populateColumnToggles();
+        localStorage.setItem('hiddenColumns', JSON.stringify([]));
+    }
+}
+
+function hideAllColumns() {
+    const dashboard = window.dashboard;
+    if (dashboard) {
+        // Keep essential columns visible
+        const essentialColumns = ['ticker', 'name', 'currentPrice', '1d'];
+        
+        dashboard.allColumns.forEach(column => {
+            if (!essentialColumns.includes(column.id)) {
+                dashboard.hiddenColumns.add(column.id);
+                dashboard.applyColumnVisibility(column.id, false);
+            }
+        });
+        dashboard.populateColumnToggles();
+        localStorage.setItem('hiddenColumns', JSON.stringify([...dashboard.hiddenColumns]));
+    }
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const clickedDropdown = event.target.closest('.column-dropdown');
+    
+    // Close all dropdowns if clicking outside of any dropdown
+    if (!clickedDropdown) {
+        document.querySelectorAll('.column-dropdown').forEach(dropdown => {
+            dropdown.classList.remove('open');
+            const arrow = dropdown.querySelector('.column-dropdown-arrow');
+            if (arrow) arrow.textContent = '▼';
+        });
+    }
+});
+
 // Initialize the dashboard
 document.addEventListener('DOMContentLoaded', () => {
-    new StockDashboard();
+    window.dashboard = new StockDashboard();
 });

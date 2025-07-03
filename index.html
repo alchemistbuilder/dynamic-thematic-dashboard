@@ -12,14 +12,14 @@
             <h1>Dynamic Thematic Dashboard</h1>
             <div class="tab-container">
                 <div class="tabs">
-                    <button class="tab-btn active" data-tab="market-summary">Market Summary</button>
-                    <button class="tab-btn" data-tab="sector-overview">Sector Overview</button>
+                    <button class="tab-btn active" data-tab="sector-overview">Sector Overview</button>
                     <button class="tab-btn" data-tab="high-growth">High Growth Momentum</button>
                     <button class="tab-btn" data-tab="compounder">Compounder</button>
                     <button class="tab-btn" data-tab="mag7-plus">Mag7+</button>
                     <button class="tab-btn" data-tab="ai-platform">AI Platform Basket</button>
                     <button class="tab-btn" data-tab="market-intelligence">Market Intelligence</button>
                     <button class="tab-btn" data-tab="gainers-losers">Gainers/Losers</button>
+                    <button class="tab-btn" data-tab="market-summary">Market Summary</button>
                 </div>
                 <div class="controls">
                     <button id="refreshBtn" class="refresh-btn">Refresh Data</button>
@@ -32,7 +32,7 @@
         </header>
         
         <!-- Market Summary Tab -->
-        <div class="tab-content active" id="market-summary">
+        <div class="tab-content" id="market-summary">
             <div class="main-content">
                 <div class="side-panel" id="sidePanelSummary">
                     <h3>📊 Market Summary</h3>
@@ -94,8 +94,16 @@
                                 <div class="stat-value" id="growthStats">Loading...</div>
                             </div>
                             <div class="stat-card">
-                                <h4>Market Momentum</h4>
-                                <div class="stat-value" id="momentumStats">Loading...</div>
+                                <h4>Compounders</h4>
+                                <div class="stat-value" id="compounderStats">Loading...</div>
+                            </div>
+                            <div class="stat-card">
+                                <h4>Mag7+</h4>
+                                <div class="stat-value" id="mag7Stats">Loading...</div>
+                            </div>
+                            <div class="stat-card">
+                                <h4>AI Platform</h4>
+                                <div class="stat-value" id="aiPlatformStats">Loading...</div>
                             </div>
                         </div>
                         
@@ -142,7 +150,7 @@
         </div>
 
         <!-- Sector Overview Tab -->
-        <div class="tab-content" id="sector-overview">
+        <div class="tab-content active" id="sector-overview">
             <div class="main-content">
                 <div class="side-panel" id="sidePanel">
                     <h3>📊 Sector Insights</h3>
@@ -165,6 +173,29 @@
                     <div class="insight-section">
                         <h4>💎 Breakout Candidates (Top 5)</h4>
                         <div id="breakoutList" class="stock-list"></div>
+                    </div>
+                </div>
+                
+                <!-- Column Controls Dropdown -->
+                <div class="table-controls">
+                    <div class="column-dropdown">
+                        <button class="column-dropdown-btn" onclick="toggleColumnDropdown(event)">
+                            <span>🔧</span>
+                            <span>Columns</span>
+                            <span id="columnDropdownArrow">▼</span>
+                        </button>
+                        <div class="column-dropdown-content" id="columnDropdownContent">
+                            <div class="dropdown-header">
+                                <span>Show/Hide Columns</span>
+                                <div class="dropdown-actions">
+                                    <button onclick="showAllColumns()" class="action-btn">All</button>
+                                    <button onclick="hideAllColumns()" class="action-btn">None</button>
+                                </div>
+                            </div>
+                            <div class="dropdown-columns" id="columnToggles">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -314,6 +345,29 @@
                     <div class="insight-section">
                         <h4>💎 Breakout Candidates (Top 5)</h4>
                         <div id="breakoutListGrowth" class="stock-list"></div>
+                    </div>
+                </div>
+                
+                <!-- Column Controls Dropdown -->
+                <div class="table-controls">
+                    <div class="column-dropdown">
+                        <button class="column-dropdown-btn" onclick="toggleColumnDropdown(event)">
+                            <span>🔧</span>
+                            <span>Columns</span>
+                            <span class="column-dropdown-arrow">▼</span>
+                        </button>
+                        <div class="column-dropdown-content">
+                            <div class="dropdown-header">
+                                <span>Show/Hide Columns</span>
+                                <div class="dropdown-actions">
+                                    <button onclick="showAllColumns()" class="action-btn">All</button>
+                                    <button onclick="hideAllColumns()" class="action-btn">None</button>
+                                </div>
+                            </div>
+                            <div class="dropdown-columns column-toggles">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -468,6 +522,29 @@
                     </div>
                 </div>
                 
+                <!-- Column Controls Dropdown -->
+                <div class="table-controls">
+                    <div class="column-dropdown">
+                        <button class="column-dropdown-btn" onclick="toggleColumnDropdown(event)">
+                            <span>🔧</span>
+                            <span>Columns</span>
+                            <span class="column-dropdown-arrow">▼</span>
+                        </button>
+                        <div class="column-dropdown-content">
+                            <div class="dropdown-header">
+                                <span>Show/Hide Columns</span>
+                                <div class="dropdown-actions">
+                                    <button onclick="showAllColumns()" class="action-btn">All</button>
+                                    <button onclick="hideAllColumns()" class="action-btn">None</button>
+                                </div>
+                            </div>
+                            <div class="dropdown-columns column-toggles">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="dashboard">
                     <table id="compounderTable">
                     <thead>
@@ -619,6 +696,29 @@
                     </div>
                 </div>
                 
+                <!-- Column Controls Dropdown -->
+                <div class="table-controls">
+                    <div class="column-dropdown">
+                        <button class="column-dropdown-btn" onclick="toggleColumnDropdown(event)">
+                            <span>🔧</span>
+                            <span>Columns</span>
+                            <span class="column-dropdown-arrow">▼</span>
+                        </button>
+                        <div class="column-dropdown-content">
+                            <div class="dropdown-header">
+                                <span>Show/Hide Columns</span>
+                                <div class="dropdown-actions">
+                                    <button onclick="showAllColumns()" class="action-btn">All</button>
+                                    <button onclick="hideAllColumns()" class="action-btn">None</button>
+                                </div>
+                            </div>
+                            <div class="dropdown-columns column-toggles">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
                 <div class="dashboard">
                     <table id="mag7Table">
                     <thead>
@@ -767,6 +867,29 @@
                     <div class="insight-section">
                         <h4>💎 Breakout Candidates (Top 5)</h4>
                         <div id="breakoutListAIPlatform" class="stock-list"></div>
+                    </div>
+                </div>
+                
+                <!-- Column Controls Dropdown -->
+                <div class="table-controls">
+                    <div class="column-dropdown">
+                        <button class="column-dropdown-btn" onclick="toggleColumnDropdown(event)">
+                            <span>🔧</span>
+                            <span>Columns</span>
+                            <span class="column-dropdown-arrow">▼</span>
+                        </button>
+                        <div class="column-dropdown-content">
+                            <div class="dropdown-header">
+                                <span>Show/Hide Columns</span>
+                                <div class="dropdown-actions">
+                                    <button onclick="showAllColumns()" class="action-btn">All</button>
+                                    <button onclick="hideAllColumns()" class="action-btn">None</button>
+                                </div>
+                            </div>
+                            <div class="dropdown-columns column-toggles">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -1433,6 +1556,6 @@
         </div>
     </div>
     
-    <script src="script.js?v=33"></script>
+    <script src="script.js?v=47"></script>
 </body>
 </html>

@@ -223,3 +223,6 @@ This project is open source and available under the MIT License.
 ---
 
 **⚡ Live Dashboard**: Run locally for real-time market insights!
+
+---
+_Last updated: 2025-06-27_
