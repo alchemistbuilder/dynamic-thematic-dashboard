@@ -6,7 +6,7 @@ const USE_POLYGON = true; // Set to false to use Yahoo Finance
 
 // Check if we're on Vercel and should use the API proxy
 const USE_API_PROXY = window.location.hostname.includes('vercel.app') || 
-                      window.location.hostname !== 'localhost';
+                      (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1');
 
 // Helper function to make API calls through proxy when on Vercel
 async function fetchPolygonData(polygonUrl) {
@@ -387,7 +387,6 @@ class StockDashboard {
         this.compounderData = new Map();
         this.mag7Data = new Map();
         this.aiPlatformData = new Map();
-        this.watchlistData = new Map();
         this.currentTab = 'sector-overview';
         this.sortColumn = null;
         this.sortDirection = 'asc';
@@ -397,72 +396,10 @@ class StockDashboard {
         // Column visibility state
         this.hiddenColumns = new Set();
         
-        // Watchlist management
-        this.userWatchlist = this.loadWatchlist();
         
         this.init();
     }
 
-    // Watchlist management functions
-    loadWatchlist() {
-        try {
-            const saved = localStorage.getItem('userWatchlist');
-            return saved ? JSON.parse(saved) : [];
-        } catch (error) {
-            console.error('Error loading watchlist:', error);
-            return [];
-        }
-    }
-
-    saveWatchlist() {
-        try {
-            localStorage.setItem('userWatchlist', JSON.stringify(this.userWatchlist));
-            this.updateWatchlistCount();
-        } catch (error) {
-            console.error('Error saving watchlist:', error);
-        }
-    }
-
-    addToWatchlist(ticker) {
-        const upperTicker = ticker.toUpperCase().trim();
-        if (!upperTicker || this.userWatchlist.includes(upperTicker)) {
-            return false;
-        }
-        
-        this.userWatchlist.push(upperTicker);
-        this.saveWatchlist();
-        
-        // If we're on the watchlist tab, refresh the data
-        if (this.currentTab === 'watchlist') {
-            this.fetchWatchlistData();
-        }
-        
-        return true;
-    }
-
-    removeFromWatchlist(ticker) {
-        const index = this.userWatchlist.indexOf(ticker);
-        if (index > -1) {
-            this.userWatchlist.splice(index, 1);
-            this.saveWatchlist();
-            
-            // Remove from data map
-            this.watchlistData.delete(ticker);
-            
-            // If we're on the watchlist tab, refresh the table
-            if (this.currentTab === 'watchlist') {
-                this.renderWatchlistTable();
-                this.renderSectorAnalysis('watchlist', this.watchlistData);
-            }
-        }
-    }
-
-    updateWatchlistCount() {
-        const countElement = document.getElementById('watchlistCount');
-        if (countElement) {
-            countElement.textContent = this.userWatchlist.length;
-        }
-    }
 
     init() {
         this.bindEvents();
@@ -827,8 +764,6 @@ class StockDashboard {
         } else if (tabId === 'ai-platform') {
             this.renderTable();
             this.renderSectorAnalysis('ai-platform', this.aiPlatformData);
-        } else if (tabId === 'watchlist') {
-            this.renderWatchlistTab();
         } else {
             this.renderTable();
             
@@ -935,9 +870,6 @@ class StockDashboard {
                 break;
             case 'ai-platform':
                 tickers = AI_PLATFORM_TICKERS;
-                break;
-            case 'watchlist':
-                tickers = this.userWatchlist;
                 break;
             default:
                 // Market summary - don't update live prices
@@ -1566,11 +1498,6 @@ class StockDashboard {
                 tickers = AI_PLATFORM_TICKERS;
                 dataMap = this.aiPlatformData;
                 tickerType = 'ai-platform';
-                break;
-            case 'watchlist':
-                tickers = this.userWatchlist;
-                dataMap = this.watchlistData;
-                tickerType = 'watchlist';
                 break;
             default:
                 console.error(`Unknown tab type: ${tabType}`);
@@ -4191,165 +4118,6 @@ class StockDashboard {
         });
     }
 
-    // Watchlist-specific functions
-    async renderWatchlistTab() {
-        this.updateWatchlistCount();
-        this.setupWatchlistEventListeners();
-        
-        if (this.userWatchlist.length === 0) {
-            this.renderEmptyWatchlist();
-            return;
-        }
-        
-        // Fetch data for watchlist tickers if not already loaded
-        await this.fetchWatchlistData();
-        
-        // Render table and analysis
-        this.renderWatchlistTable();
-        this.renderSectorAnalysis('watchlist', this.watchlistData);
-    }
-
-    setupWatchlistEventListeners() {
-        // Add ticker button
-        const addButton = document.getElementById('addTickerBtn');
-        const tickerInput = document.getElementById('tickerInput');
-        
-        if (addButton && tickerInput) {
-            // Remove existing listeners to prevent duplicates
-            addButton.replaceWith(addButton.cloneNode(true));
-            tickerInput.replaceWith(tickerInput.cloneNode(true));
-            
-            // Get new references
-            const newAddButton = document.getElementById('addTickerBtn');
-            const newTickerInput = document.getElementById('tickerInput');
-            
-            newAddButton.addEventListener('click', () => {
-                const ticker = newTickerInput.value.trim().toUpperCase();
-                if (ticker) {
-                    if (this.addToWatchlist(ticker)) {
-                        newTickerInput.value = '';
-                        newTickerInput.focus();
-                    } else {
-                        alert('Ticker already in watchlist or invalid');
-                    }
-                }
-            });
-            
-            newTickerInput.addEventListener('keypress', (e) => {
-                if (e.key === 'Enter') {
-                    newAddButton.click();
-                }
-            });
-            
-            newTickerInput.addEventListener('input', (e) => {
-                e.target.value = e.target.value.toUpperCase();
-            });
-        }
-    }
-
-    async fetchWatchlistData() {
-        if (this.userWatchlist.length === 0) return;
-        
-        try {
-            const promises = this.userWatchlist.map(ticker => this.fetchStockData(ticker));
-            const results = await Promise.allSettled(promises);
-            
-            results.forEach((result, index) => {
-                const ticker = this.userWatchlist[index];
-                if (result.status === 'fulfilled' && result.value) {
-                    this.watchlistData.set(ticker, result.value);
-                } else {
-                    console.warn(`Failed to fetch data for ${ticker}`);
-                }
-            });
-        } catch (error) {
-            console.error('Error fetching watchlist data:', error);
-        }
-    }
-
-    renderWatchlistTable() {
-        const tableBody = document.getElementById('watchlistTableBody');
-        if (!tableBody) return;
-        
-        if (this.userWatchlist.length === 0) {
-            this.renderEmptyWatchlist();
-            return;
-        }
-        
-        let html = '';
-        this.userWatchlist.forEach(ticker => {
-            const data = this.watchlistData.get(ticker);
-            if (data) {
-                html += this.createWatchlistTableRow(data);
-            } else {
-                // Show loading row
-                html += `<tr><td>${ticker}</td><td colspan="34">Loading...</td><td><button class="remove-ticker-btn" onclick="window.dashboard.removeFromWatchlist('${ticker}')">Remove</button></td></tr>`;
-            }
-        });
-        
-        tableBody.innerHTML = html;
-    }
-
-    createWatchlistTableRow(data) {
-        return `
-            <tr>
-                <td class="ticker-cell">${data.ticker}</td>
-                <td class="name-cell">${data.name || '--'}</td>
-                <td class="${this.getChangeClass(data.liberationChange)}">${this.formatPercent(data.liberationChange)}</td>
-                <td class="price-cell">$${data.currentPrice?.toFixed(2) || '--'}</td>
-                <td class="${this.getChangeClass(data.changes.ytd)}">${this.formatPercent(data.changes.ytd)}</td>
-                <td class="${this.getChangeClass(data.changes['1d'])}">${this.formatPercent(data.changes['1d'])}</td>
-                <td class="${this.getGapSignalClass(data.gapSignal)}">${data.gapSignal || '--'}</td>
-                <td class="${this.getVolumeSignalClass(data.volumeSignal)}">${data.volumeSignal || '--'}</td>
-                <td class="${this.getChangeClass(data.changes['1w'])}">${this.formatPercent(data.changes['1w'])}</td>
-                <td class="${this.getChangeClass(data.changes['2w'])}">${this.formatPercent(data.changes['2w'])}</td>
-                <td class="${this.getChangeClass(data.changes['1m'])}">${this.formatPercent(data.changes['1m'])}</td>
-                <td class="${this.getChangeClass(data.changes['2m'])}">${this.formatPercent(data.changes['2m'])}</td>
-                <td class="${this.getChangeClass(data.changes['3m'])}">${this.formatPercent(data.changes['3m'])}</td>
-                <td class="${this.getChangeClass(data.changes['6m'])}">${this.formatPercent(data.changes['6m'])}</td>
-                <td class="${this.getChangeClass(data.changes['1y'])}">${this.formatPercent(data.changes['1y'])}</td>
-                <td class="${this.getChangeClass(data.comparisons.deltaFrom52WeekHigh)}">${this.formatPercent(data.comparisons.deltaFrom52WeekHigh)}</td>
-                <td class="${this.getBooleanClass(data.comparisons.above50SMA)}">${this.formatBoolean(data.comparisons.above50SMA)}</td>
-                <td class="${this.getBooleanClass(data.comparisons.above100SMA)}">${this.formatBoolean(data.comparisons.above100SMA)}</td>
-                <td class="${this.getBooleanClass(data.comparisons.above200SMA)}">${this.formatBoolean(data.comparisons.above200SMA)}</td>
-                <td class="${this.getSMAClass(data.comparisons.sma50Above100Above200)}">${data.comparisons.sma50Above100Above200 || '--'}</td>
-                <td class="${this.getBooleanClass(data.comparisons.above8EMA)}">${this.formatBoolean(data.comparisons.above8EMA)}</td>
-                <td class="${this.getBooleanClass(data.comparisons.above13EMA)}">${this.formatBoolean(data.comparisons.above13EMA)}</td>
-                <td class="${this.getBooleanClass(data.comparisons.above21EMA)}">${this.formatBoolean(data.comparisons.above21EMA)}</td>
-                <td class="${this.getEMAClass(data.comparisons.ema8Above13Above21)}">${data.comparisons.ema8Above13Above21 || '--'}</td>
-                <td class="sma-cell">$${data.sma50?.toFixed(2) || '--'}</td>
-                <td class="sma-cell">$${data.sma100?.toFixed(2) || '--'}</td>
-                <td class="sma-cell">$${data.sma200?.toFixed(2) || '--'}</td>
-                <td class="ema-cell">$${data.ema8?.toFixed(2) || '--'}</td>
-                <td class="ema-cell">$${data.ema13?.toFixed(2) || '--'}</td>
-                <td class="ema-cell">$${data.ema21?.toFixed(2) || '--'}</td>
-                <td class="${this.getRSIClass(data.rsi14)}">${data.rsi14?.toFixed(1) || '--'}</td>
-                <td class="${this.getRSIClass(data.rsi30)}">${data.rsi30?.toFixed(1) || '--'}</td>
-                <td class="earnings-cell">${data.nextEarnings || '--'}</td>
-                <td class="${this.getDaysToEarningsClass(data.daysToEarnings)}">${data.daysToEarnings || '--'}</td>
-                <td class="${this.getConsecutiveUpDaysClass(data.consecutiveUpDays)}">${data.consecutiveUpDays || '--'}</td>
-                <td class="actions-column">
-                    <button class="remove-ticker-btn" onclick="window.dashboard.removeFromWatchlist('${data.ticker}')">
-                        Remove
-                    </button>
-                </td>
-            </tr>
-        `;
-    }
-
-    renderEmptyWatchlist() {
-        const tableBody = document.getElementById('watchlistTableBody');
-        if (tableBody) {
-            tableBody.innerHTML = `
-                <tr>
-                    <td colspan="36" class="empty-watchlist">
-                        <h3>Your watchlist is empty</h3>
-                        <p>Add tickers using the form above to start tracking your favorite stocks!</p>
-                    </td>
-                </tr>
-            `;
-        }
-    }
 }
 
 // Global functions for column controls
