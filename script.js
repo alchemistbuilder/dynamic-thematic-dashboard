@@ -387,6 +387,7 @@ class StockDashboard {
         this.compounderData = new Map();
         this.mag7Data = new Map();
         this.aiPlatformData = new Map();
+        this.watchlistData = new Map();
         this.currentTab = 'sector-overview';
         this.sortColumn = null;
         this.sortDirection = 'asc';
@@ -396,7 +397,71 @@ class StockDashboard {
         // Column visibility state
         this.hiddenColumns = new Set();
         
+        // Watchlist management
+        this.userWatchlist = this.loadWatchlist();
+        
         this.init();
+    }
+
+    // Watchlist management functions
+    loadWatchlist() {
+        try {
+            const saved = localStorage.getItem('userWatchlist');
+            return saved ? JSON.parse(saved) : [];
+        } catch (error) {
+            console.error('Error loading watchlist:', error);
+            return [];
+        }
+    }
+
+    saveWatchlist() {
+        try {
+            localStorage.setItem('userWatchlist', JSON.stringify(this.userWatchlist));
+            this.updateWatchlistCount();
+        } catch (error) {
+            console.error('Error saving watchlist:', error);
+        }
+    }
+
+    addToWatchlist(ticker) {
+        const upperTicker = ticker.toUpperCase().trim();
+        if (!upperTicker || this.userWatchlist.includes(upperTicker)) {
+            return false;
+        }
+        
+        this.userWatchlist.push(upperTicker);
+        this.saveWatchlist();
+        
+        // If we're on the watchlist tab, refresh the data
+        if (this.currentTab === 'watchlist') {
+            this.fetchWatchlistData();
+        }
+        
+        return true;
+    }
+
+    removeFromWatchlist(ticker) {
+        const index = this.userWatchlist.indexOf(ticker);
+        if (index > -1) {
+            this.userWatchlist.splice(index, 1);
+            this.saveWatchlist();
+            
+            // Remove from data map
+            this.watchlistData.delete(ticker);
+            
+            // If we're on the watchlist tab, refresh the table
+            if (this.currentTab === 'watchlist') {
+                this.renderWatchlistTable();
+                this.renderSectorAnalysis('watchlist', this.watchlistData);
+            }
+        }
+    }
+
+    updateWatchlistCount() {
+        const countElement = document.getElementById('watchlistCount');
+        if (countElement) {
+            countElement.textContent = this.userWatchlist.length;
+        }
     }
 
     init() {
@@ -762,6 +827,8 @@ class StockDashboard {
         } else if (tabId === 'ai-platform') {
             this.renderTable();
             this.renderSectorAnalysis('ai-platform', this.aiPlatformData);
+        } else if (tabId === 'watchlist') {
+            this.renderWatchlistTab();
         } else {
             this.renderTable();
             
@@ -868,6 +935,9 @@ class StockDashboard {
                 break;
             case 'ai-platform':
                 tickers = AI_PLATFORM_TICKERS;
+                break;
+            case 'watchlist':
+                tickers = this.userWatchlist;
                 break;
             default:
                 // Market summary - don't update live prices
@@ -1496,6 +1566,11 @@ class StockDashboard {
                 tickers = AI_PLATFORM_TICKERS;
                 dataMap = this.aiPlatformData;
                 tickerType = 'ai-platform';
+                break;
+            case 'watchlist':
+                tickers = this.userWatchlist;
+                dataMap = this.watchlistData;
+                tickerType = 'watchlist';
                 break;
             default:
                 console.error(`Unknown tab type: ${tabType}`);
