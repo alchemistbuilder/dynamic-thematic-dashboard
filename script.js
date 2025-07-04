@@ -4030,13 +4030,23 @@ class StockDashboard {
         
         
         // Calculate equal-weighted portfolio returns
-        const timeframes = ['1d', '1w', '2w', '1m', '2m', '3m', '6m', 'ytd'];
+        const timeframes = ['1d', '1w', '2w', '1m', '2m', '3m', '6m', 'ytd', 'liberation'];
         const returns = {};
         
         timeframes.forEach(timeframe => {
-            const validChanges = stocks
-                .map(stock => stock.changes[timeframe])
-                .filter(change => change !== null && change !== undefined && !isNaN(change));
+            let validChanges;
+            
+            if (timeframe === 'liberation') {
+                // Use liberationChange for Liberation timeframe
+                validChanges = stocks
+                    .map(stock => stock.liberationChange)
+                    .filter(change => change !== null && change !== undefined && !isNaN(change));
+            } else {
+                // Use regular changes for other timeframes
+                validChanges = stocks
+                    .map(stock => stock.changes[timeframe])
+                    .filter(change => change !== null && change !== undefined && !isNaN(change));
+            }
             
             if (validChanges.length > 0) {
                 // Calculate median for more robust average
