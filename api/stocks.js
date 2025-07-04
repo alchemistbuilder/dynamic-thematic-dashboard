@@ -29,7 +29,12 @@ export default async function handler(req, res) {
     try {
         // Decode the URL and add API key
         const decodedUrl = decodeURIComponent(url);
-        const polygonUrl = `${decodedUrl}&apikey=${API_KEY}`;
+        
+        // Ensure proper URL construction
+        const separator = decodedUrl.includes('?') ? '&' : '?';
+        const polygonUrl = `${decodedUrl}${separator}apikey=${API_KEY}`;
+        
+        console.log('Fetching from:', polygonUrl.replace(API_KEY, '[HIDDEN]'));
         
         // Fetch from Polygon.io
         const response = await fetch(polygonUrl);
