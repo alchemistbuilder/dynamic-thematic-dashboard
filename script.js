@@ -866,6 +866,9 @@ class StockDashboard {
             case 'mag7-plus':
                 tickers = MAG7_PLUS_TICKERS;
                 break;
+            case 'ai-platform':
+                tickers = AI_PLATFORM_TICKERS;
+                break;
             default:
                 // Market summary - don't update live prices
                 return;
@@ -1460,6 +1463,9 @@ class StockDashboard {
         await new Promise(resolve => setTimeout(resolve, 1000));
         
         await this.fetchDataForTab('mag7-plus');
+        await new Promise(resolve => setTimeout(resolve, 1000));
+        
+        await this.fetchDataForTab('ai-platform');
     }
 
     async fetchDataForTab(tabType) {
@@ -1485,6 +1491,11 @@ class StockDashboard {
                 tickers = MAG7_PLUS_TICKERS;
                 dataMap = this.mag7Data;
                 tickerType = 'mag7+';
+                break;
+            case 'ai-platform':
+                tickers = AI_PLATFORM_TICKERS;
+                dataMap = this.aiPlatformData;
+                tickerType = 'ai-platform';
                 break;
             default:
                 console.error(`Unknown tab type: ${tabType}`);
