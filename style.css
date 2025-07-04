@@ -1718,3 +1718,106 @@ th.drag-over .drag-indicator {
 .column-hidden {
     display: none !important;
 }
+
+/* Watchlist specific styles */
+.watchlist-controls {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 25px;
+}
+
+.watchlist-controls h4 {
+    color: #00d4aa;
+    margin-bottom: 15px;
+    font-size: 1.1rem;
+}
+
+.add-ticker-form {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+#tickerInput {
+    flex: 1;
+    padding: 10px 12px;
+    background: rgba(20, 20, 20, 0.8);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    color: #ffffff;
+    font-size: 14px;
+    text-transform: uppercase;
+}
+
+#tickerInput:focus {
+    outline: none;
+    border-color: #00d4aa;
+    box-shadow: 0 0 0 2px rgba(0, 212, 170, 0.2);
+}
+
+.add-ticker-btn {
+    background: linear-gradient(135deg, #00d4aa 0%, #00b896 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.add-ticker-btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 212, 170, 0.3);
+}
+
+.add-ticker-btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.watchlist-count {
+    color: rgba(255, 255, 255, 0.7);
+    font-size: 0.9rem;
+    text-align: center;
+}
+
+.actions-column {
+    width: 80px;
+    text-align: center;
+}
+
+.remove-ticker-btn {
+    background: rgba(255, 59, 48, 0.8);
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    transition: all 0.2s ease;
+}
+
+.remove-ticker-btn:hover {
+    background: rgba(255, 59, 48, 1);
+    transform: translateY(-1px);
+}
+
+.empty-watchlist {
+    text-align: center;
+    padding: 60px 20px;
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.empty-watchlist h3 {
+    color: rgba(255, 255, 255, 0.8);
+    margin-bottom: 10px;
+}
+
+.empty-watchlist p {
+    font-size: 0.9rem;
+    line-height: 1.5;
+}
