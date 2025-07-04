@@ -29,10 +29,7 @@ export default async function handler(req, res) {
     try {
         // Decode the URL and add API key
         const decodedUrl = decodeURIComponent(url);
-        
-        // Ensure proper URL construction
-        const separator = decodedUrl.includes('?') ? '&' : '?';
-        const polygonUrl = `${decodedUrl}${separator}apikey=${API_KEY}`;
+        const polygonUrl = `${decodedUrl}&apikey=${API_KEY}`;
         
         // Fetch from Polygon.io
         const response = await fetch(polygonUrl);
@@ -42,6 +39,7 @@ export default async function handler(req, res) {
         res.status(200).json(data);
         
     } catch (error) {
+        console.error('API Error:', error);
         res.status(500).json({ error: 'Failed to fetch data' });
     }
 }
