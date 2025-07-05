@@ -1660,6 +1660,16 @@ class StockDashboard {
         // Calculate comparison indicators
         const comparisons = this.calculateComparisons(currentPrice, movingAverages, week52High);
         
+        // Calculate new volatility and EMA metrics
+        const volatilityMetrics = this.calculateVolatilityMetrics(sortedData);
+        const emaMetrics = this.calculateEMAMetrics(sortedData, currentPrice, movingAverages.ema21);
+        
+        // Debug logging
+        if (ticker === 'QQQ') {
+            console.log('QQQ Volatility Metrics:', volatilityMetrics);
+            console.log('QQQ EMA Metrics:', emaMetrics);
+        }
+        
         // Note: Earnings data removed - not available through current API
         
         // Determine trends
@@ -1678,7 +1688,9 @@ class StockDashboard {
             week52High,
             comparisons,
             shortTermTrend,
-            longTermTrend
+            longTermTrend,
+            volatilityMetrics,
+            emaMetrics
         };
     }
 
@@ -2022,6 +2034,65 @@ class StockDashboard {
         return 'N/A';
     }
 
+    calculateVolatilityMetrics(data) {
+        // Calculate daily returns for the past year (252 trading days)
+        const oneYearData = data.slice(-252);
+        if (oneYearData.length < 20) return { dailyVol1Yr: null };
+        
+        const dailyReturns = [];
+        for (let i = 1; i < oneYearData.length; i++) {
+            const return_pct = (oneYearData[i].c - oneYearData[i-1].c) / oneYearData[i-1].c;
+            dailyReturns.push(return_pct);
+        }
+        
+        // Calculate standard deviation (1 std dev = typical daily move)
+        const mean = dailyReturns.reduce((sum, ret) => sum + ret, 0) / dailyReturns.length;
+        const variance = dailyReturns.reduce((sum, ret) => sum + Math.pow(ret - mean, 2), 0) / dailyReturns.length;
+        const dailyVol1Yr = Math.sqrt(variance) * 100; // Convert to percentage
+        
+        return {
+            dailyVol1Yr: dailyVol1Yr
+        };
+    }
+
+    calculateEMAMetrics(data, currentPrice, ema21) {
+        if (!ema21 || !currentPrice) return { currentDistanceEMA21: null, maxDistanceEMA21_1Yr: null };
+        
+        // Current distance from EMA21
+        const currentDistanceEMA21 = ((currentPrice - ema21) / ema21) * 100;
+        
+        // Calculate maximum distance above EMA21 in past year (simplified)
+        const oneYearData = data.slice(-252);
+        if (oneYearData.length < 21) return { currentDistanceEMA21, maxDistanceEMA21_1Yr: null };
+        
+        let maxDistanceAbove = -Infinity;
+        
+        // Simplified: Calculate EMA21 using current algorithm, then check historical distances
+        const prices = oneYearData.map(d => d.c);
+        
+        // Calculate EMA21 for the full period once
+        const multiplier = 2 / (21 + 1);
+        let ema = prices.slice(0, 21).reduce((sum, price) => sum + price, 0) / 21;
+        
+        // Check distance at the initial period
+        const initialDistance = ((prices[20] - ema) / ema) * 100;
+        if (initialDistance > maxDistanceAbove) maxDistanceAbove = initialDistance;
+        
+        // Update EMA for each subsequent day and check distance
+        for (let i = 21; i < prices.length; i++) {
+            ema = (prices[i] * multiplier) + (ema * (1 - multiplier));
+            const distance = ((prices[i] - ema) / ema) * 100;
+            if (distance > maxDistanceAbove) {
+                maxDistanceAbove = distance;
+            }
+        }
+        
+        return {
+            currentDistanceEMA21: currentDistanceEMA21,
+            maxDistanceEMA21_1Yr: maxDistanceAbove === -Infinity ? null : maxDistanceAbove
+        };
+    }
+
     sortTable(column) {
         // Toggle sort direction if same column, otherwise reset to ascending
         if (this.sortColumn === column) {
@@ -2149,6 +2220,12 @@ class StockDashboard {
                     'No Data': 0
                 };
                 return volumeRankings[volumeSignal] || 2;
+            case 'currentDistanceEMA21':
+                return data.emaMetrics?.currentDistanceEMA21 || -Infinity;
+            case 'maxDistanceEMA21_1Yr':
+                return data.emaMetrics?.maxDistanceEMA21_1Yr || -Infinity;
+            case 'dailyVol1Yr':
+                return data.volatilityMetrics?.dailyVol1Yr || Infinity;
             default:
                 return 0;
         }
@@ -2494,6 +2571,9 @@ class StockDashboard {
             <td class="name-cell">${data.name}</td>
             <td>${formatPercent(data.liberationChange)}</td>
             <td class="price-cell">${formatPrice(data.currentPrice)}</td>
+            <td>${formatPercent(data.emaMetrics?.currentDistanceEMA21)}</td>
+            <td>${formatPercent(data.emaMetrics?.maxDistanceEMA21_1Yr)}</td>
+            <td>${formatPercent(data.volatilityMetrics?.dailyVol1Yr)}</td>
             <td>${formatPercent(data.changes['ytd'])}</td>
             <td>${formatPercent(data.changes['1d'])}</td>
             <td>${formatGapSignal(data.gapSignal)}</td>
