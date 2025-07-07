@@ -414,6 +414,12 @@ class StockDashboard {
             { id: 'name', name: 'Name' },
             { id: 'liberationChange', name: '% change since Liberation' },
             { id: 'currentPrice', name: 'Price' },
+            { id: 'currentDistanceEMA21', name: '% Above 21D EMA' },
+            { id: 'maxDistanceEMA21_1Yr', name: 'Max % Above EMA (1Yr)' },
+            { id: 'maxDistanceEMA21_1Yr_Date', name: 'Date of Max (1Yr)' },
+            { id: 'maxDistanceEMA21_5Yr', name: 'Max % Above EMA (5Yr)' },
+            { id: 'maxDistanceEMA21_5Yr_Date', name: 'Date of Max (5Yr)' },
+            { id: 'dailyVol1Yr', name: 'Daily Vol (1σ)' },
             { id: 'ytd', name: '% YTD' },
             { id: '1d', name: '%1 D' },
             { id: 'gapSignal', name: 'Gap Signal' },
@@ -442,8 +448,6 @@ class StockDashboard {
             { id: 'ema21', name: '21d EMA' },
             { id: 'rsi14', name: '14D RSI' },
             { id: 'rsi30', name: '30D RSI' },
-            { id: 'nextEarnings', name: 'Next Earnings' },
-            { id: 'daysToEarnings', name: 'Days to Earnings' },
             { id: 'consecutiveUpDays', name: '# of Days Up' }
         ];
         
@@ -1056,13 +1060,6 @@ class StockDashboard {
             // Fetch crypto separately (grouped endpoint doesn't support crypto)
             await this.fetchCryptoData();
             
-            // Fetch earnings for individual stock tabs
-            await Promise.all([
-                this.fetchAllEarningsData(GROWTH_TICKERS, this.growthData),
-                this.fetchAllEarningsData(COMPOUNDER_TICKERS, this.compounderData),
-                this.fetchAllEarningsData(MAG7_PLUS_TICKERS, this.mag7Data),
-                this.fetchAllEarningsData(AI_PLATFORM_TICKERS, this.aiPlatformData)
-            ]);
             
             console.log('Grouped data fetch completed successfully!');
             
@@ -1414,6 +1411,10 @@ class StockDashboard {
             // Calculate Liberation Day change
             const liberationChange = this.calculateLiberationDayChange(historicalData, currentPrice);
             
+            // Calculate new volatility and EMA metrics
+            const volatilityMetrics = this.calculateVolatilityMetrics(historicalData);
+            const emaMetrics = this.calculateEMAMetrics(historicalData, currentPrice, movingAverages.ema21);
+            
             return {
                 ticker,
                 name: STOCK_NAMES[ticker] || GROWTH_NAMES[ticker] || COMPOUNDER_NAMES[ticker] || AI_PLATFORM_NAMES[ticker] || MAG7_PLUS_NAMES[ticker] || ticker,
@@ -1427,6 +1428,8 @@ class StockDashboard {
                 volumeSignal,
                 gapSignal,
                 breakoutScore,
+                volatilityMetrics,
+                emaMetrics,
                 nextEarnings: 'N/A', // Will be populated later
                 daysToEarnings: 'N/A'
             };
@@ -1665,9 +1668,11 @@ class StockDashboard {
         const emaMetrics = this.calculateEMAMetrics(sortedData, currentPrice, movingAverages.ema21);
         
         // Debug logging
-        if (ticker === 'QQQ') {
-            console.log('QQQ Volatility Metrics:', volatilityMetrics);
-            console.log('QQQ EMA Metrics:', emaMetrics);
+        if (ticker === 'QQQ' || ticker === 'SPY') {
+            console.log(`${ticker} Current Price:`, currentPrice);
+            console.log(`${ticker} EMA21:`, movingAverages.ema21);
+            console.log(`${ticker} Volatility Metrics:`, volatilityMetrics);
+            console.log(`${ticker} EMA Metrics:`, emaMetrics);
         }
         
         // Note: Earnings data removed - not available through current API
@@ -2056,40 +2061,85 @@ class StockDashboard {
     }
 
     calculateEMAMetrics(data, currentPrice, ema21) {
-        if (!ema21 || !currentPrice) return { currentDistanceEMA21: null, maxDistanceEMA21_1Yr: null };
+        if (!ema21 || !currentPrice) return { 
+            currentDistanceEMA21: null, 
+            maxDistanceEMA21_1Yr: null, 
+            maxDistanceEMA21_5Yr: null,
+            maxDistanceEMA21_1Yr_Date: null,
+            maxDistanceEMA21_5Yr_Date: null
+        };
         
         // Current distance from EMA21
         const currentDistanceEMA21 = ((currentPrice - ema21) / ema21) * 100;
         
-        // Calculate maximum distance above EMA21 in past year (simplified)
+        // Calculate maximum distance above EMA21 in past year
         const oneYearData = data.slice(-252);
-        if (oneYearData.length < 21) return { currentDistanceEMA21, maxDistanceEMA21_1Yr: null };
+        if (oneYearData.length < 21) return { 
+            currentDistanceEMA21, 
+            maxDistanceEMA21_1Yr: null, 
+            maxDistanceEMA21_5Yr: null,
+            maxDistanceEMA21_1Yr_Date: null,
+            maxDistanceEMA21_5Yr_Date: null
+        };
         
-        let maxDistanceAbove = -Infinity;
+        // Calculate maximum distance above EMA21 in past 5 years
+        const fiveYearData = data.slice(-1260); // 5 years = 252 * 5 trading days
         
-        // Simplified: Calculate EMA21 using current algorithm, then check historical distances
-        const prices = oneYearData.map(d => d.c);
+        let maxDistanceAbove1Yr = -Infinity;
+        let maxDistanceAbove5Yr = -Infinity;
+        let maxDate1Yr = null;
+        let maxDate5Yr = null;
         
-        // Calculate EMA21 for the full period once
+        // Calculate EMA21 for 1-year data
+        const prices1Yr = oneYearData.map(d => d.c);
         const multiplier = 2 / (21 + 1);
-        let ema = prices.slice(0, 21).reduce((sum, price) => sum + price, 0) / 21;
+        let ema1Yr = prices1Yr.slice(0, 21).reduce((sum, price) => sum + price, 0) / 21;
         
         // Check distance at the initial period
-        const initialDistance = ((prices[20] - ema) / ema) * 100;
-        if (initialDistance > maxDistanceAbove) maxDistanceAbove = initialDistance;
+        const initialDistance1Yr = ((prices1Yr[20] - ema1Yr) / ema1Yr) * 100;
+        if (initialDistance1Yr > maxDistanceAbove1Yr) {
+            maxDistanceAbove1Yr = initialDistance1Yr;
+            maxDate1Yr = new Date(oneYearData[20].t);
+        }
         
-        // Update EMA for each subsequent day and check distance
-        for (let i = 21; i < prices.length; i++) {
-            ema = (prices[i] * multiplier) + (ema * (1 - multiplier));
-            const distance = ((prices[i] - ema) / ema) * 100;
-            if (distance > maxDistanceAbove) {
-                maxDistanceAbove = distance;
+        // Update EMA for each subsequent day and check distance (1 year)
+        for (let i = 21; i < prices1Yr.length; i++) {
+            ema1Yr = (prices1Yr[i] * multiplier) + (ema1Yr * (1 - multiplier));
+            const distance = ((prices1Yr[i] - ema1Yr) / ema1Yr) * 100;
+            if (distance > maxDistanceAbove1Yr) {
+                maxDistanceAbove1Yr = distance;
+                maxDate1Yr = new Date(oneYearData[i].t);
+            }
+        }
+        
+        // Calculate for 5-year data if we have enough data
+        if (fiveYearData.length >= 21) {
+            const prices5Yr = fiveYearData.map(d => d.c);
+            let ema5Yr = prices5Yr.slice(0, 21).reduce((sum, price) => sum + price, 0) / 21;
+            
+            const initialDistance5Yr = ((prices5Yr[20] - ema5Yr) / ema5Yr) * 100;
+            if (initialDistance5Yr > maxDistanceAbove5Yr) {
+                maxDistanceAbove5Yr = initialDistance5Yr;
+                maxDate5Yr = new Date(fiveYearData[20].t);
+            }
+            
+            // Update EMA for each subsequent day and check distance (5 years)
+            for (let i = 21; i < prices5Yr.length; i++) {
+                ema5Yr = (prices5Yr[i] * multiplier) + (ema5Yr * (1 - multiplier));
+                const distance = ((prices5Yr[i] - ema5Yr) / ema5Yr) * 100;
+                if (distance > maxDistanceAbove5Yr) {
+                    maxDistanceAbove5Yr = distance;
+                    maxDate5Yr = new Date(fiveYearData[i].t);
+                }
             }
         }
         
         return {
             currentDistanceEMA21: currentDistanceEMA21,
-            maxDistanceEMA21_1Yr: maxDistanceAbove === -Infinity ? null : maxDistanceAbove
+            maxDistanceEMA21_1Yr: maxDistanceAbove1Yr === -Infinity ? null : maxDistanceAbove1Yr,
+            maxDistanceEMA21_5Yr: maxDistanceAbove5Yr === -Infinity ? null : maxDistanceAbove5Yr,
+            maxDistanceEMA21_1Yr_Date: maxDate1Yr,
+            maxDistanceEMA21_5Yr_Date: maxDate5Yr
         };
     }
 
@@ -2224,6 +2274,12 @@ class StockDashboard {
                 return data.emaMetrics?.currentDistanceEMA21 || -Infinity;
             case 'maxDistanceEMA21_1Yr':
                 return data.emaMetrics?.maxDistanceEMA21_1Yr || -Infinity;
+            case 'maxDistanceEMA21_5Yr':
+                return data.emaMetrics?.maxDistanceEMA21_5Yr || -Infinity;
+            case 'maxDistanceEMA21_1Yr_Date':
+                return data.emaMetrics?.maxDistanceEMA21_1Yr_Date ? new Date(data.emaMetrics.maxDistanceEMA21_1Yr_Date).getTime() : 0;
+            case 'maxDistanceEMA21_5Yr_Date':
+                return data.emaMetrics?.maxDistanceEMA21_5Yr_Date ? new Date(data.emaMetrics.maxDistanceEMA21_5Yr_Date).getTime() : 0;
             case 'dailyVol1Yr':
                 return data.volatilityMetrics?.dailyVol1Yr || Infinity;
             default:
@@ -2514,6 +2570,16 @@ class StockDashboard {
 
 
     createRowHTML(data) {
+        // Debug for first few rows
+        if (data.ticker === 'QQQ' || data.ticker === 'SPY' || data.ticker === 'PLTR') {
+            console.log(`Creating row for ${data.ticker}:`, {
+                emaMetrics: data.emaMetrics,
+                volatilityMetrics: data.volatilityMetrics,
+                ema21: data.movingAverages?.ema21,
+                currentPrice: data.currentPrice
+            });
+        }
+        
         const formatPercent = (value) => {
             if (value === null || value === undefined) return 'N/A';
             const formatted = value.toFixed(1) + '%';
@@ -2566,6 +2632,17 @@ class StockDashboard {
             return `<span class="${className}">${volumeData.signal}</span>`;
         };
 
+        const formatDate = (date) => {
+            if (!date) return 'N/A';
+            const d = new Date(date);
+            if (isNaN(d.getTime())) return 'N/A';
+            return d.toLocaleDateString('en-US', { 
+                month: 'short', 
+                day: 'numeric',
+                year: 'numeric'
+            });
+        };
+
         return `
             <td class="ticker-cell">${data.ticker}</td>
             <td class="name-cell">${data.name}</td>
@@ -2573,6 +2650,9 @@ class StockDashboard {
             <td class="price-cell">${formatPrice(data.currentPrice)}</td>
             <td>${formatPercent(data.emaMetrics?.currentDistanceEMA21)}</td>
             <td>${formatPercent(data.emaMetrics?.maxDistanceEMA21_1Yr)}</td>
+            <td>${formatDate(data.emaMetrics?.maxDistanceEMA21_1Yr_Date)}</td>
+            <td>${formatPercent(data.emaMetrics?.maxDistanceEMA21_5Yr)}</td>
+            <td>${formatDate(data.emaMetrics?.maxDistanceEMA21_5Yr_Date)}</td>
             <td>${formatPercent(data.volatilityMetrics?.dailyVol1Yr)}</td>
             <td>${formatPercent(data.changes['ytd'])}</td>
             <td>${formatPercent(data.changes['1d'])}</td>
@@ -2602,8 +2682,6 @@ class StockDashboard {
             <td>${formatPrice(data.movingAverages.ema21)}</td>
             <td class="${this.getRSIClass(data.rsiData.rsi14)}">${this.formatRSI(data.rsiData.rsi14)}</td>
             <td class="${this.getRSIClass(data.rsiData.rsi30)}">${this.formatRSI(data.rsiData.rsi30)}</td>
-            <td>${this.formatEarningsDate(data.nextEarnings)}</td>
-            <td class="${this.getDaysToEarningsClass(data.daysToEarnings)}">${this.formatDaysToEarnings(data.daysToEarnings)}</td>
             <td class="${this.getConsecutiveUpDaysClass(data.consecutiveUpDays)}">${data.consecutiveUpDays}</td>
         `;
     }
@@ -3254,11 +3332,6 @@ class StockDashboard {
             trends.push(`⚖️ RSI levels balanced across market`);
         }
 
-        // Earnings coming up
-        const earningsThisWeek = allData.filter(s => s.daysToEarnings && s.daysToEarnings <= 7 && s.daysToEarnings !== 'N/A').length;
-        if (earningsThisWeek > 0) {
-            trends.push(`📊 ${earningsThisWeek} stocks reporting earnings this week`);
-        }
 
         // Momentum analysis
         const strongMomentum = allData.filter(s => (s.consecutiveUpDays || 0) >= 3).length;
@@ -3568,125 +3641,6 @@ class StockDashboard {
         return { totalScore: score, criteria };
     }
 
-    async fetchAllEarningsData(tickers, dataMap) {
-        console.log('Fetching earnings data for growth stock tickers...');
-        
-        // Fetch earnings for growth stock tickers only
-        const earningsPromises = tickers.map(ticker => this.fetchEarningsData(ticker));
-        const earningsResults = await Promise.allSettled(earningsPromises);
-        
-        let earningsSuccessCount = 0;
-        earningsResults.forEach((result, index) => {
-            const ticker = tickers[index];
-            if (result.status === 'fulfilled' && result.value) {
-                const stockData = dataMap.get(ticker);
-                if (stockData) {
-                    stockData.nextEarnings = result.value.nextEarnings;
-                    stockData.daysToEarnings = result.value.daysToEarnings;
-                    earningsSuccessCount++;
-                }
-            } else {
-                console.error(`Failed to fetch earnings for ${ticker}:`, result.reason || 'No earnings data');
-                const stockData = dataMap.get(ticker);
-                if (stockData) {
-                    stockData.nextEarnings = 'N/A';
-                    stockData.daysToEarnings = 'N/A';
-                }
-            }
-        });
-        
-        console.log(`Successfully fetched earnings for ${earningsSuccessCount}/${tickers.length} tickers`);
-    }
-
-    async fetchEarningsData(ticker) {
-        try {
-            // FMP earnings calendar API - get next 3 months
-            const today = new Date();
-            const threeMonthsLater = new Date(today);
-            threeMonthsLater.setMonth(threeMonthsLater.getMonth() + 3);
-            
-            const fromDate = today.toISOString().split('T')[0];
-            const toDate = threeMonthsLater.toISOString().split('T')[0];
-            
-            const fmpUrl = `https://financialmodelingprep.com/api/v3/earning_calendar?from=${fromDate}&to=${toDate}&apikey=${FMP_API_KEY}`;
-            
-            const response = await fetch(fmpUrl);
-            
-            if (!response.ok) {
-                throw new Error(`HTTP ${response.status}`);
-            }
-            
-            const earningsData = await response.json();
-            
-            // Find next earnings for this ticker
-            const tickerEarnings = earningsData.filter(earning => 
-                earning.symbol === ticker && new Date(earning.date) >= today
-            );
-            
-            if (tickerEarnings.length === 0) {
-                return null;
-            }
-            
-            // Sort by date and get the next one
-            tickerEarnings.sort((a, b) => new Date(a.date) - new Date(b.date));
-            const nextEarning = tickerEarnings[0];
-            
-            const earningsDate = new Date(nextEarning.date);
-            const daysToEarnings = Math.ceil((earningsDate - today) / (1000 * 60 * 60 * 24));
-            
-            return {
-                nextEarnings: nextEarning.date,
-                daysToEarnings: daysToEarnings
-            };
-            
-        } catch (error) {
-            console.error(`Error fetching earnings for ${ticker}:`, error);
-            return null;
-        }
-    }
-
-    formatEarningsDate(dateStr) {
-        if (!dateStr || dateStr === 'N/A') {
-            return 'N/A';
-        }
-        
-        const date = new Date(dateStr);
-        return date.toLocaleDateString('en-US', {
-            month: 'short',
-            day: 'numeric',
-            year: 'numeric'
-        });
-    }
-
-    formatDaysToEarnings(days) {
-        if (!days || days === 'N/A') {
-            return 'N/A';
-        }
-        
-        if (days === 0) {
-            return 'Today';
-        } else if (days === 1) {
-            return '1 day';
-        } else if (days < 0) {
-            return `${Math.abs(days)} days ago`;
-        } else {
-            return `${days} days`;
-        }
-    }
-
-    getDaysToEarningsClass(days) {
-        if (!days || days === 'N/A') {
-            return '';
-        }
-        
-        if (days <= 7) {
-            return 'urgent-earnings';
-        } else if (days <= 30) {
-            return 'upcoming-earnings';
-        } else {
-            return 'future-earnings';
-        }
-    }
 
     getConsecutiveUpDaysClass(days) {
         if (days === 0) {

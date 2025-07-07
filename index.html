@@ -192,7 +192,7 @@
                                     <button onclick="hideAllColumns()" class="action-btn">None</button>
                                 </div>
                             </div>
-                            <div class="dropdown-columns" id="columnToggles">
+                            <div class="dropdown-columns column-toggles" id="columnToggles">
                                 <!-- Will be populated by JavaScript -->
                             </div>
                         </div>
@@ -209,6 +209,9 @@
                             <th class="sortable" data-column="currentPrice">Price</th>
                             <th class="sortable" data-column="currentDistanceEMA21">% Above 21D EMA</th>
                             <th class="sortable" data-column="maxDistanceEMA21_1Yr">Max % Above EMA (1Yr)</th>
+                            <th class="sortable" data-column="maxDistanceEMA21_1Yr_Date">Date of Max (1Yr)</th>
+                            <th class="sortable" data-column="maxDistanceEMA21_5Yr">Max % Above EMA (5Yr)</th>
+                            <th class="sortable" data-column="maxDistanceEMA21_5Yr_Date">Date of Max (5Yr)</th>
                             <th class="sortable" data-column="dailyVol1Yr">Daily Vol (1σ)</th>
                             <th class="sortable" data-column="ytd">% YTD</th>
                             <th class="sortable" data-column="1d">%1 D</th>
@@ -238,8 +241,6 @@
                             <th class="sortable" data-column="ema21">21d EMA</th>
                             <th class="sortable" data-column="rsi14">14D RSI</th>
                             <th class="sortable" data-column="rsi30">30D RSI</th>
-                            <th class="sortable" data-column="nextEarnings">Next Earnings</th>
-                            <th class="sortable" data-column="daysToEarnings">Days to Earnings</th>
                             <th class="sortable" data-column="consecutiveUpDays"># of Days Up</th>
                         </tr>
                     </thead>
@@ -390,6 +391,9 @@
                             <th class="sortable" data-column="currentPrice">Price</th>
                             <th class="sortable" data-column="currentDistanceEMA21">% Above 21D EMA</th>
                             <th class="sortable" data-column="maxDistanceEMA21_1Yr">Max % Above EMA (1Yr)</th>
+                            <th class="sortable" data-column="maxDistanceEMA21_1Yr_Date">Date of Max (1Yr)</th>
+                            <th class="sortable" data-column="maxDistanceEMA21_5Yr">Max % Above EMA (5Yr)</th>
+                            <th class="sortable" data-column="maxDistanceEMA21_5Yr_Date">Date of Max (5Yr)</th>
                             <th class="sortable" data-column="dailyVol1Yr">Daily Vol (1σ)</th>
                             <th class="sortable" data-column="ytd">% YTD</th>
                             <th class="sortable" data-column="1d">%1 D</th>
@@ -419,8 +423,6 @@
                             <th class="sortable" data-column="ema21">21d EMA</th>
                             <th class="sortable" data-column="rsi14">14D RSI</th>
                             <th class="sortable" data-column="rsi30">30D RSI</th>
-                            <th class="sortable" data-column="nextEarnings">Next Earnings</th>
-                            <th class="sortable" data-column="daysToEarnings">Days to Earnings</th>
                             <th class="sortable" data-column="consecutiveUpDays"># of Days Up</th>
                         </tr>
                     </thead>
@@ -571,6 +573,9 @@
                             <th class="sortable" data-column="currentPrice">Price</th>
                             <th class="sortable" data-column="currentDistanceEMA21">% Above 21D EMA</th>
                             <th class="sortable" data-column="maxDistanceEMA21_1Yr">Max % Above EMA (1Yr)</th>
+                            <th class="sortable" data-column="maxDistanceEMA21_1Yr_Date">Date of Max (1Yr)</th>
+                            <th class="sortable" data-column="maxDistanceEMA21_5Yr">Max % Above EMA (5Yr)</th>
+                            <th class="sortable" data-column="maxDistanceEMA21_5Yr_Date">Date of Max (5Yr)</th>
                             <th class="sortable" data-column="dailyVol1Yr">Daily Vol (1σ)</th>
                             <th class="sortable" data-column="ytd">% YTD</th>
                             <th class="sortable" data-column="1d">%1 D</th>
@@ -600,8 +605,6 @@
                             <th class="sortable" data-column="ema21">21d EMA</th>
                             <th class="sortable" data-column="rsi14">14D RSI</th>
                             <th class="sortable" data-column="rsi30">30D RSI</th>
-                            <th class="sortable" data-column="nextEarnings">Next Earnings</th>
-                            <th class="sortable" data-column="daysToEarnings">Days to Earnings</th>
                             <th class="sortable" data-column="consecutiveUpDays"># of Days Up</th>
                         </tr>
                     </thead>
@@ -752,6 +755,9 @@
                             <th class="sortable" data-column="currentPrice">Price</th>
                             <th class="sortable" data-column="currentDistanceEMA21">% Above 21D EMA</th>
                             <th class="sortable" data-column="maxDistanceEMA21_1Yr">Max % Above EMA (1Yr)</th>
+                            <th class="sortable" data-column="maxDistanceEMA21_1Yr_Date">Date of Max (1Yr)</th>
+                            <th class="sortable" data-column="maxDistanceEMA21_5Yr">Max % Above EMA (5Yr)</th>
+                            <th class="sortable" data-column="maxDistanceEMA21_5Yr_Date">Date of Max (5Yr)</th>
                             <th class="sortable" data-column="dailyVol1Yr">Daily Vol (1σ)</th>
                             <th class="sortable" data-column="ytd">% YTD</th>
                             <th class="sortable" data-column="1d">%1 D</th>
@@ -781,8 +787,6 @@
                             <th class="sortable" data-column="ema21">21d EMA</th>
                             <th class="sortable" data-column="rsi14">14D RSI</th>
                             <th class="sortable" data-column="rsi30">30D RSI</th>
-                            <th class="sortable" data-column="nextEarnings">Next Earnings</th>
-                            <th class="sortable" data-column="daysToEarnings">Days to Earnings</th>
                             <th class="sortable" data-column="consecutiveUpDays"># of Days Up</th>
                         </tr>
                     </thead>
@@ -933,6 +937,9 @@
                             <th class="sortable" data-column="currentPrice">Price</th>
                             <th class="sortable" data-column="currentDistanceEMA21">% Above 21D EMA</th>
                             <th class="sortable" data-column="maxDistanceEMA21_1Yr">Max % Above EMA (1Yr)</th>
+                            <th class="sortable" data-column="maxDistanceEMA21_1Yr_Date">Date of Max (1Yr)</th>
+                            <th class="sortable" data-column="maxDistanceEMA21_5Yr">Max % Above EMA (5Yr)</th>
+                            <th class="sortable" data-column="maxDistanceEMA21_5Yr_Date">Date of Max (5Yr)</th>
                             <th class="sortable" data-column="dailyVol1Yr">Daily Vol (1σ)</th>
                             <th class="sortable" data-column="ytd">% YTD</th>
                             <th class="sortable" data-column="1d">%1 D</th>
@@ -962,8 +969,6 @@
                             <th class="sortable" data-column="ema21">21d EMA</th>
                             <th class="sortable" data-column="rsi14">14D RSI</th>
                             <th class="sortable" data-column="rsi30">30D RSI</th>
-                            <th class="sortable" data-column="nextEarnings">Next Earnings</th>
-                            <th class="sortable" data-column="daysToEarnings">Days to Earnings</th>
                             <th class="sortable" data-column="consecutiveUpDays"># of Days Up</th>
                         </tr>
                     </thead>
