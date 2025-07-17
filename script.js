@@ -105,6 +105,33 @@ const GROWTH_TICKERS = [
     'RKLB'
 ];
 
+// Semiconductor tickers
+const SEMICONDUCTOR_TICKERS = [
+    'VRT',   // Vertiv Holdings
+    'TSM',   // Taiwan Semiconductor
+    'ARM',   // ARM Holdings
+    'MRVL',  // Marvell Technology
+    'AVGO',  // Broadcom
+    'NBIS',  // Nebius Group
+    'SOXL',  // Direxion Daily Semiconductor Bull 3X Shares
+    'CDNS',  // Cadence Design Systems
+    'NVDA',  // NVIDIA
+    'SNPS',  // Synopsys
+    'INTC',  // Intel
+    'SMH',   // VanEck Vectors Semiconductor ETF
+    'SOXX',  // iShares PHLX Semiconductor ETF
+    'LRCX',  // Lam Research
+    'KLAC',  // KLA Corporation
+    'TXN',   // Texas Instruments
+    'ASML',  // ASML Holding
+    'QCOM',  // Qualcomm
+    'AMD',   // Advanced Micro Devices
+    'AMAT',  // Applied Materials
+    'VST',   // Vistra Corp
+    'MU',    // Micron Technology
+    'CRWV'   // Crown Castle
+];
+
 // Compounder tickers (Quality long-term growth stocks)
 const COMPOUNDER_TICKERS = [
     'MELI',
@@ -390,6 +417,7 @@ class StockDashboard {
         this.compounderData = new Map();
         this.mag7Data = new Map();
         this.aiPlatformData = new Map();
+        this.semiconductorData = new Map();
         this.currentTab = 'sector-overview';
         this.sortColumn = null;
         this.sortDirection = 'asc';
@@ -550,6 +578,7 @@ class StockDashboard {
         if (this.currentTab === 'compounder') return this.compounderData;
         if (this.currentTab === 'mag7-plus') return this.mag7Data;
         if (this.currentTab === 'ai-platform') return this.aiPlatformData;
+        if (this.currentTab === 'semiconductors') return this.semiconductorData;
         return new Map(); // Market summary doesn't have its own data
     }
 
@@ -782,6 +811,8 @@ class StockDashboard {
                 this.renderSectorAnalysis('compounder', this.compounderData);
             } else if (this.currentTab === 'mag7-plus') {
                 this.renderSectorAnalysis('mag7', this.mag7Data);
+            } else if (this.currentTab === 'semiconductors') {
+                this.renderSectorAnalysis('semiconductors', this.semiconductorData);
             }
         }
         
@@ -879,6 +910,9 @@ class StockDashboard {
                 break;
             case 'ai-platform':
                 tickers = AI_PLATFORM_TICKERS;
+                break;
+            case 'semiconductors':
+                tickers = SEMICONDUCTOR_TICKERS;
                 break;
             default:
                 // Market summary - don't update live prices
@@ -979,7 +1013,8 @@ class StockDashboard {
             'high-growth': 'growthTableBody',
             'compounder': 'compounderTableBody',
             'mag7-plus': 'mag7TableBody',
-            'ai-platform': 'aiPlatformTableBody'
+            'ai-platform': 'aiPlatformTableBody',
+            'semiconductors': 'semiconductorTableBody'
         };
         const tbody = document.getElementById(tbodyMapping[this.currentTab]);
         
@@ -1056,7 +1091,8 @@ class StockDashboard {
                     ...GROWTH_TICKERS,
                     ...COMPOUNDER_TICKERS,
                     ...MAG7_PLUS_TICKERS,
-                    ...AI_PLATFORM_TICKERS
+                    ...AI_PLATFORM_TICKERS,
+                    ...SEMICONDUCTOR_TICKERS
                 ])
             ];
             
@@ -1071,14 +1107,15 @@ class StockDashboard {
                 this.processGroupedDataForTab('high-growth', GROWTH_TICKERS, stockData),
                 this.processGroupedDataForTab('compounder', COMPOUNDER_TICKERS, stockData),
                 this.processGroupedDataForTab('mag7-plus', MAG7_PLUS_TICKERS, stockData),
-                this.processGroupedDataForTab('ai-platform', AI_PLATFORM_TICKERS, stockData)
+                this.processGroupedDataForTab('ai-platform', AI_PLATFORM_TICKERS, stockData),
+                this.processGroupedDataForTab('semiconductors', SEMICONDUCTOR_TICKERS, stockData)
             ]);
             
             // Debug: Log data sizes after processing
             console.log('Data sizes after processing:');
             console.log(`Sector: ${this.sectorData.size}, Growth: ${this.growthData.size}`);
             console.log(`Compounder: ${this.compounderData.size}, Mag7: ${this.mag7Data.size}`);
-            console.log(`AI Platform: ${this.aiPlatformData.size}`);
+            console.log(`AI Platform: ${this.aiPlatformData.size}, Semiconductors: ${this.semiconductorData.size}`);
             
             // Fetch crypto separately (grouped endpoint doesn't support crypto)
             await this.fetchCryptoData();
@@ -1094,6 +1131,7 @@ class StockDashboard {
             this.compounderData.clear();
             this.mag7Data.clear();
             this.aiPlatformData.clear();
+            this.semiconductorData.clear();
             
             // Fallback to original method if grouped fails
             await this.fetchAllStockDataFallback();
@@ -1394,6 +1432,7 @@ class StockDashboard {
             case 'compounder': return this.compounderData;
             case 'mag7-plus': return this.mag7Data;
             case 'ai-platform': return this.aiPlatformData;
+            case 'semiconductors': return this.semiconductorData;
             default: return new Map();
         }
     }
@@ -1506,6 +1545,9 @@ class StockDashboard {
         await new Promise(resolve => setTimeout(resolve, 500));
         
         await this.fetchDataForTab('ai-platform');
+        await new Promise(resolve => setTimeout(resolve, 500));
+        
+        await this.fetchDataForTab('semiconductors');
     }
 
     async fetchDataForTab(tabType) {
@@ -1536,6 +1578,11 @@ class StockDashboard {
                 tickers = AI_PLATFORM_TICKERS;
                 dataMap = this.aiPlatformData;
                 tickerType = 'ai-platform';
+                break;
+            case 'semiconductors':
+                tickers = SEMICONDUCTOR_TICKERS;
+                dataMap = this.semiconductorData;
+                tickerType = 'semiconductors';
                 break;
             default:
                 console.error(`Unknown tab type: ${tabType}`);
@@ -2329,7 +2376,8 @@ class StockDashboard {
             'high-growth': 'growthTableBody',
             'compounder': 'compounderTableBody',
             'mag7-plus': 'mag7TableBody',
-            'ai-platform': 'aiPlatformTableBody'
+            'ai-platform': 'aiPlatformTableBody',
+            'semiconductors': 'semiconductorTableBody'
         };
         
         const tbodyId = tbodyMapping[this.currentTab];
@@ -2742,7 +2790,7 @@ class StockDashboard {
     renderMarketIntelligence() {
         // Ensure all datasets are loaded
         if (this.sectorData.size === 0 || this.growthData.size === 0 || 
-            this.compounderData.size === 0 || this.mag7Data.size === 0 || this.aiPlatformData.size === 0) {
+            this.compounderData.size === 0 || this.mag7Data.size === 0 || this.aiPlatformData.size === 0 || this.semiconductorData.size === 0) {
             // Show loading state and load data if not available
             const container = document.getElementById('market-intelligence');
             if (container) {
@@ -2767,7 +2815,8 @@ class StockDashboard {
             ...Array.from(this.growthData.values()),
             ...Array.from(this.compounderData.values()),
             ...Array.from(this.aiPlatformData.values()),
-            ...Array.from(this.mag7Data.values())
+            ...Array.from(this.mag7Data.values()),
+            ...Array.from(this.semiconductorData.values())
         ].filter(stock => stock !== null);
         
         // Debug CRCL presence in allStocks
@@ -3875,7 +3924,7 @@ class StockDashboard {
         // Ensure all datasets are loaded
         if (this.sectorData.size === 0 || this.growthData.size === 0 || 
             this.compounderData.size === 0 || this.mag7Data.size === 0 || 
-            this.aiPlatformData.size === 0) {
+            this.aiPlatformData.size === 0 || this.semiconductorData.size === 0) {
             // Show loading state and load data if not available
             const container = document.getElementById('gainers-losers');
             if (container) {
@@ -3917,7 +3966,8 @@ class StockDashboard {
             { id: 'growth', data: Array.from(this.growthData.values()).filter(d => d !== null) },
             { id: 'compounder', data: Array.from(this.compounderData.values()).filter(d => d !== null) },
             { id: 'mag7', data: Array.from(this.mag7Data.values()).filter(d => d !== null) },
-            { id: 'ai-platform', data: Array.from(this.aiPlatformData.values()).filter(d => d !== null) }
+            { id: 'ai-platform', data: Array.from(this.aiPlatformData.values()).filter(d => d !== null) },
+            { id: 'semiconductors', data: Array.from(this.semiconductorData.values()).filter(d => d !== null) }
         ];
         
         sections.forEach(section => {
@@ -3932,7 +3982,7 @@ class StockDashboard {
         const allStocksMap = new Map();
         
         // Add stocks from each dataset
-        [this.sectorData, this.growthData, this.compounderData, this.mag7Data, this.aiPlatformData].forEach(dataMap => {
+        [this.sectorData, this.growthData, this.compounderData, this.mag7Data, this.aiPlatformData, this.semiconductorData].forEach(dataMap => {
             dataMap.forEach((data, ticker) => {
                 if (data && !allStocksMap.has(ticker)) {
                     allStocksMap.set(ticker, data);

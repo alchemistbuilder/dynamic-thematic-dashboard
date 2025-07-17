@@ -17,6 +17,7 @@
                     <button class="tab-btn" data-tab="compounder">Compounder</button>
                     <button class="tab-btn" data-tab="mag7-plus">Mag7+</button>
                     <button class="tab-btn" data-tab="ai-platform">AI Platform Basket</button>
+                    <button class="tab-btn" data-tab="semiconductors">Semiconductors</button>
                     <button class="tab-btn" data-tab="market-intelligence">Market Intelligence</button>
                     <button class="tab-btn" data-tab="gainers-losers">Gainers/Losers</button>
                     <button class="tab-btn" data-tab="market-summary">Market Summary</button>
@@ -976,6 +977,126 @@
                         <!-- AI Platform stock data will be populated here -->
                     </tbody>
                 </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Semiconductors Tab -->
+        <div class="tab-content" id="semiconductors">
+            <!-- Sector Analysis Section -->
+            <div class="sector-analysis">
+                <h3>📊 Semiconductors Sector Analysis</h3>
+                <div class="sector-metrics">
+                    <div class="sector-returns">
+                        <h4>📈 Equal-Weighted Portfolio Returns</h4>
+                        <div class="returns-grid">
+                            <div class="return-item">
+                                <span class="return-label">1D</span>
+                                <span class="return-value" id="semiconductors-return-1d">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">2W</span>
+                                <span class="return-value" id="semiconductors-return-2w">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">1M</span>
+                                <span class="return-value" id="semiconductors-return-1m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">3M</span>
+                                <span class="return-value" id="semiconductors-return-3m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">6M</span>
+                                <span class="return-value" id="semiconductors-return-6m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">YTD</span>
+                                <span class="return-value" id="semiconductors-return-ytd">--</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="sector-status">
+                        <h4>📊 % Above Moving Averages</h4>
+                        <div class="status-grid">
+                            <div class="status-item">
+                                <span class="status-label">Above 50 SMA</span>
+                                <span class="status-value" id="semiconductors-above-50-sma">--</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Above 100 SMA</span>
+                                <span class="status-value" id="semiconductors-above-100-sma">--</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Above 200 SMA</span>
+                                <span class="status-value" id="semiconductors-above-200-sma">--</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Above 8 EMA</span>
+                                <span class="status-value" id="semiconductors-above-8-ema">--</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Above 13 EMA</span>
+                                <span class="status-value" id="semiconductors-above-13-ema">--</span>
+                            </div>
+                            <div class="status-item">
+                                <span class="status-label">Above 21 EMA</span>
+                                <span class="status-value" id="semiconductors-above-21-ema">--</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Stock Table -->
+            <div class="stock-table-container">
+                <div class="column-controls">
+                    <button id="columnsToggle" class="columns-btn">
+                        <span class="columns-icon">⚙️</span>
+                        Columns ▼
+                    </button>
+                    <div id="columnToggles" class="column-toggles hidden">
+                        <!-- Column toggles will be populated by JavaScript -->
+                    </div>
+                </div>
+                
+                <div class="table-wrapper">
+                    <table id="semiconductorTable" class="stock-table">
+                        <thead>
+                            <tr>
+                                <th data-column="ticker" class="sortable">Ticker</th>
+                                <th data-column="liberationChange" class="sortable">% change since Liberation</th>
+                                <th data-column="currentPrice" class="sortable">Price</th>
+                                <th data-column="1d" class="sortable">%1D</th>
+                                <th data-column="1w" class="sortable">%1W</th>
+                                <th data-column="2w" class="sortable">%2W</th>
+                                <th data-column="1m" class="sortable">%1M</th>
+                                <th data-column="3m" class="sortable">%3M</th>
+                                <th data-column="6m" class="sortable">%6M</th>
+                                <th data-column="ytd" class="sortable">%YTD</th>
+                                <th data-column="above50SMA" class="sortable">50>100>200?</th>
+                                <th data-column="above100SMA" class="sortable">Above 100 SMA</th>
+                                <th data-column="above200SMA" class="sortable">Above 200 SMA</th>
+                                <th data-column="above8EMA" class="sortable">Above 8 EMA</th>
+                                <th data-column="above13EMA" class="sortable">Above 13 EMA</th>
+                                <th data-column="above21EMA" class="sortable">Above 21 EMA</th>
+                                <th data-column="ema8Above13Above21" class="sortable">EMA 8>13>21?</th>
+                                <th data-column="sma50" class="sortable">50 SMA</th>
+                                <th data-column="sma100" class="sortable">100 SMA</th>
+                                <th data-column="sma200" class="sortable">200 SMA</th>
+                                <th data-column="ema8" class="sortable">8 EMA</th>
+                                <th data-column="ema13" class="sortable">13 EMA</th>
+                                <th data-column="ema21" class="sortable">21 EMA</th>
+                                <th data-column="rsi14" class="sortable">RSI 14</th>
+                                <th data-column="rsi30" class="sortable">RSI 30</th>
+                                <th data-column="consecutiveUpDays" class="sortable">Consecutive Up Days</th>
+                            </tr>
+                        </thead>
+                        <tbody id="semiconductorTableBody">
+                            <!-- Data will be populated by JavaScript -->
+                        </tbody>
+                    </table>
                 </div>
             </div>
         </div>
