@@ -995,12 +995,20 @@
                                 <span class="return-value" id="semiconductors-return-1d">--</span>
                             </div>
                             <div class="return-item">
+                                <span class="return-label">1W</span>
+                                <span class="return-value" id="semiconductors-return-1w">--</span>
+                            </div>
+                            <div class="return-item">
                                 <span class="return-label">2W</span>
                                 <span class="return-value" id="semiconductors-return-2w">--</span>
                             </div>
                             <div class="return-item">
                                 <span class="return-label">1M</span>
                                 <span class="return-value" id="semiconductors-return-1m">--</span>
+                            </div>
+                            <div class="return-item">
+                                <span class="return-label">2M</span>
+                                <span class="return-value" id="semiconductors-return-2m">--</span>
                             </div>
                             <div class="return-item">
                                 <span class="return-label">3M</span>
@@ -1014,50 +1022,89 @@
                                 <span class="return-label">YTD</span>
                                 <span class="return-value" id="semiconductors-return-ytd">--</span>
                             </div>
+                            <div class="return-item">
+                                <span class="return-label">Liberation</span>
+                                <span class="return-value" id="semiconductors-return-liberation">--</span>
+                            </div>
                         </div>
                     </div>
-                    
-                    <div class="sector-status">
+                    <div class="sector-ma-stats">
                         <h4>📊 % Above Moving Averages</h4>
-                        <div class="status-grid">
-                            <div class="status-item">
-                                <span class="status-label">Above 50 SMA</span>
-                                <span class="status-value" id="semiconductors-above-50-sma">--</span>
+                        <div class="ma-stats-grid">
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 50 SMA</span>
+                                <span class="ma-value" id="semiconductors-above-50-sma">--</span>
                             </div>
-                            <div class="status-item">
-                                <span class="status-label">Above 100 SMA</span>
-                                <span class="status-value" id="semiconductors-above-100-sma">--</span>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 100 SMA</span>
+                                <span class="ma-value" id="semiconductors-above-100-sma">--</span>
                             </div>
-                            <div class="status-item">
-                                <span class="status-label">Above 200 SMA</span>
-                                <span class="status-value" id="semiconductors-above-200-sma">--</span>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 200 SMA</span>
+                                <span class="ma-value" id="semiconductors-above-200-sma">--</span>
                             </div>
-                            <div class="status-item">
-                                <span class="status-label">Above 8 EMA</span>
-                                <span class="status-value" id="semiconductors-above-8-ema">--</span>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 8 EMA</span>
+                                <span class="ma-value" id="semiconductors-above-8-ema">--</span>
                             </div>
-                            <div class="status-item">
-                                <span class="status-label">Above 13 EMA</span>
-                                <span class="status-value" id="semiconductors-above-13-ema">--</span>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 13 EMA</span>
+                                <span class="ma-value" id="semiconductors-above-13-ema">--</span>
                             </div>
-                            <div class="status-item">
-                                <span class="status-label">Above 21 EMA</span>
-                                <span class="status-value" id="semiconductors-above-21-ema">--</span>
+                            <div class="ma-stat">
+                                <span class="ma-label">Above 21 EMA</span>
+                                <span class="ma-value" id="semiconductors-above-21-ema">--</span>
                             </div>
                         </div>
                     </div>
                 </div>
             </div>
-            
-            <!-- Stock Table -->
-            <div class="stock-table-container">
-                <div class="column-controls">
-                    <button id="columnsToggle" class="columns-btn">
-                        <span class="columns-icon">⚙️</span>
-                        Columns ▼
-                    </button>
-                    <div id="columnToggles" class="column-toggles hidden">
-                        <!-- Column toggles will be populated by JavaScript -->
+
+            <div class="main-content">
+                <div class="side-panel" id="sidePanelSemiconductors">
+                    <h3>📊 Semiconductor Insights</h3>
+                    
+                    <div class="insight-section">
+                        <h4>🚀 Most Bullish (Top 5)</h4>
+                        <div id="bullishListSemiconductors" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>⚠️ Most Bearish (Top 5)</h4>
+                        <div id="bearishListSemiconductors" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>📈 Best Performers (Top 5)</h4>
+                        <div id="performersListSemiconductors" class="stock-list"></div>
+                    </div>
+                    
+                    <div class="insight-section">
+                        <h4>💎 Breakout Candidates (Top 5)</h4>
+                        <div id="breakoutListSemiconductors" class="stock-list"></div>
+                    </div>
+                </div>
+                
+                <!-- Column Controls Dropdown -->
+                <div class="table-controls">
+                    <div class="column-dropdown">
+                        <button class="column-dropdown-btn" onclick="toggleColumnDropdown(event)">
+                            <span>🔧</span>
+                            <span>Columns</span>
+                            <span class="column-dropdown-arrow">▼</span>
+                        </button>
+                        <div class="column-dropdown-content">
+                            <div class="dropdown-header">
+                                <span>Show/Hide Columns</span>
+                                <div class="dropdown-actions">
+                                    <button onclick="showAllColumns()" class="action-btn">All</button>
+                                    <button onclick="hideAllColumns()" class="action-btn">None</button>
+                                </div>
+                            </div>
+                            <div class="dropdown-columns column-toggles">
+                                <!-- Will be populated by JavaScript -->
+                            </div>
+                        </div>
                     </div>
                 </div>
                 
@@ -1068,27 +1115,11 @@
                                 <th data-column="ticker" class="sortable">Ticker</th>
                                 <th data-column="liberationChange" class="sortable">% change since Liberation</th>
                                 <th data-column="currentPrice" class="sortable">Price</th>
+                                <th data-column="above21EMA" class="sortable">%Above 21D EMA</th>
                                 <th data-column="1d" class="sortable">%1D</th>
                                 <th data-column="1w" class="sortable">%1W</th>
                                 <th data-column="2w" class="sortable">%2W</th>
-                                <th data-column="1m" class="sortable">%1M</th>
-                                <th data-column="3m" class="sortable">%3M</th>
-                                <th data-column="6m" class="sortable">%6M</th>
-                                <th data-column="ytd" class="sortable">%YTD</th>
-                                <th data-column="above50SMA" class="sortable">50>100>200?</th>
-                                <th data-column="above100SMA" class="sortable">Above 100 SMA</th>
-                                <th data-column="above200SMA" class="sortable">Above 200 SMA</th>
-                                <th data-column="above8EMA" class="sortable">Above 8 EMA</th>
-                                <th data-column="above13EMA" class="sortable">Above 13 EMA</th>
-                                <th data-column="above21EMA" class="sortable">Above 21 EMA</th>
-                                <th data-column="ema8Above13Above21" class="sortable">EMA 8>13>21?</th>
-                                <th data-column="sma50" class="sortable">50 SMA</th>
-                                <th data-column="sma100" class="sortable">100 SMA</th>
-                                <th data-column="sma200" class="sortable">200 SMA</th>
-                                <th data-column="ema8" class="sortable">8 EMA</th>
-                                <th data-column="ema13" class="sortable">13 EMA</th>
-                                <th data-column="ema21" class="sortable">21 EMA</th>
-                                <th data-column="rsi14" class="sortable">RSI 14</th>
+                                <th data-column="50100200" class="sortable">50>100>200?</th>
                                 <th data-column="rsi30" class="sortable">RSI 30</th>
                                 <th data-column="consecutiveUpDays" class="sortable">Consecutive Up Days</th>
                             </tr>
