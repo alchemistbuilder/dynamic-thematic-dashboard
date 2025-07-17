@@ -2799,9 +2799,20 @@ class StockDashboard {
 
 
     renderMarketIntelligence() {
+        // Debug: Check dataset sizes
+        console.log('Market Intelligence dataset sizes:', {
+            sector: this.sectorData.size,
+            growth: this.growthData.size,
+            compounder: this.compounderData.size,
+            mag7: this.mag7Data.size,
+            aiPlatform: this.aiPlatformData.size,
+            semiconductors: this.semiconductorData.size
+        });
+        
         // Ensure all datasets are loaded
         if (this.sectorData.size === 0 || this.growthData.size === 0 || 
             this.compounderData.size === 0 || this.mag7Data.size === 0 || this.aiPlatformData.size === 0 || this.semiconductorData.size === 0) {
+            console.log('Market Intelligence: Some datasets not loaded, showing loading state');
             // Show loading state and load data if not available
             const container = document.getElementById('market-intelligence');
             if (container) {
@@ -2861,9 +2872,27 @@ class StockDashboard {
         console.log('✅ Market Intelligence Analysis Complete');
     }
 
+    updateIntelligenceSidePanel(analysis) {
+        // Calculate summary stats
+        const totalOpportunities = analysis.highSharpe.length + analysis.momentum.length + 
+                                 analysis.stealth.length + analysis.breakouts.length + 
+                                 analysis.value.length + analysis.oversold.length + 
+                                 analysis.breakoutHunter.length;
+        
+        const totalOpportunitiesElement = document.getElementById('totalOpportunities');
+        if (totalOpportunitiesElement) {
+            totalOpportunitiesElement.textContent = totalOpportunities;
+        }
+        
+        // Update other intelligence side panel stats as needed
+        console.log('Intelligence side panel updated with', totalOpportunities, 'opportunities');
+    }
+
     analyzeMarketData(allStocks) {
+        console.log('Analyzing market data for', allStocks.length, 'stocks');
+        
         // 1. HIGH SHARPE RATIO CANDIDATES
-        const highSharpeStocks = allStocks
+        const highSharpe = allStocks
             .filter(s => s.liberationChange > 15) // Good returns since Liberation
             .filter(s => (s.changes['1m'] || 0) > -5 && (s.changes['1m'] || 0) < 25) // Controlled monthly volatility
             .filter(s => (s.changes['1w'] || 0) > -3 && (s.changes['1w'] || 0) < 15) // Stable weekly moves
@@ -2875,7 +2904,7 @@ class StockDashboard {
             .slice(0, 8);
 
         // 2. MOMENTUM ACCELERATION PLAYS
-        const momentumAccel = allStocks
+        const momentum = allStocks
             .filter(s => (s.changes['1w'] || 0) > (s.changes['1m'] || 0) / 4) // Weekly > monthly/4 (accelerating)
             .filter(s => (s.changes['2w'] || 0) > (s.changes['1m'] || 0) / 2) // 2-week > monthly/2
             .filter(s => (s.consecutiveUpDays || 0) >= 2) // Recent momentum
@@ -2887,128 +2916,54 @@ class StockDashboard {
             .slice(0, 6);
 
         // 3. STEALTH PERFORMERS
-        const stealthPerformers = allStocks
+        const stealth = allStocks
             .filter(s => s.liberationChange > 20) // Strong Liberation performance
             .filter(s => (s.comparisons.deltaFrom52WeekHigh || -100) < -15) // Still well below 52w high
-            .filter(s => s.comparisons.ema8Above13Above21 && 
-                        ['ST BULLISH', 'EMA Bullish', 'Uptrend Maintained'].includes(s.comparisons.ema8Above13Above21))
             .filter(s => (s.rsiData.rsi14 || 50) < 70) // Not overbought
             .sort((a, b) => (b.liberationChange || 0) - (a.liberationChange || 0))
             .slice(0, 6);
 
         // 4. TECHNICAL BREAKOUT SETUPS
-        const breakoutSetups = allStocks
+        const breakouts = allStocks
             .filter(s => (s.comparisons.deltaFrom52WeekHigh || -100) > -8) // Very close to 52w high
             .filter(s => (s.changes['1w'] || 0) > 0) // Positive weekly momentum
             .filter(s => (s.consecutiveUpDays || 0) >= 1) // Recent upward movement
-            .filter(s => s.comparisons.above50SMA && s.comparisons.above100SMA) // Above key SMAs
             .sort((a, b) => (b.comparisons.deltaFrom52WeekHigh || -100) - (a.comparisons.deltaFrom52WeekHigh || -100))
             .slice(0, 5);
 
         // 5. VALUE WITH MOMENTUM
-        const valueWithMomentum = allStocks
+        const value = allStocks
             .filter(s => (s.changes['3m'] || 0) > 10) // Strong 3-month trend
             .filter(s => (s.changes['1m'] || 0) > 5) // Positive recent momentum
             .filter(s => (s.comparisons.deltaFrom52WeekHigh || -100) < -20) // Still discounted from highs
-            .filter(s => s.comparisons.sma50Above100Above200 === 'BULLISH' || s.comparisons.sma50Above100Above200 === 'Healthy')
             .sort((a, b) => (b.changes['3m'] || 0) - (a.changes['3m'] || 0))
-            .slice(0, 6);
-
-        // 6. CONTRARIAN OVERSOLD PLAYS
-        const oversoldBounce = allStocks
-            .filter(s => (s.rsiData.rsi14 || 50) < 35) // Oversold RSI
-            .filter(s => (s.changes['1w'] || 0) > -10) // Not in free fall
-            .filter(s => s.liberationChange > 0) // Still positive long-term
-            .filter(s => s.comparisons.above200SMA) // Above long-term trend
-            .sort((a, b) => (a.rsiData.rsi14 || 50) - (b.rsiData.rsi14 || 50)) // Most oversold first
             .slice(0, 5);
 
-        // 7. NEW: BREAKOUT HUNTER ANALYSIS
-        const breakoutHunterCandidates = allStocks
-            .map(stock => {
-                // Calculate breakout score if not already calculated
-                if (!stock.breakoutScore) {
-                    stock.breakoutScore = this.calculateBreakoutScore(stock);
-                }
-                
-                // Debug CRCL and ZETA specifically
-                if (stock.ticker === 'CRCL' || stock.ticker === 'ZETA') {
-                    console.log(`=== ${stock.ticker} BREAKOUT HUNTER DEBUG ===`);
-                    console.log(`${stock.ticker} Stock Data:`, stock);
-                    console.log(`${stock.ticker} Breakout Score:`, stock.breakoutScore);
-                    console.log(`${stock.ticker} Volume Signal:`, stock.volumeSignal);
-                    console.log(`${stock.ticker} Gap Signal:`, stock.gapSignal);
-                    console.log(`${stock.ticker} Consecutive Up Days:`, stock.consecutiveUpDays);
-                    console.log(`${stock.ticker} Changes:`, stock.changes);
-                    console.log(`${stock.ticker} Comparisons:`, stock.comparisons);
-                    console.log(`${stock.ticker} Moving Averages:`, stock.movingAverages);
-                    console.log(`${stock.ticker} RSI Data:`, stock.rsiData);
-                }
-                
-                return stock;
-            })
-            .filter(stock => {
-                // More inclusive filtering - catch different breakout patterns
-                const score = stock.breakoutScore.totalScore;
-                const isNewIPO = stock.breakoutScore.isNewIPO;
-                const hasVolumeSpike = stock.volumeSignal?.signal?.includes('Spike');
-                const hasGapUp = stock.gapSignal?.signal?.includes('Gap Up');
-                const strongMomentum = (stock.consecutiveUpDays || 0) >= 3;
-                const moderateMomentum = (stock.consecutiveUpDays || 0) >= 2;
-                const recentGains = (stock.changes['1w'] || 0) > 5;
-                const moderateGains = (stock.changes['1w'] || 0) > 2;
-                const strongLiberation = (stock.liberationChange || 0) > 30;
-                
-                // Debug CRCL and ZETA filtering
-                if (stock.ticker === 'CRCL' || stock.ticker === 'ZETA') {
-                    console.log(`${stock.ticker} Filter Check:`);
-                    console.log('- Score:', score, '(>= 5)', score >= 5);
-                    console.log('- Is New IPO:', isNewIPO);
-                    console.log('- Volume Spike:', hasVolumeSpike);
-                    console.log('- Gap Up:', hasGapUp);
-                    console.log('- Strong Momentum:', strongMomentum, '(3+ up days)');
-                    console.log('- Moderate Momentum:', moderateMomentum, '(2+ up days)');
-                    console.log('- Recent Gains:', recentGains, '(>5% 1w)');
-                    console.log('- Strong Liberation:', strongLiberation, '(>30%)');
-                }
-                
-                // Special criteria for new IPOs (more lenient)
-                if (isNewIPO) {
-                    const passesNewIPO = score >= 4 || hasVolumeSpike || hasGapUp || 
-                                        (moderateMomentum && moderateGains) || strongLiberation;
-                    if (stock.ticker === 'CRCL' || stock.ticker === 'ZETA') {
-                        console.log('- NEW IPO PASSES:', passesNewIPO);
-                        console.log('=====================================');
-                    }
-                    return passesNewIPO;
-                }
-                
-                // Regular criteria for established stocks
-                const passesRegular = score >= 5 || hasVolumeSpike || hasGapUp || 
-                                     (strongMomentum && recentGains) || 
-                                     (score >= 4 && strongLiberation);
-                
-                if (stock.ticker === 'CRCL' || stock.ticker === 'ZETA') {
-                    console.log('- REGULAR PASSES:', passesRegular);
-                    console.log('=====================================');
-                }
-                
-                return passesRegular;
-            })
-            .sort((a, b) => b.breakoutScore.totalScore - a.breakoutScore.totalScore)
-            .slice(0, 25); // Top 25 breakout candidates (increased from 20)
+        // 6. OVERSOLD OPPORTUNITIES
+        const oversold = allStocks
+            .filter(s => (s.rsiData.rsi14 || 50) < 35) // Oversold RSI
+            .filter(s => (s.changes['1m'] || 0) > -10) // Not crashing
+            .sort((a, b) => (a.rsiData.rsi14 || 50) - (b.rsiData.rsi14 || 50))
+            .slice(0, 5);
+
+        // 7. BREAKOUT HUNTER
+        const breakoutHunter = allStocks
+            .filter(s => (s.consecutiveUpDays || 0) >= 3) // Strong recent momentum
+            .filter(s => (s.changes['1w'] || 0) > 5) // Good weekly performance
+            .sort((a, b) => (b.consecutiveUpDays || 0) - (a.consecutiveUpDays || 0))
+            .slice(0, 5);
 
         return {
-            highSharpe: highSharpeStocks,
-            momentum: momentumAccel,
-            stealth: stealthPerformers,
-            breakouts: breakoutSetups,
-            value: valueWithMomentum,
-            oversold: oversoldBounce,
-            breakoutHunter: breakoutHunterCandidates,
-            totalStocks: allStocks.length
+            highSharpe,
+            momentum,
+            stealth,
+            breakouts,
+            value,
+            oversold,
+            breakoutHunter
         };
     }
+
 
     updateIntelligenceSidePanel(analysis) {
         // Calculate summary stats
@@ -4289,12 +4244,12 @@ class StockDashboard {
 
         // Update moving average stats
         const maMapping = {
-            above50SMA: `${sectorId}-above-50sma`,
-            above100SMA: `${sectorId}-above-100sma`,
-            above200SMA: `${sectorId}-above-200sma`,
-            above8EMA: `${sectorId}-above-8ema`,
-            above13EMA: `${sectorId}-above-13ema`,
-            above21EMA: `${sectorId}-above-21ema`
+            above50SMA: `${sectorId}-above-50-sma`,
+            above100SMA: `${sectorId}-above-100-sma`,
+            above200SMA: `${sectorId}-above-200-sma`,
+            above8EMA: `${sectorId}-above-8-ema`,
+            above13EMA: `${sectorId}-above-13-ema`,
+            above21EMA: `${sectorId}-above-21-ema`
         };
 
         Object.keys(maMapping).forEach(key => {
