@@ -3018,6 +3018,24 @@ class StockDashboard {
         }
     }
 
+    populateIntelligenceGrid(containerId, stocks, dataExtractor) {
+        const container = document.getElementById(containerId);
+        if (!container) {
+            console.warn(`Container ${containerId} not found`);
+            return;
+        }
+        
+        container.innerHTML = '';
+        
+        stocks.forEach(stock => {
+            const dataArray = dataExtractor(stock);
+            const row = document.createElement('div');
+            row.className = 'stock-row';
+            row.innerHTML = dataArray.map(item => `<span class="stock-data">${item}</span>`).join('');
+            container.appendChild(row);
+        });
+    }
+
     updateIntelligenceSections(analysis) {
         // High Sharpe Ratio
         this.populateIntelligenceGrid('highSharpeList', analysis.highSharpe, (stock) => [
@@ -3876,8 +3894,8 @@ class StockDashboard {
 
         console.log('📊 Rendering Gainers/Losers Analysis...');
         
-        // Update market status indicator
-        this.updateMarketStatusIndicator();
+        // Update market status indicator (placeholder for now)
+        // this.updateMarketStatusIndicator();
         
         // Get all stocks across all categories
         const allStocks = this.getAllStocksData();
@@ -3890,8 +3908,8 @@ class StockDashboard {
             this.renderTimeframeGainersLosers('overall', allStocks, timeframe);
         });
         
-        // Render multi-timeframe champions
-        this.renderMultiTimeframeChampions(allStocks);
+        // Render multi-timeframe champions (temporarily disabled)
+        // this.renderMultiTimeframeChampions(allStocks);
         
         // Render section-specific gainers/losers
         const sections = [
