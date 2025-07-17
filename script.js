@@ -1562,9 +1562,10 @@ class StockDashboard {
             console.log(`Successfully fetched ${tickerType} data for ${successCount}/${tickers.length} tickers`);
             
             // Fetch earnings data (individual stocks only, not ETFs/crypto)
-            if (tabType === 'high-growth' || tabType === 'compounder' || tabType === 'mag7-plus') {
-                await this.fetchAllEarningsData(tickers, dataMap);
-            }
+            // Temporarily disabled due to API rate limits
+            // if (tabType === 'high-growth' || tabType === 'compounder' || tabType === 'mag7-plus') {
+            //     await this.fetchAllEarningsData(tickers, dataMap);
+            // }
         } else {
             // Yahoo Finance - sequential loading with delays
             let successCount = 0;
