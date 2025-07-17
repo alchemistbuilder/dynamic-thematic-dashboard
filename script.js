@@ -4,19 +4,22 @@ const FMP_API_KEY = 'm1HzjYgss43pOkJZcWTr2tuKvRvOPM4W'; // Premium FMP API key
 const LIBERATION_DAY = new Date('2025-04-02');
 const USE_POLYGON = true; // Set to false to use Yahoo Finance
 
-// Check if we're on Vercel and should use the API proxy
+// Check if we're on production and should use the API proxy
 const USE_API_PROXY = window.location.hostname.includes('vercel.app') || 
+                      window.location.hostname.includes('dynamicalphaboard.com') ||
                       (window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1');
 
-// Helper function to make API calls through proxy when on Vercel
+// Helper function to make API calls through proxy when on production
 async function fetchPolygonData(polygonUrl) {
     if (USE_API_PROXY) {
         // Use the proxy endpoint to hide API key
         const encodedUrl = encodeURIComponent(polygonUrl.replace(/&apikey=.*$/, ''));
         const proxyUrl = `/api/stocks?url=${encodedUrl}`;
+        console.log(`Using proxy for API call: ${proxyUrl}`);
         return fetch(proxyUrl);
     } else {
         // Local development - use direct API call
+        console.log(`Making direct API call: ${polygonUrl.substring(0, 100)}...`);
         return fetch(polygonUrl);
     }
 }
@@ -1042,6 +1045,8 @@ class StockDashboard {
 
     async fetchAllStockData() {
         console.log('Using grouped endpoint for maximum speed...');
+        console.log(`USE_API_PROXY is: ${USE_API_PROXY}`);
+        console.log(`Current hostname: ${window.location.hostname}`);
         
         try {
             // Get all unique stock tickers (excluding crypto for grouped endpoint)
@@ -1054,6 +1059,8 @@ class StockDashboard {
                     ...AI_PLATFORM_TICKERS
                 ])
             ];
+            
+            console.log(`Total unique tickers to fetch: ${allStockTickers.length}`);
             
             // Fetch all stock data in a single grouped call
             const stockData = await this.fetchGroupedStockData(allStockTickers);
@@ -1080,6 +1087,14 @@ class StockDashboard {
             
         } catch (error) {
             console.error('Grouped fetch failed, falling back to individual calls:', error);
+            console.error('Error details:', error.message, error.stack);
+            // Clear any partial data before fallback
+            this.sectorData.clear();
+            this.growthData.clear();
+            this.compounderData.clear();
+            this.mag7Data.clear();
+            this.aiPlatformData.clear();
+            
             // Fallback to original method if grouped fails
             await this.fetchAllStockDataFallback();
         }
