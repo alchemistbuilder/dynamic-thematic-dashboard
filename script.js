@@ -392,6 +392,7 @@ class StockDashboard {
         this.sortDirection = 'asc';
         this.liveUpdateInterval = null;
         this.liveUpdateEnabled = false;
+        this.isLoading = false;
         
         // Column visibility state
         this.hiddenColumns = new Set();
@@ -779,11 +780,12 @@ class StockDashboard {
             } else if (this.currentTab === 'mag7-plus') {
                 this.renderSectorAnalysis('mag7', this.mag7Data);
             }
-            
-            // If no data loaded for this tab, load it
-            if (this.stockData.size === 0) {
-                this.loadData();
-            }
+        }
+        
+        // Always check if data needs to be loaded after switching tabs
+        if (this.stockData.size === 0) {
+            console.log(`No data for ${this.currentTab}, triggering loadData()`);
+            this.loadData();
         }
     }
 
@@ -1006,6 +1008,13 @@ class StockDashboard {
     }
 
     async loadData() {
+        // Prevent multiple simultaneous loads
+        if (this.isLoading) {
+            console.log('Data loading already in progress, skipping...');
+            return;
+        }
+        
+        this.isLoading = true;
         const refreshBtn = document.getElementById('refreshBtn');
         const loading = document.getElementById('loading');
         
@@ -1024,6 +1033,7 @@ class StockDashboard {
             console.error('Error loading data:', error);
             this.showError('Failed to load stock data. Please try again.');
         } finally {
+            this.isLoading = false;
             refreshBtn.disabled = false;
             refreshBtn.textContent = 'Refresh Data';
             loading.style.display = 'none';
@@ -1057,9 +1067,14 @@ class StockDashboard {
                 this.processGroupedDataForTab('ai-platform', AI_PLATFORM_TICKERS, stockData)
             ]);
             
+            // Debug: Log data sizes after processing
+            console.log('Data sizes after processing:');
+            console.log(`Sector: ${this.sectorData.size}, Growth: ${this.growthData.size}`);
+            console.log(`Compounder: ${this.compounderData.size}, Mag7: ${this.mag7Data.size}`);
+            console.log(`AI Platform: ${this.aiPlatformData.size}`);
+            
             // Fetch crypto separately (grouped endpoint doesn't support crypto)
             await this.fetchCryptoData();
-            
             
             console.log('Grouped data fetch completed successfully!');
             
@@ -1305,8 +1320,10 @@ class StockDashboard {
     }
 
     async processGroupedDataForTab(tabType, tickers, stockData) {
+        console.log(`Processing grouped data for ${tabType} with ${tickers.length} tickers`);
         const dataMap = this.getDataMapForTab(tabType);
         const missingTickers = [];
+        let processedCount = 0;
         
         tickers.forEach(ticker => {
             const grouped = stockData.grouped.get(ticker);
@@ -1318,15 +1335,18 @@ class StockDashboard {
                 const processedData = this.processStockDataFromGrouped(ticker, grouped, historical, currentPrice);
                 if (processedData) {
                     dataMap.set(ticker, processedData);
+                    processedCount++;
                 }
             } else if (historical && historical.length > 0) {
                 // For stocks not in grouped data (e.g., new IPOs), fetch individual data
                 console.log(`${ticker} not in grouped data, will fetch individually`);
                 missingTickers.push(ticker);
             } else {
-                console.warn(`No data available for ${ticker}`);
+                console.warn(`No data available for ${ticker} in ${tabType}`);
             }
         });
+        
+        console.log(`${tabType}: Successfully processed ${processedCount}/${tickers.length} tickers, ${missingTickers.length} missing`);
         
         // Fetch missing tickers individually
         if (missingTickers.length > 0) {
@@ -1457,18 +1477,18 @@ class StockDashboard {
     async fetchAllStockDataFallback() {
         console.log('Using fallback method...');
         
-        // Original sequential approach with delays between tabs
+        // Original sequential approach with reduced delays between tabs for speed
         await this.fetchDataForTab('sector-overview');
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         await this.fetchDataForTab('high-growth');
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         await this.fetchDataForTab('compounder');
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         await this.fetchDataForTab('mag7-plus');
-        await new Promise(resolve => setTimeout(resolve, 1000));
+        await new Promise(resolve => setTimeout(resolve, 500));
         
         await this.fetchDataForTab('ai-platform');
     }
@@ -2306,6 +2326,22 @@ class StockDashboard {
         
         tbody.innerHTML = '';
 
+        // Check if data is available for this tab
+        if (this.stockData.size === 0) {
+            // Show loading message
+            const loadingRow = document.createElement('tr');
+            loadingRow.innerHTML = `
+                <td colspan="12" style="text-align: center; padding: 40px; color: #666;">
+                    <div style="display: flex; align-items: center; justify-content: center; gap: 10px;">
+                        <div style="width: 20px; height: 20px; border: 2px solid #f3f3f3; border-top: 2px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite;"></div>
+                        Loading ${this.currentTab} data...
+                    </div>
+                </td>
+            `;
+            tbody.appendChild(loadingRow);
+            return;
+        }
+
         // Convert Map to Array for sorting
         let stockArray = Array.from(this.stockData.entries())
             .map(([ticker, data]) => data)
@@ -2691,7 +2727,18 @@ class StockDashboard {
         // Ensure all datasets are loaded
         if (this.sectorData.size === 0 || this.growthData.size === 0 || 
             this.compounderData.size === 0 || this.mag7Data.size === 0 || this.aiPlatformData.size === 0) {
-            // Load data if not available
+            // Show loading state and load data if not available
+            const container = document.getElementById('market-intelligence');
+            if (container) {
+                container.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 400px; color: #666;">
+                        <div style="text-align: center;">
+                            <div style="width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                            Loading Market Intelligence data...
+                        </div>
+                    </div>
+                `;
+            }
             this.loadData();
             return;
         }
@@ -3795,7 +3842,18 @@ class StockDashboard {
         if (this.sectorData.size === 0 || this.growthData.size === 0 || 
             this.compounderData.size === 0 || this.mag7Data.size === 0 || 
             this.aiPlatformData.size === 0) {
-            // Load data if not available
+            // Show loading state and load data if not available
+            const container = document.getElementById('gainers-losers');
+            if (container) {
+                container.innerHTML = `
+                    <div style="display: flex; align-items: center; justify-content: center; height: 400px; color: #666;">
+                        <div style="text-align: center;">
+                            <div style="width: 40px; height: 40px; border: 3px solid #f3f3f3; border-top: 3px solid #3498db; border-radius: 50%; animation: spin 1s linear infinite; margin: 0 auto 20px;"></div>
+                            Loading Gainers/Losers data...
+                        </div>
+                    </div>
+                `;
+            }
             this.loadData();
             return;
         }

@@ -632,6 +632,11 @@ th.drag-over .drag-indicator {
     }
 }
 
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 /* Market Summary Styles */
 .summary-section {
     margin-bottom: 30px;
