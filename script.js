@@ -2547,6 +2547,8 @@ class StockDashboard {
     }
 
     updateSidePanel(stockArray) {
+        console.log(`updateSidePanel called for ${this.currentTab} with ${stockArray.length} stocks`);
+        
         // Calculate scores for all stocks
         const scoredStocks = stockArray.map(data => ({
             ...data,
@@ -2561,7 +2563,9 @@ class StockDashboard {
             'sector-overview': '',
             'high-growth': 'Growth',
             'compounder': 'Compounder',
-            'mag7-plus': 'Mag7'
+            'mag7-plus': 'Mag7',
+            'ai-platform': 'AIPlatform',
+            'semiconductors': 'Semiconductors'
         };
         const suffix = suffixMapping[this.currentTab] || '';
         
@@ -2592,6 +2596,13 @@ class StockDashboard {
 
     populateStockList(containerId, stocks, type) {
         const container = document.getElementById(containerId);
+        console.log(`populateStockList: ${containerId}, found element: ${!!container}, stocks: ${stocks.length}`);
+        
+        if (!container) {
+            console.warn(`Element with id '${containerId}' not found`);
+            return;
+        }
+        
         container.innerHTML = '';
 
         stocks.forEach(stock => {
